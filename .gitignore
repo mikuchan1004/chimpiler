@@ -1,0 +1,9 @@
+# Created by venv; see https://docs.python.org/3/library/venv.html
+# 이 문서에 파일명 혹은 파일확장자를 적어두시면 깃허브에 올라가지 않습니다
+Lib/
+Scripts/
+Include/
+pyvenv.cfg
+
+__pycache__/
+*.pyc
