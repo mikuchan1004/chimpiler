@@ -1,5 +1,7 @@
 # Created by venv; see https://docs.python.org/3/library/venv.html
+# 이렇게 해두면, 가상환경에 관련된 폴더나 파일이 올라가지 않습니다.
 /Include
 /Lib
 /Scripts
 *.cfg
+/__pycache__
