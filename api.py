@@ -18,7 +18,11 @@ def get_session():
         yield session       # 라우터 함수에 DB 세션을 전달
         session.commit()    # 요청 처리가 무사히 끝나면 변경
 
-# 관리자 대시보드  
+###########
+# 페이지 이동
+###########
+
+# 관리자 대시보드 
 @app.get('/dashboard')
 def list(request: Request, session: Session = Depends(get_session)):
     print('/dashboard 실행')

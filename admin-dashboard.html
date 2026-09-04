@@ -1,98 +1,97 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>관리자 대시보드 | CHIMPILER</title>
-<link rel="stylesheet" href="static/css/common.css">
-<link rel="stylesheet" href="static/css/components.css">
-<link rel="stylesheet" href="static/css/pages.css">
-<link rel="stylesheet" href="static/css/responsive.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>관리자 대시보드 | CHIMPILER</title>
+    <link rel="stylesheet" href="/static/css/common.css">
+    <link rel="stylesheet" href="/static/css/components.css">
+    <link rel="stylesheet" href="/static/css/pages.css">
+    <link rel="stylesheet" href="/static/css/responsive.css">
 </head>
 <body>
-<header class="admin-header">
-<nav class="container admin-nav">
-<a class="brand-name" href="admin-dashboard.html">관리자 페이지</a>
-<a class="active" href="admin-dashboard.html">대시보드</a>
-<a href="admin-inquiries.html">문의관리</a>
-<a href="admin-users.html">회원관리</a>
-<a href="admin-products.html">상품/재고관리</a>
-<a href="admin-orders.html">주문/배송관리</a>
-<a href="admin-reservations.html">예약관리</a>
-<span style="margin-left:auto">관리자님</span>
-<a href="main.html">홈으로</a>
-</nav>
-</header>
-<main class="container admin-layout">
-<header class="admin-toolbar">
-<div>
-<span class="eyebrow">ADMIN</span>
-<h1 class="page-title">운영 대시보드</h1>
-</div>
-<span>2026.09.04 기준</span>
-</header>
-<section class="dashboard-cards">
-<article class="card metric">
-<span>오늘 주문</span>
-<div class="metric-value">12</div>
-</article>
-<article class="card metric">
-<span>예약 대기</span>
-<div class="metric-value">8</div>
-</article>
-<article class="card metric">
-<span>답변 대기</span>
-<div class="metric-value">4</div>
-</article>
-<article class="card metric">
-<span>재고 부족</span>
-<div class="metric-value">6</div>
-</article>
-</section>
-<div class="split-view" style="margin-top:20px">
-<section class="panel">
-<h2>최근 주문</h2>
-<div class="table-wrap">
-<table class="data-table">
-<thead>
-<tr>
-<th>주문서</th>
-<th>회원</th>
-<th>금액</th>
-<th>상태</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1004</td>
-<td>human</td>
-<td>49,000원</td>
-<td>
-<span class="badge warning">상품준비중</span>
-</td>
-</tr>
-<tr>
-<td>1003</td>
-<td>tester</td>
-<td>29,800원</td>
-<td>
-<span class="badge success">주문완료</span>
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</section>
-<aside class="panel">
-<h2>빠른 이동</h2>
-<div class="summary-list">
-<a class="button secondary" href="admin-products.html">재고 보충</a>
-<a class="button secondary" href="admin-inquiries.html">문의 답변</a>
-<a class="button secondary" href="admin-reservations.html">예약 확인</a>
-</div>
-</aside>
-</div>
-</main>
+    <header class="admin-header">
+        <nav class="container admin-nav">
+            <a class="brand-name" href="admin-dashboard.html">관리자 페이지</a>
+            <a class="active" href="admin-dashboard.html">대시보드</a>
+            <a href="admin-inquiries.html">문의관리</a>
+            <a href="admin-users.html">회원관리</a>
+            <a href="admin-products.html">상품/재고관리</a>
+            <a href="admin-orders.html">주문/배송관리</a>
+            <a href="admin-reservations.html">예약관리</a>
+            <span style="margin-left:auto">관리자님</span>
+            <a href="main.html">홈으로</a>
+        </nav>
+    </header>
+    <main class="container admin-layout">
+        <header class="admin-toolbar">
+            <div>
+                <span class="eyebrow">ADMIN</span>
+                <h1 class="page-title">운영 대시보드</h1>
+            </div>
+            <span>2026.09.04 기준</span>
+        </header>
+        <section class="dashboard-cards">
+            <article class="card metric">
+                <span>오늘 주문</span>
+                <div class="metric-value">12</div>
+            </article>
+            <article class="card metric">
+                <span>예약 대기</span>
+                <div class="metric-value">8</div>
+            </article>
+            <article class="card metric">
+                <span>답변 대기</span>
+                <div class="metric-value">4</div>
+            </article>
+            <article class="card metric">
+                <span>재고 부족</span>
+                <div class="metric-value">6</div>
+            </article>
+        </section>
+        <div class="split-view" style="margin-top:20px">
+            <section class="panel">
+                <h2>최근 주문</h2>
+                <div class="table-wrap">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>주문서</th>
+                                <th>회원</th>
+                                <th>금액</th>
+                                <th>상태</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1004</td>
+                                <td>human</td>
+                                <td>49,000원</td>
+                                <td>
+                                    <span class="badge warning">상품준비중</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>1003</td>
+                                <td>tester</td>
+                                <td>29,800원</td>
+                                <td>
+                                    <span class="badge success">주문완료</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+            <aside class="panel">
+                <h2>빠른 이동</h2>
+                <div class="summary-list">
+                    <a class="button secondary" href="admin-products.html">재고 보충</a>
+                    <a class="button secondary" href="admin-inquiries.html">문의 답변</a>
+                    <a class="button secondary" href="admin-reservations.html">예약 확인</a>
+                </div>
+            </aside>
+        </div>
+    </main>
 </body>
 </html>
-
