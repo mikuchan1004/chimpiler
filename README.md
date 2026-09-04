@@ -1,87 +1,63 @@
-# chimpiler
-## 팀 소개
+# CHIMPILER HEALTHCARE UI
 
-**Chimpiler**
-Chimpanzee + Compiler
+PC/Mobile 스토리보드를 기준으로 만든 정적 HTML/CSS 화면입니다. Jinja, JavaScript, FastAPI 기능은 포함하지 않았으며 팀에서 연결할 수 있도록 주요 조작 요소에 ID를 지정했습니다.
 
-Chimpiler는 뛰어난 학습 능력과 협동심을 바탕으로 도구를 활용해 문제를 해결하는 Chimpanzee와, 다양한 코드와 명령을 컴퓨터가 실행할 수 있는 결과물로 변환하는 **Compiler**를 결합한 이름입니다.
+## 폴더 구조
 
-침팬지가 주변 환경을 관찰하고 적절한 도구를 활용하며 동료들과 협력해 문제를 해결하듯, Chimpiler는 HTML, CSS, JavaScript, Python, 데이터베이스, API와 AI 등 다양한 웹 기술을 목적에 맞게 활용합니다.
+```text
+chimpiler-ui/
+├─ templates/
+│  └─ layout.html
+├─ static/
+│  ├─ css/
+│  │  ├─ common.css
+│  │  ├─ components.css
+│  │  ├─ pages.css
+│  │  └─ responsive.css
+│  └─ images/
+│     ├─ chimpiler-logo.png
+│     └─ 상품 이미지 60개
+├─ main.html
+├─ products.html
+├─ product-detail.html
+├─ cart.html
+├─ checkout.html
+├─ payment-result.html
+├─ login.html
+├─ signup.html
+├─ terms.html
+├─ mypage-dashboard.html
+├─ mypage-profile.html
+├─ mypage-orders.html
+├─ mypage-reservations.html
+├─ mypage-inquiries.html
+├─ ai-health.html
+├─ notice.html
+├─ faq.html
+├─ inquiry-write.html
+├─ admin-dashboard.html
+├─ admin-users.html
+├─ admin-products.html
+├─ admin-orders.html
+├─ admin-reservations.html
+├─ admin-inquiries.html
+├─ error-404.html
+├─ products.csv
+├─ IMPLEMENTATION_NOTES.md
+└─ NAMING_REFERENCE.md
+```
 
-웹 개발은 서로 다른 언어와 기술, 데이터와 기능을 유기적으로 연결해 하나의 서비스로 완성하는 과정입니다. 
+## CSS 역할
 
-Chimpiler 역시 네 명의 팀원이 각자의 아이디어와 역량을 연결하고, 시행착오를 함께 해결하며, 사용자가 실제로 경험할 수 있는 웹 서비스로 컴파일한다는 의미를 담고 있습니다.
+| 파일 | 역할 |
+|---|---|
+| common.css | 컬러, 글꼴, 공통 레이아웃, 헤더, 푸터, 메뉴, 고정 버튼 |
+| components.css | 버튼, 입력창, 테이블, 탭, 모달, 상태 배지 |
+| pages.css | 상품, 주문, 회원, 마이페이지, 커뮤니티, AI, 관리자 화면 |
+| responsive.css | 태블릿 및 모바일 반응형 배치 |
 
-**관찰하고, 연결하고, 협력하여 완성한다.**
+CSS 수정은 역할에 맞는 파일 한 곳에서 진행하면 같은 컴포넌트를 사용하는 모든 페이지에 반영됩니다.
 
-Chimpiler는 영리한 협업을 통해 아이디어를 살아 움직이는 웹 서비스로 만드는 팀입니다.
+## Jinja 적용 시
 
-[요약]
-도구를 활용해 함께 문제를 해결하는 침팬지처럼, 다양한 웹 기술과 아이디어를 연결해 하나의 서비스로 컴파일하는 팀입니다.
-
-## 링크 모음
-
-[전체 수업 내용 정리(노션)](https://www.notion.so/260629-387a69c6e8268029bc39e45c08072f09)
-
-## 🐒 Chimpiler 팀 규칙
-
-### 1. AI 활용 내용은 투명하게 공유하기
-
-AI를 사용했다면 어떤 부분에, 어떤 목적으로 활용했는지 팀원들에게 공유합니다.  
-단순히 결과만 가져오기보다는 내용을 직접 이해하고, 팀원 모두가 함께 배울 수 있도록 사용 과정과 알게 된 점도 나눕니다.
-
-### 2. 연락은 빠르고 확실하게 확인하기
-
-비상시 연락할 수 있도록 팀원 간 연락처를 공유하고, Discord 메시지를 자주 확인합니다.  
-모바일 Discord는 알림이나 메시지 시간이 정확하지 않을 수 있으므로 중요한 내용은 답변이나 이모지로 확인 여부를 표시합니다.
-
-### 3. 작업마다 현실적인 기한 정하기
-
-기한이 없으면 하나의 작업에 지나치게 많은 시간이 소요될 수 있으므로, 각자 맡은 작업에는 대략적인 목표 기한을 설정합니다.
-
-혼자 해결하기 어렵거나 일정 시간 이상 막힌 경우에는 부담 갖지 말고 팀원들에게 도움을 요청합니다. 함께 원인을 확인하고 피드백을 주고받으며 해결합니다.
-
-> 혼자 오래 고민하기보다, 함께 빠르게 해결하기!
-
-### 4. 필요하면 추가 작업시간 활용하기
-
-교육 시간 내에 해결하지 못한 작업이 있거나 일정상 추가 시간이 필요하다면 팀원들과 협의하여 저녁 시간도 활용합니다.
-
-정말 필요한 경우 주말까지 활용할 수 있지만, 가급적 평일에 계획적으로 진행하여 모두의 휴식 시간을 지키는 것을 목표로 합니다.
-
-> 주말 작업은 최후의 수단! 그런 일이 없도록 미리미리 진행하기 🙏
-
-### 5. 건강하게 개발하기
-
-한 시간 이상 쉬지 않고 계속 코딩하지 않습니다. 중간중간 자리에서 일어나 스트레칭하고 눈과 머리를 쉬게 합니다.
-
-두통이나 피로가 느껴진다면 억지로 버티지 말고 반드시 휴식을 취합니다. 건강과 집중력을 지키는 것도 프로젝트의 중요한 부분입니다.
-
-### 6. 작은 성과도 적극적으로 칭찬하기
-
-잘한 부분이 100개 중 단 하나라도 있다면, 그 한 가지를 발견해 열렬하게 칭찬합니다.
-
-서로의 노력과 성장을 당연하게 여기지 않고, 좋은 점을 구체적으로 이야기하며 즐겁게 협업합니다.
-
-### 7. 편안하게 소통하기
-
-팀원끼리는 서로 부담 없이 편하게 이야기합니다. 다만 친근함 속에서도 기본적인 존중과 배려를 지키며, 
-
-의견이 다를 때는 사람보다 문제와 해결 방법에 집중합니다.
-
----
-
-### Chimpiler의 약속
-
-> 투명하게 공유하고, 막히면 함께 해결하고,  
-> 건강하게 개발하며, 작은 성장도 크게 칭찬한다.  
-> **Think, Link, Compile! 🐒💻**
-
-### 팀원 
-
-|이름|직책|
-|:---|:---|
-|조규혁|팀장|
-|정근욱|팀원|
-|최영욱|팀원|
-|김상우|팀원|
+`templates/layout.html`의 `mainContent` 내부를 `{% block main %}{% endblock %}`으로 바꾸고, 각 페이지에서 `{% extends "layout.html" %}`를 사용하면 됩니다. 현재 HTML은 브라우저에서 바로 확인할 수 있도록 정적 경로를 사용했습니다.

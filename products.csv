@@ -1,0 +1,61 @@
+id,category,brand,product_name,price_krw,image
+SUP001,건강기능식품,CHIMPILER,데일리 밸런스 멀티비타민,24900,01_supplements/supplement-01-vita-core.png
+SUP002,건강기능식품,MONKEY LAB,프로바이오틱스 밸런스,29800,01_supplements/supplement-02-bio-balance.png
+SUP003,건강기능식품,VITAFOREST,식물성 오메가3,31500,01_supplements/supplement-03-omega-leaf.png
+SUP004,건강기능식품,MINTWELL,눈건강 루테인,22000,01_supplements/supplement-04-lutein-view.png
+SUP005,건강기능식품,NOVA CARE,관절케어 MSM,27900,01_supplements/supplement-05-msm-joint.png
+SUP006,건강기능식품,DAILY ROOT,비타민C 1000,15900,01_supplements/supplement-06-c-vital-1000.png
+SUP007,건강기능식품,CALMORA,마그네슘 밸런스,18500,01_supplements/supplement-07-magne-calm.png
+SUP008,건강기능식품,HERB CIRCLE,밀크씨슬 케어,23800,01_supplements/supplement-08-liver-guard.png
+SUP009,건강기능식품,ROOT NINE,홍삼 에너지 스틱,34900,01_supplements/supplement-09-red-ginseng.png
+SUP010,건강기능식품,LUMINA,콜라겐 비오틴,26500,01_supplements/supplement-10-collagen-glow.png
+FIT001,운동용품,FLEXORA,에코 요가매트,29900,02_fitness/fitness-01-flex-mat.png
+FIT002,운동용품,MOVE MONKEY,파워 저항밴드 세트,18900,02_fitness/fitness-02-power-band.png
+FIT003,운동용품,IRON MINT,소프트 아령 2kg 세트,24000,02_fitness/fitness-03-soft-dumbbell.png
+FIT004,운동용품,CORENOVA,텍스처 폼롤러,21500,02_fitness/fitness-04-core-roller.png
+FIT005,운동용품,JUMP LAB,스피드 줄넘기,12900,02_fitness/fitness-05-speed-rope.png
+FIT006,운동용품,ACTIVE ARC,발목 중량밴드 1kg 세트,19800,02_fitness/fitness-06-ankle-fit.png
+FIT007,운동용품,KINETIQ,듀얼 복근 롤러,23900,02_fitness/fitness-07-ab-wheel.png
+FIT008,운동용품,GUARDUP,손목 보호대 세트,15500,02_fitness/fitness-08-wrist-guard.png
+FIT009,운동용품,RELAX BEAN,마사지볼 듀오,11900,02_fitness/fitness-09-massage-duo.png
+FIT010,운동용품,PULSE CUP,액티브 쉐이커,9900,02_fitness/fitness-10-active-shaker.png
+DEV001,건강기기,METRIVA,디지털 체중계,39900,03_devices/device-01-body-scale.png
+DEV002,건강기기,VITALOOP,상완식 혈압계,74900,03_devices/device-02-pressure-care.png
+DEV003,건강기기,THERMOON,비접촉 체온계,42000,03_devices/device-03-temp-check.png
+DEV004,건강기기,PULSE NOVA,손가락 산소포화도 측정기,35900,03_devices/device-04-oxy-pulse.png
+DEV005,건강기기,MONKEY TECH,스마트 피트니스 밴드,59900,03_devices/device-05-smart-fit.png
+DEV006,건강기기,ALIGNIQ,자세 교정 알림 센서,49800,03_devices/device-06-posture-link.png
+DEV007,건강기기,MOTIONA,미니 마사지건,69000,03_devices/device-07-mini-relax.png
+DEV008,건강기기,GRIPLY,디지털 악력계,45000,03_devices/device-08-grip-meter.png
+DEV009,건강기기,MEASURE ME,스마트 바디 줄자,28900,03_devices/device-09-smart-tape.png
+DEV010,건강기기,WALKWISE,휴대용 만보기,19900,03_devices/device-10-step-go.png
+SLP001,수면·휴식,DREAM NEST,메모리폼 숙면 베개,49900,04_sleep_rest/sleep-01-dream-pillow.png
+SLP002,수면·휴식,MOON SILK,프리미엄 실크 수면안대,18000,04_sleep_rest/sleep-02-silk-night.png
+SLP003,수면·휴식,HUSH LAB,백색소음기,39500,04_sleep_rest/sleep-03-white-noise.png
+SLP004,수면·휴식,AROMORA,아로마 미스트 디퓨저,32900,04_sleep_rest/sleep-04-aroma-mist.png
+SLP005,수면·휴식,WARM WAVE,넥 온열팩,24900,04_sleep_rest/sleep-05-neck-warm.png
+SLP006,수면·휴식,RESTORY,딥 웨이트 블랭킷,69000,04_sleep_rest/sleep-06-deep-blanket.png
+SLP007,수면·휴식,POSTURE CLOUD,허리 받침 쿠션,38000,04_sleep_rest/sleep-07-back-rest.png
+SLP008,수면·휴식,SOOTHE STEP,전기 족욕기,45900,04_sleep_rest/sleep-08-foot-spa.png
+SLP009,수면·휴식,QUIETLY,수면용 이어플러그,12900,04_sleep_rest/sleep-09-quiet-plug.png
+SLP010,수면·휴식,LUMA NIGHT,베드사이드 무드등,29900,04_sleep_rest/sleep-10-mood-sleep.png
+FOD001,건강식품,LEAN MONKEY,프로틴 밸런스 파우더,32900,05_healthy_food/food-01-protein-balance.png
+FOD002,건강식품,NUTRIBITE,저당 너트바 세트,18900,05_healthy_food/food-02-nut-bar.png
+FOD003,건강식품,LIGHT GRAIN,곤약 현미밥,21900,05_healthy_food/food-03-konjac-rice.png
+FOD004,건강식품,OAT DAYS,데일리 오트밀,16500,05_healthy_food/food-04-daily-oats.png
+FOD005,건강식품,GREEN PRESS,NFC 채소주스 세트,25900,05_healthy_food/food-05-green-daily.png
+FOD006,건강식품,MORNING MATE,요거트 크런치 그래놀라,19800,05_healthy_food/food-06-yogurt-crunch.png
+FOD007,건강식품,BEAN NOTE,검은콩 두유 세트,15900,05_healthy_food/food-07-black-bean.png
+FOD008,건강식품,FRESH LOOP,퀴노아 샐러드 키트,27900,05_healthy_food/food-08-quinoa-kit.png
+FOD009,건강식품,FOREST HANDFUL,프리미엄 견과 믹스,22500,05_healthy_food/food-09-nut-mix.png
+FOD010,건강식품,SUNNY ROOT,허니 유자차,17900,05_healthy_food/food-10-citron-warm.png
+DAY001,생활건강,AQUA SMILE,데스크형 구강세정기,59900,06_daily_health/daily-01-oral-clean.png
+DAY002,생활건강,BRIGHT LOOP,소닉 전동칫솔,49900,06_daily_health/daily-02-sonic-care.png
+DAY003,생활건강,MONKEY SAFE,보호 마스크 10매,12900,06_daily_health/daily-03-air-guard.png
+DAY004,생활건강,PURE HANDS,자동 손세정 디스펜서,32000,06_daily_health/daily-04-clean-drop.png
+DAY005,생활건강,THERMA REST,목·어깨 온열패드,44900,06_daily_health/daily-05-shoulder-warm.png
+DAY006,생활건강,EYE CLOUD,스팀 온열안대 세트,14900,06_daily_health/daily-06-eye-rest.png
+DAY007,생활건강,MISTY HOME,초음파 미니 가습기,39900,06_daily_health/daily-07-pure-mist.png
+DAY008,생활건강,SITWELL,바른자세 방석,34900,06_daily_health/daily-08-posture-seat.png
+DAY009,생활건강,READY NINE,가정용 구급키트,28900,06_daily_health/daily-09-safe-kit.png
+DAY010,생활건강,CALF CARE,컴포트 압박양말,16900,06_daily_health/daily-10-leg-comfort.png

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>상품/재고관리</title>
+<link rel="stylesheet" href="static/css/common.css">
+<link rel="stylesheet" href="static/css/components.css">
+<link rel="stylesheet" href="static/css/pages.css">
+<link rel="stylesheet" href="static/css/responsive.css">
+</head>
+<body>
+<header class="admin-header">
+<nav class="container admin-nav">
+<a class="brand-name" href="admin-dashboard.html">관리자 페이지</a>
+<a href="admin-dashboard.html">대시보드</a>
+<a href="admin-inquiries.html">문의관리</a>
+<a href="admin-users.html">회원관리</a>
+<a class="active" href="admin-products.html">상품/재고관리</a>
+<a href="admin-orders.html">주문/배송관리</a>
+<a href="admin-reservations.html">예약관리</a>
+<a href="main.html">홈으로</a>
+</nav>
+</header>
+<main class="container admin-layout">
+<div class="admin-toolbar">
+<h1 class="page-title">상품/재고관리</h1>
+<div class="admin-actions">
+<button class="button" id="productCreateButton">상품 추가</button>
+<form class="search-box">
+<input id="adminProductSearchInput" placeholder="상품 검색">
+<button>⌕</button>
+</form>
+</div>
+</div>
+<div class="table-wrap">
+<table class="data-table" id="adminProductTable">
+<thead>
+<tr>
+<th>ID</th>
+<th>상품명</th>
+<th>가격</th>
+<th>판매재고</th>
+<th>예약재고</th>
+<th>상태</th>
+<th>관리</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>데일리 비타 코어</td>
+<td>29,800원</td>
+<td>24</td>
+<td>0</td>
+<td>
+<span class="badge success">판매중</span>
+</td>
+<td>
+<button class="button secondary small" id="stockEditButton">재고 보충</button> <button class="button small">수정</button>
+<button class="button danger small" id="productSoldOutButton" type="button">일시 품절처리</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</main>
+<div class="modal" id="stockEditModal">
+<div class="modal-dialog">
+<header class="modal-header">
+<h2 class="modal-title">재고 보충</h2>
+<button class="modal-close">×</button>
+</header>
+<div class="modal-body form-grid">
+<label class="form-field">
+<span>판매재고</span>
+<input class="form-control" id="saleStockInput" type="number">
+</label>
+<label class="form-field">
+<span>예약재고</span>
+<input class="form-control" id="reservationStockInput" type="number">
+</label>
+</div>
+<footer class="modal-footer">
+<button class="button secondary">취소</button>
+<button class="button">저장</button>
+</footer>
+</div>
+</div>
+</body>
+</html>

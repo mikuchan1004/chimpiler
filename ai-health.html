@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI 건강 체크 | CHIMPILER</title>
+<link rel="stylesheet" href="static/css/common.css">
+<link rel="stylesheet" href="static/css/components.css">
+<link rel="stylesheet" href="static/css/pages.css">
+<link rel="stylesheet" href="static/css/responsive.css">
+</head>
+<body id="top">
+<header class="site-header"><div class="container header-inner"><button class="menu-button" id="menuOpenButton">☰ <span>메뉴</span></button><nav class="quick-nav"><a href="main.html#bestProductList">베스트</a><a href="ai-health.html">AI 건강 체크</a><a href="notice.html">커뮤니티</a><a href="products.html">이벤트</a></nav><a class="brand" href="main.html"><strong class="brand-name">CHIMPILER HEALTHCARE</strong></a><nav class="user-nav"><a href="cart.html">장바구니</a><a href="mypage-dashboard.html">마이페이지</a><a href="login.html">로그인</a></nav></div></header>
+<main class="page-section">
+<div class="container">
+<header class="page-heading">
+<span class="eyebrow">AI HEALTH CHECK</span>
+<h1 class="page-title">나를 위한 건강 루틴 찾기</h1>
+<p class="page-description">간단한 생활 정보를 입력하면 참고용 건강 피드백과 상품을 추천합니다.</p>
+</header>
+<div class="ai-layout">
+<form class="card ai-form" id="healthCheckForm">
+<div class="summary-list">
+<label class="form-field">
+<span class="form-label">체중(kg)</span>
+<input class="form-control" id="healthWeight" name="health_weight" type="number">
+</label>
+<label class="form-field">
+<span class="form-label">나이</span>
+<input class="form-control" id="healthAge" name="health_age" type="number">
+</label>
+<label class="form-field">
+<span class="form-label">성별</span>
+<select class="form-control" id="healthGender" name="health_gender">
+<option>선택</option>
+<option>남성</option>
+<option>여성</option>
+<option>기타</option>
+</select>
+</label>
+<label class="form-field">
+<span class="form-label">평균 수면 시간</span>
+<input class="form-control" id="healthSleep" name="health_sleep" type="number">
+</label>
+<button class="button full" id="healthCheckButton">AI 건강 체크하기</button>
+</div>
+</form>
+<section class="card ai-result" id="healthResultPanel">
+<span class="badge success">AI 피드백</span>
+<h2>균형 잡힌 영양과 숙면 루틴을 추천해요</h2>
+<p class="muted">입력한 내용에 기반한 참고 정보입니다. 불편한 증상이 있으면 의료 전문가와 상담해 주세요.</p>
+<h3>추천 상품</h3>
+<div class="recommend-grid" id="recommendedProductList">
+<article class="card product-card">
+<img class="product-image" src="static/images/supplement-07-magne-calm.png" alt="">
+<div class="product-body">
+<strong>마그네 캄</strong>
+</div>
+</article>
+<article class="card product-card">
+<img class="product-image" src="static/images/sleep-03-white-noise.png" alt="">
+<div class="product-body">
+<strong>화이트 노이즈</strong>
+</div>
+</article>
+<article class="card product-card">
+<img class="product-image" src="static/images/food-04-daily-oats.png" alt="">
+<div class="product-body">
+<strong>데일리 오트</strong>
+</div>
+</article>
+</div>
+<button class="button secondary" id="healthResultSaveButton" style="margin-top:20px">결과 저장</button>
+<div class="ai-result-actions"><a class="button" id="recommendedCheckoutButton" href="checkout.html">주문서 작성하기</a><a class="button secondary" id="healthHomeButton" href="main.html">메인페이지 돌아가기</a><a class="button secondary" id="expertConsultButton" href="inquiry-write.html">전문가 상담받기</a></div>
+</section>
+</div>
+</div>
+</main>
+<footer class="site-footer" id="siteFooter"><div class="container"><div class="footer-grid"><section class="footer-brand"><img class="footer-logo" src="static/images/chimpiler-logo.png" alt=""><div><h2 class="footer-title">CHIMPILER HEALTHCARE</h2><p class="footer-copy">건강 기록 기반 AI 상품 추천 및 예약구매 헬스케어 쇼핑몰</p></div></section><section><h3 class="footer-heading">SERVICE</h3><div class="footer-list"><a href="terms.html">이용약관</a><a href="terms.html">개인정보처리방침</a><a href="faq.html">이용안내</a></div></section><section><h3 class="footer-heading">CS CENTER</h3><div class="footer-list"><a href="notice.html">공지사항</a><a href="faq.html">자주 묻는 질문</a><a href="inquiry-write.html">1:1 문의</a></div></section><section><h3 class="footer-heading">CHIMPILER TEAM</h3><div class="footer-list"><span>휴먼교육센터 팀 프로젝트</span><a href="#">GitHub 바로가기</a></div></section></div><div class="health-notice"><strong>건강정보 이용 안내</strong><br>AI 건강 체크 결과는 참고 정보이며 의학적 진단이나 처방을 대신하지 않습니다.</div><div class="copyright"><span>© 2026 Chimpiler Healthcare.</span><span>All rights reserved.</span></div></div></footer><div class="floating-tools"><button class="floating-button chat" id="chatOpenButton">💬 챗봇 상담</button><a class="floating-button" href="#top">↑</a><a class="floating-button" href="#siteFooter">↓</a></div>
+</body>
+</html>
