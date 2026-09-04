@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>회원관리</title>
+<link rel="stylesheet" href="static/css/common.css">
+<link rel="stylesheet" href="static/css/components.css">
+<link rel="stylesheet" href="static/css/pages.css">
+<link rel="stylesheet" href="static/css/responsive.css">
+</head>
+<body>
+<header class="admin-header">
+<nav class="container admin-nav">
+<a class="brand-name" href="admin-dashboard.html">관리자 페이지</a>
+<a href="admin-dashboard.html">대시보드</a>
+<a href="admin-inquiries.html">문의관리</a>
+<a class="active" href="admin-users.html">회원관리</a>
+<a href="admin-products.html">상품/재고관리</a>
+<a href="admin-orders.html">주문/배송관리</a>
+<a href="admin-reservations.html">예약관리</a>
+<a href="main.html">홈으로</a>
+</nav>
+</header>
+<main class="container admin-layout">
+<div class="admin-toolbar">
+<h1 class="page-title">회원관리</h1>
+<form class="search-box">
+<input id="adminUserSearchInput" placeholder="아이디 또는 이름">
+<button>⌕</button>
+</form>
+</div>
+<div class="table-wrap">
+<table class="data-table" id="adminUserTable">
+<thead>
+<tr>
+<th>아이디</th>
+<th>이름</th>
+<th>연락처</th>
+<th>경고</th>
+<th>상태</th>
+<th>관리</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>human</td>
+<td>홍길동</td>
+<td>010-1234-5678</td>
+<td>0</td>
+<td>
+<span class="badge success">정상</span>
+</td>
+<td>
+<button class="button secondary small">경고</button> <button class="button danger small">정지</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</main>
+</body>
+</html>
