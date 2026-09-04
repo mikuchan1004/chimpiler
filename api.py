@@ -3,9 +3,11 @@ from fastapi import FastAPI, Depends, Request, Form    # FastAPI 기본 기능, 
 from fastapi.templating import Jinja2Templates         # HTML 템플릿(Jinja2) 연동을 위한 모듈
 from fastapi.responses import RedirectResponse         # 작업 완료 후 다른 페이지로 이동(리다이렉트)시키는 모듈
 from sqlalchemy import text                           # 원시 SQL(Raw SQL) 문장을 안전하게 실행하기 위한 함수
+from fastapi.staticfiles import StaticFiles
 
 app = FastAPI()  # FastAPI 웹 서버 인스턴스 생성
-templates = Jinja2Templates(directory='.')  # HTML 파일들이 위치한 폴더 경로 지정
+app.mount("/static", StaticFiles(directory="static"), name="static")
+templates = Jinja2Templates(directory='.')  
 
 DATABASE_URL = 'mysql+pymysql://chimpiler_team:chimpiler!@#@192.168.0.65:3306/chimpiler'
 
@@ -15,18 +17,19 @@ def get_session():
     with Session(engine) as session: 
         yield session       # 라우터 함수에 DB 세션을 전달
         session.commit()    # 요청 처리가 무사히 끝나면 변경
-        
-@app.get('/list')
+
+# 관리자 대시보드  
+@app.get('/dashboard')
 def list(request: Request, session: Session = Depends(get_session)):
-    print('/list 실행')
-    # 전체 사원 조회를 위한 SQL 문 작성
-    sql = text('''
-        select * from emp3
-    ''')
-    # .mappings().fetchall(): 쿼리 결과를 딕셔너리 형태로 변환하여 전체 목록을 가져옴
-    results = session.execute(sql).mappings().fetchall()
+    print('/dashboard 실행')
+    return templates.TemplateResponse(request, 'admin-dashboard.html')
+
+if __name__ == "__main__":
+    import uvicorn
     
-    # list.html 파일에 emp_list 변수 이름으로 조회 결과를 전달하여 화면 렌더링
-    return templates.TemplateResponse(request, 'list.html', {
-        'emp_list': results
-    })
+    # Uvicorn 서버 실행
+    # "파일이름:FastAPI객체명" -> "03_crud:app"
+    # host="0.0.0.0": 외부 접속 허용
+    # port=8085: 웹 서버가 사용할 포트 번호 (8000번 대신 지정)
+    # reload=True: 코드 변경 시 서버 자동 재시작 (개발용 옵션)
+    uvicorn.run("api:app", port=8085, reload=True, host="0.0.0.0")
