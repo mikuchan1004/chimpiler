@@ -1,75 +1,75 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>문의관리</title>
-<link rel="stylesheet" href="/static/css/common.css">
-<link rel="stylesheet" href="/static/css/components.css">
-<link rel="stylesheet" href="/static/css/pages.css">
-<link rel="stylesheet" href="/static/css/responsive.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>문의관리</title>
+    <link rel="stylesheet" href="/static/css/common.css">
+    <link rel="stylesheet" href="/static/css/components.css">
+    <link rel="stylesheet" href="/static/css/pages.css">
+    <link rel="stylesheet" href="/static/css/responsive.css">
 </head>
 <body>
-<header class="admin-header">
-<nav class="container admin-nav">
-<a class="brand-name" href="admin-dashboard.html">관리자 페이지</a>
-<a href="admin-dashboard.html">대시보드</a>
-<a class="active" href="admin-inquiries.html">문의관리</a>
-<a href="admin-users.html">회원관리</a>
-<a href="admin-products.html">상품/재고관리</a>
-<a href="admin-orders.html">주문/배송관리</a>
-<a href="admin-reservations.html">예약관리</a>
-<a href="main.html">홈으로</a>
-</nav>
-</header>
-<main class="container admin-layout">
-<div class="admin-toolbar">
-<h1 class="page-title">문의관리</h1>
-<select class="form-control" id="inquiryStatusFilter" style="max-width:180px">
-<option>전체</option>
-<option>답변대기</option>
-<option>답변완료</option>
-</select>
-</div>
-<div class="split-view">
-<div class="table-wrap">
-<table class="data-table" id="adminInquiryTable">
-<thead>
-<tr>
-<th>ID</th>
-<th>회원</th>
-<th>유형</th>
-<th>제목</th>
-<th>상태</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>8</td>
-<td>human</td>
-<td>배송문의</td>
-<td>배송일 문의</td>
-<td>
-<span class="badge warning">답변대기</span>
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-<form class="panel" id="inquiryAnswerForm">
-<h2>문의 답변</h2>
-<p>
-<strong>배송일 문의</strong>
-</p>
-<p class="muted">언제 배송이 시작되나요?</p>
-<label class="form-field">
-<span class="form-label">답변</span>
-<textarea class="form-control" id="inquiryAnswer" name="inquiry_answer">
+    <header class="admin-header">
+        <nav class="container admin-nav">
+            <a class="brand-name" href="admin-dashboard.html">관리자 페이지</a>
+            <a href="admin-dashboard.html">대시보드</a>
+            <a class="active" href="admin-inquiries.html">문의관리</a>
+            <a href="admin-users.html">회원관리</a>
+            <a href="admin-products.html">상품/재고관리</a>
+            <a href="admin-orders.html">주문/배송관리</a>
+            <a href="admin-reservations.html">예약관리</a>
+            <a href="main.html">홈으로</a>
+        </nav>
+    </header>
+    <main class="container admin-layout">
+        <div class="admin-toolbar">
+            <h1 class="page-title">문의관리</h1>
+            <select class="form-control" id="inquiryStatusFilter" style="max-width:180px">
+                <option>전체</option>
+                <option>답변대기</option>
+                <option>답변완료</option>
+            </select>
+        </div>
+        <div class="split-view">
+            <div class="table-wrap">
+                <table class="data-table" id="adminInquiryTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>회원</th>
+                            <th>유형</th>
+                            <th>제목</th>
+                            <th>상태</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>8</td>
+                            <td>human</td>
+                            <td>배송문의</td>
+                            <td>배송일 문의</td>
+                            <td>
+                                <span class="badge warning">답변대기</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <form class="panel" id="inquiryAnswerForm">
+                <h2>문의 답변</h2>
+                <p>
+                    <strong>배송일 문의</strong>
+                </p>
+                <p class="muted">언제 배송이 시작되나요?</p>
+                <label class="form-field">
+                    <span class="form-label">답변</span>
+                    <textarea class="form-control" id="inquiryAnswer" name="inquiry_answer">
 </textarea>
-</label>
-<button class="button full" id="inquiryAnswerButton">답변 등록</button>
-</form>
-</div>
-</main>
+                </label>
+                <button class="button full" id="inquiryAnswerButton">답변 등록</button>
+            </form>
+        </div>
+    </main>
 </body>
 </html>
