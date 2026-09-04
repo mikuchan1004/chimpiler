@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>공지사항 | CHIMPILER</title>
+<link rel="stylesheet" href="static/css/common.css">
+<link rel="stylesheet" href="static/css/components.css">
+<link rel="stylesheet" href="static/css/pages.css">
+<link rel="stylesheet" href="static/css/responsive.css">
+</head>
+<body id="top">
+<header class="site-header">
+<div class="container header-inner">
+<button class="menu-button">☰ <span>메뉴</span>
+</button>
+<nav class="quick-nav"><a href="main.html#bestProductList">베스트</a><a href="ai-health.html">AI 건강 체크</a><a href="notice.html">커뮤니티</a><a href="products.html">이벤트</a></nav>
+<a class="brand" href="main.html">
+<strong class="brand-name">CHIMPILER HEALTHCARE</strong>
+</a>
+<nav class="user-nav">
+<a href="cart.html">장바구니</a>
+<a href="mypage-dashboard.html">마이페이지</a>
+<a href="login.html">로그인</a>
+</nav>
+</div>
+</header>
+<main class="community-shell">
+<div class="container community-layout">
+<div class="community-head">
+<header class="page-heading">
+<span class="eyebrow">COMMUNITY</span>
+<h1 class="page-title">고객 커뮤니티</h1>
+<p class="page-description">서비스 안내와 궁금한 내용을 빠르게 확인하세요.</p>
+</header>
+<form class="search-box" id="noticeSearchForm">
+<input id="noticeSearchInput" placeholder="공지사항 검색">
+<button>⌕</button>
+</form>
+</div>
+<nav class="tabs">
+<a class="tab active" href="notice.html">공지사항</a>
+<a class="tab" href="faq.html">자주 묻는 질문</a>
+<a class="tab" href="inquiry-write.html">1:1 문의</a>
+</nav>
+<section class="post-list notice-accordion" id="noticeList">
+<details class="notice-item"><summary class="post-row"><span class="badge">공지</span><strong class="post-title">예약구매 서비스 이용 안내</strong><span>관리자</span><time class="post-date">2026.09.04</time></summary><div class="notice-detail"><p>품절 상품은 예약구매를 신청할 수 있으며, 재고가 입고되면 예약 순서대로 구매 가능 상태로 전환됩니다.</p><p>구매 가능 기한과 현재 순위는 마이페이지의 예약 관리에서 확인해 주세요.</p></div></details>
+<details class="notice-item"><summary class="post-row"><span>2</span><strong class="post-title">배송 정책 안내</strong><span>관리자</span><time class="post-date">2026.09.02</time></summary><div class="notice-detail"><p>결제 완료 후 상품 준비가 시작되며, 배송이 시작되면 주문·배송 조회 화면에서 상태를 확인할 수 있습니다.</p></div></details>
+<details class="notice-item"><summary class="post-row"><span>1</span><strong class="post-title">CHIMPILER HEALTHCARE 오픈 안내</strong><span>관리자</span><time class="post-date">2026.09.01</time></summary><div class="notice-detail"><p>건강 상품 추천과 예약구매 서비스를 제공하는 CHIMPILER HEALTHCARE가 문을 열었습니다.</p></div></details>
+</section>
+<nav class="pagination">
+<button class="page-button">이전</button>
+<button class="page-button active">1</button>
+<button class="page-button">다음</button>
+</nav>
+</div>
+</main>
+<footer class="site-footer" id="siteFooter"><div class="container"><div class="footer-grid"><section class="footer-brand"><img class="footer-logo" src="static/images/chimpiler-logo.png" alt=""><div><h2 class="footer-title">CHIMPILER HEALTHCARE</h2><p class="footer-copy">건강 기록 기반 AI 상품 추천 및 예약구매 헬스케어 쇼핑몰</p></div></section><section><h3 class="footer-heading">SERVICE</h3><div class="footer-list"><a href="terms.html">이용약관</a><a href="terms.html">개인정보처리방침</a><a href="faq.html">이용안내</a></div></section><section><h3 class="footer-heading">CS CENTER</h3><div class="footer-list"><a href="notice.html">공지사항</a><a href="faq.html">자주 묻는 질문</a><a href="inquiry-write.html">1:1 문의</a></div></section><section><h3 class="footer-heading">CHIMPILER TEAM</h3><div class="footer-list"><span>휴먼교육센터 팀 프로젝트</span><a href="#">GitHub 바로가기</a></div></section></div><div class="health-notice"><strong>건강정보 이용 안내</strong><br>AI 건강 체크 결과는 참고 정보이며 의학적 진단이나 처방을 대신하지 않습니다.</div><div class="copyright"><span>© 2026 Chimpiler Healthcare.</span><span>All rights reserved.</span></div></div></footer>
+<div class="floating-tools">
+<button class="floating-button chat" id="chatOpenButton">💬 챗봇 상담</button>
+<a class="floating-button" href="#top" aria-label="상단 이동">↑</a>
+<a class="floating-button" href="#pageBottom" aria-label="하단 이동">↓</a>
+</div>
+<div id="pageBottom">
+</div>
+</body>
+</html>

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>예약관리</title>
+<link rel="stylesheet" href="static/css/common.css">
+<link rel="stylesheet" href="static/css/components.css">
+<link rel="stylesheet" href="static/css/pages.css">
+<link rel="stylesheet" href="static/css/responsive.css">
+</head>
+<body>
+<header class="admin-header">
+<nav class="container admin-nav">
+<a class="brand-name" href="admin-dashboard.html">관리자 페이지</a>
+<a href="admin-dashboard.html">대시보드</a>
+<a href="admin-inquiries.html">문의관리</a>
+<a href="admin-users.html">회원관리</a>
+<a href="admin-products.html">상품/재고관리</a>
+<a href="admin-orders.html">주문/배송관리</a>
+<a class="active" href="admin-reservations.html">예약관리</a>
+<a href="main.html">홈으로</a>
+</nav>
+</header>
+<main class="container admin-layout">
+<div class="admin-toolbar">
+<h1 class="page-title">예약관리</h1>
+<span class="badge warning">예약 대기 8건</span>
+</div>
+<div class="table-wrap">
+<table class="data-table" id="adminReservationTable">
+<thead>
+<tr>
+<th>예약ID</th>
+<th>회원</th>
+<th>상품</th>
+<th>수량</th>
+<th>순번</th>
+<th>상태</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>14</td>
+<td>human</td>
+<td>화이트 노이즈 머신</td>
+<td>1</td>
+<td>1</td>
+<td>
+<span class="badge">예약대기</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</main>
+</body>
+</html>
+

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>회원정보 수정 | CHIMPILER</title>
+<link rel="stylesheet" href="static/css/common.css">
+<link rel="stylesheet" href="static/css/components.css">
+<link rel="stylesheet" href="static/css/pages.css">
+<link rel="stylesheet" href="static/css/responsive.css">
+</head>
+<body id="top">
+<header class="site-header"><div class="container header-inner"><button class="menu-button" id="menuOpenButton">☰ <span>메뉴</span></button><nav class="quick-nav"><a href="main.html#bestProductList">베스트</a><a href="ai-health.html">AI 건강 체크</a><a href="notice.html">커뮤니티</a><a href="products.html">이벤트</a></nav><a class="brand" href="main.html"><strong class="brand-name">CHIMPILER HEALTHCARE</strong></a><nav class="user-nav"><a href="cart.html">장바구니</a><a href="mypage-dashboard.html">마이페이지</a><a href="login.html">로그인</a></nav></div></header>
+<main class="page-section">
+<div class="container mypage-layout">
+<nav class="card side-nav">
+<a href="mypage-dashboard.html">마이페이지</a>
+<a class="active" href="mypage-profile.html">회원정보 수정</a>
+<a href="mypage-orders.html">주문·배송 조회</a>
+<a href="mypage-reservations.html">예약 관리</a>
+<a href="mypage-inquiries.html">문의 내역</a>
+</nav>
+<section>
+<header class="page-heading">
+<span class="eyebrow">MY PAGE</span>
+<h1 class="page-title">개인정보 수정</h1>
+</header>
+<form class="panel form-grid" id="profileForm">
+<label class="form-field">
+<span class="form-label">이름</span>
+<input class="form-control" id="profileName" name="user_name" value="회원 이름">
+</label>
+<label class="form-field">
+<span class="form-label">아이디</span>
+<input class="form-control" id="profileUserId" value="user_id" readonly>
+</label>
+<label class="form-field full">
+<span class="form-label">주소</span>
+<span class="input-row">
+<input class="form-control" id="profileAddress" name="user_addr">
+<button class="button secondary" type="button">주소 검색</button>
+</span>
+</label>
+<label class="form-field">
+<span class="form-label">이메일</span>
+<input class="form-control" id="profileEmail" name="user_email">
+</label>
+<label class="form-field">
+<span class="form-label">휴대폰 번호</span>
+<input class="form-control" id="profilePhone" name="user_phone">
+</label>
+<div class="form-field full">
+<button class="button secondary" id="passwordChangeButton" type="button">비밀번호 변경</button>
+</div>
+<div class="form-field full">
+<button class="button" id="profileSaveButton">정보 수정</button> <button class="button secondary" type="reset">취소</button>
+</div>
+</form>
+</section>
+</div>
+</main>
+<div class="modal" id="passwordChangeModal">
+<div class="modal-dialog">
+<header class="modal-header">
+<h2 class="modal-title">비밀번호 변경</h2>
+<button class="modal-close">×</button>
+</header>
+<div class="modal-body summary-list">
+<input class="form-control" id="newPassword" type="password" placeholder="새 비밀번호">
+<input class="form-control" id="newPasswordConfirm" type="password" placeholder="새 비밀번호 확인">
+</div>
+<footer class="modal-footer">
+<button class="button secondary">취소</button>
+<button class="button">변경</button>
+</footer>
+</div>
+</div>
+<footer class="site-footer" id="siteFooter"><div class="container"><div class="footer-grid"><section class="footer-brand"><img class="footer-logo" src="static/images/chimpiler-logo.png" alt=""><div><h2 class="footer-title">CHIMPILER HEALTHCARE</h2><p class="footer-copy">건강 기록 기반 AI 상품 추천 및 예약구매 헬스케어 쇼핑몰</p></div></section><section><h3 class="footer-heading">SERVICE</h3><div class="footer-list"><a href="terms.html">이용약관</a><a href="terms.html">개인정보처리방침</a><a href="faq.html">이용안내</a></div></section><section><h3 class="footer-heading">CS CENTER</h3><div class="footer-list"><a href="notice.html">공지사항</a><a href="faq.html">자주 묻는 질문</a><a href="inquiry-write.html">1:1 문의</a></div></section><section><h3 class="footer-heading">CHIMPILER TEAM</h3><div class="footer-list"><span>휴먼교육센터 팀 프로젝트</span><a href="#">GitHub 바로가기</a></div></section></div><div class="health-notice"><strong>건강정보 이용 안내</strong><br>AI 건강 체크 결과는 참고 정보이며 의학적 진단이나 처방을 대신하지 않습니다.</div><div class="copyright"><span>© 2026 Chimpiler Healthcare.</span><span>All rights reserved.</span></div></div></footer><div class="floating-tools"><button class="floating-button chat" id="chatOpenButton">💬 챗봇 상담</button><a class="floating-button" href="#top">↑</a><a class="floating-button" href="#siteFooter">↓</a></div>
+</body>
+</html>
