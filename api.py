@@ -24,11 +24,55 @@ def get_session():
         yield session       # 라우터 함수에 DB 세션을 전달
         session.commit()    # 요청 처리가 무사히 끝나면 변경
 
+##########
+# 페이지 이동 라우터
+##########
+
 # 관리자 대시보드 페이지
 @app.get('/dashboard')
-def list(request: Request, session: Session = Depends(get_session)):
+def dashboard(request: Request, session: Session = Depends(get_session)):
     print('/dashboard 실행')
     return templates.TemplateResponse(request, 'admin-dashboard.html')
+
+# 관리자 문의관리 페이지
+@app.get('/inquiries')
+def inquiries (request: Request, session: Session = Depends(get_session)):
+    print('/inquiries 실행')
+    return templates.TemplateResponse(request, 'admin-inquiries.html')
+
+# 관리자 회원관리 페이지
+@app.get('/users')
+def users (request: Request, session: Session = Depends(get_session)):
+    print('/users 실행')
+    return templates.TemplateResponse(request, 'admin-users.html')
+
+# 관리자 상품/재고관리 페이지 
+@app.get('/products')
+def products (request:Request, session: Session = Depends(get_session)):
+    print('/products 실행')
+    return templates.TemplateResponse(request, 'admin-products.html' )
+
+# 관리자 주문/배송관리 페이지 
+@app.get('/orders')
+def orders(request:Request, session: Session = Depends(get_session)):
+    print('/orders 실행')
+    return templates.TemplateResponse(request, 'admin-orders.html')
+
+# 관리자 예약관리 페이지 
+@app.get('/reservations')
+def reservations (request:Request, session: Session = Depends(get_session)):
+    print('reservations 실행')
+    return templates.TemplateResponse(request, 'admin-reservations.html')
+
+# 메인 페이지 이동 
+@app.get('/main')
+def main (request:Request, session:Session = Depends(get_session)):
+    print('/main 실행')
+    return templates.TemplateResponse(request, 'main.html')
+
+##########
+# 페이지 이동 라우터 끝
+##########
 
 if __name__ == "__main__":
     import uvicorn
