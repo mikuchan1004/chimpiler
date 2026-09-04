@@ -1,0 +1,5 @@
+# venv 가상환경 GitHub 업로드 방지
+.venv/
+venv/
+__pycache__/
+*.pyc
