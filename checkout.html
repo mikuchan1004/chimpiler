@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>주문서 작성 | CHIMPILER</title>
+<link rel="stylesheet" href="static/css/common.css">
+<link rel="stylesheet" href="static/css/components.css">
+<link rel="stylesheet" href="static/css/pages.css">
+<link rel="stylesheet" href="static/css/responsive.css">
+</head>
+<body id="top">
+<header class="site-header"><div class="container header-inner"><button class="menu-button" id="menuOpenButton">☰ <span>메뉴</span></button><nav class="quick-nav"><a href="main.html#bestProductList">베스트</a><a href="ai-health.html">AI 건강 체크</a><a href="notice.html">커뮤니티</a><a href="products.html">이벤트</a></nav><a class="brand" href="main.html"><strong class="brand-name">CHIMPILER HEALTHCARE</strong></a><nav class="user-nav"><a href="cart.html">장바구니</a><a href="mypage-dashboard.html">마이페이지</a><a href="login.html">로그인</a></nav></div></header>
+<main class="page-section">
+<div class="container">
+<header class="page-heading">
+<span class="eyebrow">CHECKOUT</span>
+<h1 class="page-title">주문서 작성</h1>
+<a class="button secondary small" id="continueShoppingButton" href="products.html">← 상품 더 둘러보기</a>
+</header>
+<form class="checkout-layout" id="checkoutForm">
+<div class="summary-list">
+<section class="panel">
+<h2>주문 상품</h2>
+<div class="order-card">
+<img src="static/images/supplement-01-vita-core.png" alt="">
+<div>
+<strong>데일리 비타 코어 멀티비타민</strong>
+<p>수량 1개 · 29,800원</p>
+</div>
+</div>
+</section>
+<section class="panel">
+<h2>배송 정보</h2>
+<div class="form-grid">
+<label class="form-field">
+<span class="form-label">받는 분</span>
+<input class="form-control" id="receiverName" name="order_name">
+</label>
+<label class="form-field">
+<span class="form-label">연락처</span>
+<input class="form-control" id="receiverPhone" name="order_phone">
+</label>
+<label class="form-field full">
+<span class="form-label">주소</span>
+<span class="input-row">
+<input class="form-control" id="receiverAddress" name="order_addr">
+<button class="button secondary" type="button" id="addressSearchButton">주소 검색</button>
+</span>
+</label>
+<label class="form-field full">
+<span class="form-label">상세 주소</span>
+<input class="form-control" id="receiverAddressDetail">
+</label>
+</div>
+</section>
+<section class="panel">
+<h2>결제 방법</h2>
+<label>
+<input type="radio" name="payment_method" value="card" checked> 카드결제</label> &nbsp; <label>
+<input type="radio" name="payment_method" value="account"> 계좌 간편결제</label>
+<div class="form-grid" id="cardPaymentFields">
+<label class="form-field full">
+<span class="form-label">카드번호</span>
+<input class="form-control" id="cardNumber" inputmode="numeric" maxlength="19" placeholder="숫자 16자리">
+</label>
+<label class="form-field">
+<span class="form-label">유효기간</span>
+<input class="form-control" id="cardExpiry" placeholder="MM/YY">
+</label>
+<label class="form-field">
+<span class="form-label">CVC</span>
+<input class="form-control" id="cardCvc" inputmode="numeric" maxlength="3">
+</label>
+</div>
+</section>
+</div>
+<aside class="panel sticky-summary">
+<h2>최종 결제 금액</h2>
+<div class="summary-list">
+<div class="summary-row">
+<span>상품 금액</span>
+<strong>29,800원</strong>
+</div>
+<div class="summary-row">
+<span>배송비</span>
+<strong>0원</strong>
+</div>
+<div class="summary-row total">
+<span>총 결제금액</span>
+<strong id="checkoutTotalPrice">29,800원</strong>
+</div>
+</div>
+<label>
+<input id="orderAgreement" type="checkbox"> 주문 내용을 확인했으며 결제에 동의합니다.</label>
+<button class="button full" id="paymentSubmitButton" type="submit">29,800원 결제하기</button>
+</aside>
+</form>
+</div>
+</main>
+<footer class="site-footer" id="siteFooter"><div class="container"><div class="footer-grid"><section class="footer-brand"><img class="footer-logo" src="static/images/chimpiler-logo.png" alt=""><div><h2 class="footer-title">CHIMPILER HEALTHCARE</h2><p class="footer-copy">건강 기록 기반 AI 상품 추천 및 예약구매 헬스케어 쇼핑몰</p></div></section><section><h3 class="footer-heading">SERVICE</h3><div class="footer-list"><a href="terms.html">이용약관</a><a href="terms.html">개인정보처리방침</a><a href="faq.html">이용안내</a></div></section><section><h3 class="footer-heading">CS CENTER</h3><div class="footer-list"><a href="notice.html">공지사항</a><a href="faq.html">자주 묻는 질문</a><a href="inquiry-write.html">1:1 문의</a></div></section><section><h3 class="footer-heading">CHIMPILER TEAM</h3><div class="footer-list"><span>휴먼교육센터 팀 프로젝트</span><a href="#">GitHub 바로가기</a></div></section></div><div class="health-notice"><strong>건강정보 이용 안내</strong><br>AI 건강 체크 결과는 참고 정보이며 의학적 진단이나 처방을 대신하지 않습니다.</div><div class="copyright"><span>© 2026 Chimpiler Healthcare.</span><span>All rights reserved.</span></div></div></footer><div class="floating-tools"><button class="floating-button chat" id="chatOpenButton">💬 챗봇 상담</button><a class="floating-button" href="#top">↑</a><a class="floating-button" href="#siteFooter">↓</a></div>
+</body>
+</html>

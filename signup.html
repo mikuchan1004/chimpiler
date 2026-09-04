@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>회원가입 | CHIMPILER</title>
+  <link rel="stylesheet" href="static/css/common.css"><link rel="stylesheet" href="static/css/components.css"><link rel="stylesheet" href="static/css/pages.css"><link rel="stylesheet" href="static/css/responsive.css">
+</head>
+<body><main class="auth-shell"><section class="card auth-card">
+  <span class="eyebrow">WELCOME</span><h1 class="auth-title">회원가입</h1>
+  <form id="signupForm" class="form-grid">
+    <label class="form-field full"><span class="form-label">아이디</span><span class="input-row"><input class="form-control" id="signupUserId" name="user_id"><button class="button secondary" id="idCheckButton" type="button">중복 확인</button></span><small class="help-text" id="idCheckMessage">영문과 숫자를 조합해 주세요.</small></label>
+    <label class="form-field full"><span class="form-label">비밀번호</span><input class="form-control" id="signupPassword" name="user_password" type="password"></label>
+    <label class="form-field full"><span class="form-label">비밀번호 확인</span><input class="form-control" id="signupPasswordConfirm" type="password"></label>
+    <label class="form-field full"><span class="form-label">이름</span><input class="form-control" id="signupUserName" name="user_name"></label>
+    <label class="form-field full"><span class="form-label">주소</span><span class="input-row"><input class="form-control" id="signupAddress" name="user_addr"><button class="button secondary" id="signupAddressButton" type="button">검색</button></span></label>
+    <label class="form-field full"><span class="form-label">상세 주소</span><input class="form-control" id="signupAddressDetail"></label>
+    <label class="form-field full"><span class="form-label">이메일</span><input class="form-control" id="signupEmail" name="user_email" type="email"></label>
+    <label class="form-field full"><span class="form-label">휴대폰 번호</span><span class="input-row"><input class="form-control" id="signupPhone" name="user_phone"><button class="button secondary" id="phoneVerifyButton" type="button">인증</button></span></label>
+    <label class="form-field full check-field"><input id="termsAgreement" type="checkbox"><span><a href="terms.html">이용약관</a>에 동의합니다.</span></label>
+    <button class="button full form-field" id="signupSubmitButton">회원가입</button><a class="button secondary full form-field" href="login.html">취소</a>
+  </form>
+</section></main></body></html>
