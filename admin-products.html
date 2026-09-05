@@ -11,39 +11,52 @@
     <script>
         // 스크립트를 쓸 때 Google Gemini의 도움을 받았습니다.
         window.onload = () => {
-            // '상품 추가' 버튼 클릭 시 팝업 열기  (hide 클래스 제거)
+            // --------------------------------------------------
+            // [1] '상품 추가' 버튼 클릭 시 추가 팝업창 열기
+            // --------------------------------------------------
             document.querySelector('#productCreateButton').addEventListener('click', () => {
+                // '상품 추가' 버튼을 누르면 숨김 클래스('hide')를 없애서 팝업창이 화면에 보이게 만듭니다.
                 document.querySelector('.add_popup').classList.remove('hide')
             })
-            // 모든 '수정' 버튼에 클릭 이벤트 걸어주기 
+
+            // --------------------------------------------------
+            // [2] 목록에 있는 모든 '수정' 버튼들에 각각 클릭 기능 달아주기
+            // --------------------------------------------------
+            // 화면에 있는 모든 수정 버튼(.modify-btn)을 찾아서 하나씩 이벤트를 연결합니다.
             document.querySelectorAll('.modify-btn').forEach(btn => {
-                btn.addEventListener('click' , (e) =>{
-                    const target = e.currentTarget // 클릭한  수정 버튼 
-                    const popup = document.querySelector('.modify_popup') // 밖에 빼둔 수정 팝업
+                btn.addEventListener('click', (e) => {
+                    const target = e.currentTarget // 방금 주인님이 클릭한 바로 그 '수정' 버튼
+                    const popup = document.querySelector('.modify_popup') // 화면에 딱 하나 마련해둔 '수정 팝업창'
 
-                    // 버튼이 숨겨두고 있던 data- 값들을 팝업창 input 칸에 집어넣기 
-                    popup.querySelector('#product_id').value = target.dataset.id;
-                    popup.querySelector('#product_brand').value = target.dataset.brand;
-                    popup.querySelector('#product_name').value = target.dataset.name;
-                    popup.querySelector('#product_detail').value = target.dataset.detail;
-                    popup.querySelector('#product_price').value = target.dataset.price;
-                    popup.querySelector('#product_sale_stock').value = target.dataset.sale;
-                    popup.querySelector('#product_reservation_stock').value = target.dataset.res;
-                    popup.querySelector('#category_id').value = target.dataset.category;
+                    // 수정 버튼에 태그(data-*) 형태로 몰래 숨겨둔 상품 정보들을 
+                    // 팝업창 안에 있는 입력 칸(input)들에 하나씩 자동으로 채워 넣습니다.
+                    popup.querySelector('#product_id').value = target.dataset.id;                // 상품 번호(ID)
+                    popup.querySelector('#product_brand').value = target.dataset.brand;          // 브랜드명
+                    popup.querySelector('#product_name').value = target.dataset.name;            // 상품 이름
+                    popup.querySelector('#product_detail').value = target.dataset.detail;        // 상품 상세설명
+                    popup.querySelector('#product_price').value = target.dataset.price;          // 가격
+                    popup.querySelector('#product_sale_stock').value = target.dataset.sale;      // 판매 재고
+                    popup.querySelector('#product_reservation_stock').value = target.dataset.res; // 예약 재고
+                    popup.querySelector('#category_id').value = target.dataset.category;         // 카테고리 번호
 
-                    // 삭제 버튼의 링크 주소도 해당 상품 ID로 변경 
+                    // 팝업창 안의 '삭제' 버튼 링크 주소도 클릭한 상품의 번호에 맞춰서 동적으로 바꿔줍니다. (예: /api/remove/3)
                     popup.querySelector('a').href = `/api/remove/${target.dataset.id}`
 
-                   // 숨겨져 있던 팝업창 보여주기 
-                   popup.classList.remove('hide')  
+                    // 상품 정보 채우기가 끝났으니, 숨겨져 있던 수정 팝업창을 화면에 짠하고 띄웁니다.
+                    popup.classList.remove('hide')
                 })
             })
-            // 팝업창들의 '닫기' 버튼 클릭 시 팝업 닫기
-          document.querySelectorAll('.close').forEach(closeBtn => {
-            closeBtn.addEventListener('click' , (e) => {
-                e.target.closest('.add_popup, .modify_popup').classList.add('hide');
+
+            // --------------------------------------------------
+            // [3] 모든 팝업창 안의 '닫기' 버튼 클릭 시 팝업창 숨기기
+            // --------------------------------------------------
+            // '추가 팝업'이든 '수정 팝업'이든 안에 있는 '닫기' 버튼(.close)을 모두 찾아서 기능을 겁니다.
+            document.querySelectorAll('.close').forEach(closeBtn => {
+                closeBtn.addEventListener('click', (e) => {
+                    // 클릭된 닫기 버튼이 포함된 가장 가까운 팝업 상자를 찾아 다시 숨김 클래스('hide')를 붙여줍니다.
+                    e.target.closest('.add_popup, .modify_popup').classList.add('hide');
+                })
             })
-          })
         }
     </script>
 </head>
@@ -75,7 +88,7 @@
         <div class="add_popup hide">
             <h2>상품 추가</h2>
             <form method="post" action="/api/add" enctype="multipart/form-data">
-                <input type="text" name="product_brand" id="product_brand"placeholder='상품 브랜드 입력'><br>
+                <input type="text" name="product_brand" id="product_brand" placeholder='상품 브랜드 입력'><br>
                 <br>
                 <input type="text" name="product_name" id="product_name" placeholder="상품명 입력"><br>
                 <br>
@@ -85,9 +98,10 @@
                 <br>
                 <input type="number" name="product_price" id="product_price" placeholder="가격 입력"><br>
                 <br>
-                <input type="number" name="product_sale_stock" id="product_sale_stock"  placeholder="판매 재고 입력"><br>
+                <input type="number" name="product_sale_stock" id="product_sale_stock" placeholder="판매 재고 입력"><br>
                 <br>
-                <input type="number" name="product_reservation_stock" id="product_reservation_stock" placeholder="예약 재고 입력"><br>
+                <input type="number" name="product_reservation_stock" id="product_reservation_stock"
+                    placeholder="예약 재고 입력"><br>
                 <br>
                 <input type="number" name="category_id" id="category_id" placeholder="카테고리 ID 입력(1~6)"><br>
                 <br>
@@ -100,7 +114,7 @@
             <form method="post" action="/api/modify" enctype="multipart/form-data">
                 <input type="number" name="product_id" id="product_id" readonly><br>
                 <br>
-                 <input type="text" name="product_brand" id="product_brand" placeholder='상품 브랜드 입력'><br>
+                <input type="text" name="product_brand" id="product_brand" placeholder='상품 브랜드 입력'><br>
                 <br>
                 <input type="text" name="product_name" id="product_name" placeholder="상품명 입력"><br>
                 <br>
@@ -110,9 +124,10 @@
                 <br>
                 <input type="number" name="product_price" id="product_price" placeholder="가격 입력"><br>
                 <br>
-                <input type="number" name="product_sale_stock" id="product_sale_stock"  placeholder="판매 재고 입력"><br>
+                <input type="number" name="product_sale_stock" id="product_sale_stock" placeholder="판매 재고 입력"><br>
                 <br>
-                <input type="number" name="product_reservation_stock" id="product_reservation_stock" placeholder="예약 재고 입력"><br>
+                <input type="number" name="product_reservation_stock" id="product_reservation_stock"
+                    placeholder="예약 재고 입력"><br>
                 <br>
                 <input type="number" name="category_id" id="category_id" placeholder="카테고리 ID 입력(1~6)"><br>
                 <br>
@@ -149,24 +164,23 @@
                             <span class="badge success">판매중</span>
                         </td>
                         <td>
-                            <button class="button secondary small" id="stockEditButton">재고 보충</button> 
+                            <button class="button secondary small" id="stockEditButton">재고 보충</button>
                             <!-- 
-                            각 행마다 있는 '수정' 버튼에 data-* 라는 이름으로 해당 상품의 정보를 숨겨놓는 것. 
-                            by Google Gemini 
+                                [수정 버튼 및 커스텀 데이터 속성(data-*)]
+                                -  HTML 표준 문법인 data-* 속성을 이용해 각 상품의 정보를 버튼 자체에 숨겨둡니다.
+                                - 자바스크립트(JS)는 이 버튼이 클릭되었을 때 data-* 에 담긴 값들을 읽어서 팝업창으로 전달합니다.
+                                - by Google Gemini
                             -->
-                            <button class="button small modify-btn"
-                            data-id="{{product.product_id}}"
-                            data-brand="{{product.product_brand}}"
-                            data-name="{{product.product_name}}"
-                            data-detail="{{product.product_detail}}"
-                            data-price="{{product.product_price}}"
-                            data-sale="{{product.product_sale_stock}}"
-                            data-res="{{product.product_reservation_stock}}"
-                            data-category="{{product.category_id}}" >수정</button>
+                            <button class="button small modify-btn" data-id="{{product.product_id}}"
+                                data-brand="{{product.product_brand}}" data-name="{{product.product_name}}"
+                                data-detail="{{product.product_detail}}" data-price="{{product.product_price}}"
+                                data-sale="{{product.product_sale_stock}}"
+                                data-res="{{product.product_reservation_stock}}"
+                                data-category="{{product.category_id}}">수정</button>
                             <button class="button danger small" id="productSoldOutButton" type="button">일시 품절처리</button>
                         </td>
                     </tr>
-                        {% endfor %}
+                    {% endfor %}
                     {% endif %}
                 </tbody>
             </table>
