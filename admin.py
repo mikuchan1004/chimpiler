@@ -2,7 +2,7 @@
 # 필요한 모듈 호출 영역
 ##########
 from sqlmodel import create_engine, Session
-from fastapi import FastAPI, Depends, Request, Form, UploadFile, File, HTTPException
+from fastapi import FastAPI, Depends, Request, Form, UploadFile
 from fastapi.templating import Jinja2Templates         
 from fastapi.responses import RedirectResponse        
 from sqlalchemy import text, URL                         
@@ -12,7 +12,7 @@ import shutill
 
 from DTO.ProductDTO import Product
 
-dir = Path('/static/images')
+dir = Path('static/images')
 
 app = FastAPI()  # FastAPI 웹 서버 인스턴스 생성
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -72,6 +72,16 @@ def product_list (request: Request, session: Session = Depends(get_session)) :
 def add_product(product : Product = Form(), session: Session = Depends(get_session)):
     print('/api/add 실행')
     try :
+        # 파일에 첨부되어 들어왔는지를 확인 
+        if product.product_image and product.product_image.filename:
+            file_loaction = dir / product.product_image.filename
+            # 업로드된 파일 내용을  static/images 폴더에 실제로 쓰기 
+            with file_loaction.open('wb') as buffer:
+                shutill.copyfileobj(product.product_image.filename, buffer)
+
+            # DB에 저장될 이미지 파일 경로
+            image_path = f'/static/images/{product.product_image.filename}'
+
         sql = text ('''
             insert into product
             (
