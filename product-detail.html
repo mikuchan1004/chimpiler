@@ -1,115 +1,152 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>상품 상세 | CHIMPILER</title>
-  <link rel="stylesheet" href="static/css/common.css">
-  <link rel="stylesheet" href="static/css/components.css">
-  <link rel="stylesheet" href="static/css/pages.css">
-  <link rel="stylesheet" href="static/css/responsive.css">
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      <title>상품 상세 | CHIMPILER</title>
+      <link rel="stylesheet" href="/static/css/common.css">
+      <link rel="stylesheet" href="/static/css/components.css">
+      <link rel="stylesheet" href="/static/css/pages.css">
+      <link rel="stylesheet" href="/static/css/responsive.css">
 </head>
+
 <body id="top">
-  <header class="site-header">
-<div class="container header-inner">
-<button class="menu-button">☰ <span>메뉴</span>
-</button>
-<nav class="quick-nav"><a href="main.html#bestProductList">베스트</a><a href="ai-health.html">AI 건강 체크</a><a href="notice.html">커뮤니티</a><a href="products.html">이벤트</a></nav>
-<a class="brand" href="main.html">
-<strong class="brand-name">CHIMPILER HEALTHCARE</strong>
-</a>
-<nav class="user-nav">
-<a href="cart.html">장바구니</a>
-<a href="login.html">로그인</a>
-</nav>
-</div>
-</header>
-  <main class="page-section product-detail-page">
-<div class="container">
-<div class="detail-grid">
-    <div class="detail-media">
-<img class="detail-image" id="productMainImage" src="static/images/supplement-01-vita-core.png" alt="데일리 비타 코어">
-</div>
-    <section class="detail-purchase" aria-label="상품 구매 정보">
-      <span class="badge">건강기능식품</span>
-<h1 class="detail-title" id="productName">데일리 비타 코어 멀티비타민</h1>
-<p class="muted">하루 한 번으로 채우는 균형 잡힌 영양 루틴</p>
-<div class="detail-price" id="productPrice">29,800원</div>
-      <div class="summary-row">
-<span>판매 재고</span>
-<strong id="saleStock">24개</strong>
-</div>
-<div class="summary-row">
-<span>예약 재고</span>
-<strong id="reservationStock">0개</strong>
-</div>
-      <div class="detail-options">
-<label class="form-field">
-<span class="form-label">수량</span>
-<span class="quantity">
-<button type="button" id="quantityMinus">−</button>
-<input id="productQuantity" value="1" inputmode="numeric">
-<button type="button" id="quantityPlus">＋</button>
-</span>
-</label>
-<div class="summary-row total">
-<span>총 상품금액</span>
-<strong id="totalPrice">29,800원</strong>
-</div>
-</div>
-      <div class="purchase-bar">
-<button class="button secondary" id="cartAddButton">장바구니</button>
-<a class="button" id="buyNowButton" href="checkout.html">구매하기</a>
-<button class="button hidden" id="reservationButton">예약구매</button>
-</div>
-    </section>
-    <section class="detail-content">
-      <nav class="tabs detail-tabs" aria-label="상품 상세 메뉴">
-<a class="tab active" href="#description">상품정보</a>
-<a class="tab" href="#reviews">상품후기</a>
-<a class="tab" href="#qna">상품Q&amp;A</a>
-<a class="tab" href="#deliveryGuide">배송안내</a>
-</nav>
-      <article class="detail-panel" id="description">
-<h2>상품정보</h2>
-<p>건강한 일상을 위한 영양 성분과 섭취 방법을 확인해 주세요.</p>
-</article>
-      <article class="detail-panel" id="reviews">
-<h2>상품후기</h2>
-<div class="panel">
-<strong>★★★★★</strong>
-<p>매일 간편하게 챙겨 먹기 좋아요.</p>
-<button class="button secondary small" id="reviewReportButton">후기 신고</button>
-</div>
-</article>
-      <article class="detail-panel" id="qna">
-<h2>상품 Q&amp;A</h2>
-<button class="button secondary">상품 문의 작성</button>
-</article>
-      <article class="detail-panel" id="deliveryGuide">
-<h2>배송안내</h2>
-<p>결제 완료 후 상품 준비 및 배송이 시작됩니다.</p>
-</article>
-    </section>
-  </div>
-</div>
-</main>
-  <div class="modal" id="reservationConfirmModal">
-<div class="modal-dialog">
-<header class="modal-header">
-<h2 class="modal-title">상품을 예약하시겠습니까?</h2>
-<button class="modal-close">×</button>
-</header>
-<div class="modal-body">
-<p>현재 예약 대기 순위: <strong id="reservationQueueNumber">0번</strong>
-</p>
-</div>
-<footer class="modal-footer">
-<button class="button secondary">취소</button>
-<button class="button">예약하기</button>
-</footer>
-</div>
-</div>
-<footer class="site-footer" id="siteFooter"><div class="container"><div class="footer-grid"><section class="footer-brand"><img class="footer-logo" src="static/images/chimpiler-logo.png" alt=""><div><h2 class="footer-title">CHIMPILER HEALTHCARE</h2><p class="footer-copy">건강 기록 기반 AI 상품 추천 및 예약구매 헬스케어 쇼핑몰</p></div></section><section><h3 class="footer-heading">SERVICE</h3><div class="footer-list"><a href="terms.html">이용약관</a><a href="terms.html">개인정보처리방침</a><a href="faq.html">이용안내</a></div></section><section><h3 class="footer-heading">CS CENTER</h3><div class="footer-list"><a href="notice.html">공지사항</a><a href="faq.html">자주 묻는 질문</a><a href="inquiry-write.html">1:1 문의</a></div></section><section><h3 class="footer-heading">CHIMPILER TEAM</h3><div class="footer-list"><span>휴먼교육센터 팀 프로젝트</span><a href="#">GitHub 바로가기</a></div></section></div><div class="health-notice"><strong>건강정보 이용 안내</strong><br>AI 건강 체크 결과는 참고 정보이며 의학적 진단이나 처방을 대신하지 않습니다.</div><div class="copyright"><span>© 2026 Chimpiler Healthcare.</span><span>All rights reserved.</span></div></div></footer><div class="floating-tools"><button class="floating-button chat" id="chatOpenButton">💬 챗봇 상담</button><a class="floating-button" href="#top">↑</a><a class="floating-button" href="#siteFooter">↓</a></div>
+      <header class="site-header">
+            <div class="container header-inner">
+                  <button class="menu-button">☰ <span>메뉴</span>
+                  </button>
+                  <nav class="quick-nav"><a href="main.html#bestProductList">베스트</a><a href="ai-health.html">AI 건강
+                              체크</a><a href="notice.html">커뮤니티</a><a href="products.html">이벤트</a></nav>
+                  <a class="brand" href="main.html">
+                        <strong class="brand-name">CHIMPILER HEALTHCARE</strong>
+                  </a>
+                  <nav class="user-nav">
+                        <a href="cart.html">장바구니</a>
+                        <a href="login.html">로그인</a>
+                  </nav>
+            </div>
+      </header>
+      <main class="page-section product-detail-page">
+            <div class="container">
+                  <div class="detail-grid">
+                        <div class="detail-media">
+                              <img class="detail-image" id="productMainImage"
+                                    src="/static/images/supplement-01-vita-core.png" alt="데일리 비타 코어">
+                        </div>
+                        <section class="detail-purchase" aria-label="상품 구매 정보">
+                              <span class="badge">건강기능식품</span>
+                              <h1 class="detail-title" id="productName">데일리 비타 코어 멀티비타민</h1>
+                              <p class="muted">하루 한 번으로 채우는 균형 잡힌 영양 루틴</p>
+                              <div class="detail-price" id="productPrice">29,800원</div>
+                              <div class="summary-row">
+                                    <span>판매 재고</span>
+                                    <strong id="saleStock">24개</strong>
+                              </div>
+                              <div class="summary-row">
+                                    <span>예약 재고</span>
+                                    <strong id="reservationStock">0개</strong>
+                              </div>
+                              <div class="detail-options">
+                                    <label class="form-field">
+                                          <span class="form-label">수량</span>
+                                          <span class="quantity">
+                                                <button type="button" id="quantityMinus">−</button>
+                                                <input id="productQuantity" value="1" inputmode="numeric">
+                                                <button type="button" id="quantityPlus">＋</button>
+                                          </span>
+                                    </label>
+                                    <div class="summary-row total">
+                                          <span>총 상품금액</span>
+                                          <strong id="totalPrice">29,800원</strong>
+                                    </div>
+                              </div>
+                              <div class="purchase-bar">
+                                    <button class="button secondary" id="cartAddButton">장바구니</button>
+                                    <a class="button" id="buyNowButton" href="checkout.html">구매하기</a>
+                                    <button class="button hidden" id="reservationButton">예약구매</button>
+                              </div>
+                        </section>
+                        <section class="detail-content">
+                              <nav class="tabs detail-tabs" aria-label="상품 상세 메뉴">
+                                    <a class="tab active" href="#description">상품정보</a>
+                                    <a class="tab" href="#reviews">상품후기</a>
+                                    <a class="tab" href="#qna">상품Q&amp;A</a>
+                                    <a class="tab" href="#deliveryGuide">배송안내</a>
+                              </nav>
+                              <article class="detail-panel" id="description">
+                                    <h2>상품정보</h2>
+                                    <p>건강한 일상을 위한 영양 성분과 섭취 방법을 확인해 주세요.</p>
+                              </article>
+                              <article class="detail-panel" id="reviews">
+                                    <h2>상품후기</h2>
+                                    <div class="panel">
+                                          <strong>★★★★★</strong>
+                                          <p>매일 간편하게 챙겨 먹기 좋아요.</p>
+                                          <button class="button secondary small" id="reviewReportButton">후기 신고</button>
+                                    </div>
+                              </article>
+                              <article class="detail-panel" id="qna">
+                                    <h2>상품 Q&amp;A</h2>
+                                    <button class="button secondary">상품 문의 작성</button>
+                              </article>
+                              <article class="detail-panel" id="deliveryGuide">
+                                    <h2>배송안내</h2>
+                                    <p>결제 완료 후 상품 준비 및 배송이 시작됩니다.</p>
+                              </article>
+                        </section>
+                  </div>
+            </div>
+      </main>
+      <div class="modal" id="reservationConfirmModal">
+            <div class="modal-dialog">
+                  <header class="modal-header">
+                        <h2 class="modal-title">상품을 예약하시겠습니까?</h2>
+                        <button class="modal-close">×</button>
+                  </header>
+                  <div class="modal-body">
+                        <p>현재 예약 대기 순위: <strong id="reservationQueueNumber">0번</strong>
+                        </p>
+                  </div>
+                  <footer class="modal-footer">
+                        <button class="button secondary">취소</button>
+                        <button class="button">예약하기</button>
+                  </footer>
+            </div>
+      </div>
+      <footer class="site-footer" id="siteFooter">
+            <div class="container">
+                  <div class="footer-grid">
+                        <section class="footer-brand"><img class="footer-logo" src="/static/images/chimpiler-logo.png"
+                                    alt="">
+                              <div>
+                                    <h2 class="footer-title">CHIMPILER HEALTHCARE</h2>
+                                    <p class="footer-copy">건강 기록 기반 AI 상품 추천 및 예약구매 헬스케어 쇼핑몰</p>
+                              </div>
+                        </section>
+                        <section>
+                              <h3 class="footer-heading">SERVICE</h3>
+                              <div class="footer-list"><a href="terms.html">이용약관</a><a href="terms.html">개인정보처리방침</a><a
+                                          href="faq.html">이용안내</a></div>
+                        </section>
+                        <section>
+                              <h3 class="footer-heading">CS CENTER</h3>
+                              <div class="footer-list"><a href="notice.html">공지사항</a><a href="faq.html">자주 묻는 질문</a><a
+                                          href="inquiry-write.html">1:1 문의</a></div>
+                        </section>
+                        <section>
+                              <h3 class="footer-heading">CHIMPILER TEAM</h3>
+                              <div class="footer-list"><span>휴먼교육센터 팀 프로젝트</span><a href="#">GitHub 바로가기</a></div>
+                        </section>
+                  </div>
+                  <div class="health-notice"><strong>건강정보 이용 안내</strong><br>AI 건강 체크 결과는 참고 정보이며 의학적 진단이나 처방을 대신하지 않습니다.
+                  </div>
+                  <div class="copyright"><span>© 2026 Chimpiler Healthcare.</span><span>All rights reserved.</span>
+                  </div>
+            </div>
+      </footer>
+      <div class="floating-tools"><button class="floating-button chat" id="chatOpenButton">💬 챗봇 상담</button><a
+                  class="floating-button" href="#top">↑</a><a class="floating-button" href="#siteFooter">↓</a></div>
 </body>
+
 </html>
