@@ -2,23 +2,29 @@
 # 필요한 모듈 호출 영역
 ##########
 from sqlmodel import create_engine, Session
-from fastapi import FastAPI, Depends, Request, Form   
+from fastapi import FastAPI, Depends, Request, Form, UploadFile, File, HTTPException
 from fastapi.templating import Jinja2Templates         
 from fastapi.responses import RedirectResponse        
 from sqlalchemy import text, URL                         
 from fastapi.staticfiles import StaticFiles
+from pathlib import Path
+import shutill
+
+from DTO.ProductDTO import Product
+
+dir = Path('/static/images')
 
 app = FastAPI()  # FastAPI 웹 서버 인스턴스 생성
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory='.')  
 
 DATABASE_URL = URL.create(
-    drivername = 'mysql+pymysql',
-    username = 'chimplier_team',
-    password='chimpiler!@#',
-    host='192.168.0.65',
-    port='3306',
-    database='chimpiler'
+    drivername="mysql+pymysql",
+    username="chimpiler_team",
+    password="chimpiler!@#",
+    host="192.168.0.65",
+    port=3306,
+    database="chimpiler",
 )
 engine = create_engine(DATABASE_URL, echo=True)
 
@@ -36,36 +42,6 @@ def dashboard(request: Request, session: Session = Depends(get_session)):
     print('/dashboard 실행')
     return templates.TemplateResponse(request, 'admin-dashboard.html')
 
-# 관리자 문의관리 페이지
-@app.get('/inquiries')
-def inquiries (request: Request, session: Session = Depends(get_session)):
-    print('/inquiries 실행')
-    return templates.TemplateResponse(request, 'admin-inquiries.html')
-
-# 관리자 회원관리 페이지
-@app.get('/users')
-def users (request: Request, session: Session = Depends(get_session)):
-    print('/users 실행')
-    return templates.TemplateResponse(request, 'admin-users.html')
-
-# 관리자 상품/재고관리 페이지 
-@app.get('/products')
-def products (request:Request, session: Session = Depends(get_session)):
-    print('/products 실행')
-    return templates.TemplateResponse(request, 'admin-products.html' )
-
-# 관리자 주문/배송관리 페이지 
-@app.get('/orders')
-def orders(request:Request, session: Session = Depends(get_session)):
-    print('/orders 실행')
-    return templates.TemplateResponse(request, 'admin-orders.html')
-
-# 관리자 예약관리 페이지 
-@app.get('/reservations')
-def reservations (request:Request, session: Session = Depends(get_session)):
-    print('reservations 실행')
-    return templates.TemplateResponse(request, 'admin-reservations.html')
-
 # 메인 페이지 이동 
 @app.get('/main')
 def main (request:Request, session:Session = Depends(get_session)):
@@ -75,17 +51,110 @@ def main (request:Request, session:Session = Depends(get_session)):
 # 페이지 이동 라우터 끝
 ##########
 
+##########
+# 상품/재고관리 CRUD
+##########
+# 상품 목록 이동 및 출력 
+@app.get('/products')
+def product_list (request: Request, session: Session = Depends(get_session)) :
+    print('상품 목록 출력')
+    sql = text ('''
+        select * from product
+    ''')
+    results = session.execute(sql).mappings().fetchall()
+
+    return templates.TemplateResponse(request, 'admin-products.html', {
+        'product_list' : results
+    })
+
+# 상품 추가
+@app.post('/api/add')
+def add_product(product : Product = Form(), session: Session = Depends(get_session)):
+    print('/api/add 실행')
+    try :
+        sql = text ('''
+            insert into product
+            (
+            product_brand, 
+            product_name, 
+            product_detail, 
+            product_image, 
+            product_price, 
+            product_sale_stock,
+            product_reservation_stock,
+            category_id
+            )
+            values(
+            :product_brand, 
+            :product_name, 
+            :product_detail, 
+            :product_image, 
+            :product_price,
+            :product_sale_stock,
+            :product_reservation_stock,
+            :category_id
+            )
+        ''')
+        session.execute(sql, {
+            'product_brand' :product.product_brand,
+            'product_name' : product.product_name,
+            'product_detail' : product.product_detail,
+            'product_image' : product.product_image,
+            'product_price' : product.product_price,
+            'product_sale_stock' : product.product_sale_stock,
+            'product_reservation_stock' : product.product_reservation_stock,
+            "category_id" : product.category_id
+        })
+        session.commit()
+    except Exception as e :
+        print(e)
+
+    return RedirectResponse(url='/products', status_code=303)
+
+# 상품 수정 
+@app.post('/api/modify')
+def  update_product(product : Product = Form(), session: Session = Depends(get_session)):
+    print('/api/modify 실행' , product)
+    try:
+        sql = text('''
+            update product
+            set 
+                product_id = :product_id,
+                product_brand = :product_brand,
+                product_name = :product_name,
+                product_detail = :product_detail, 
+                product_image = :product_image, 
+                product_price = :product_price, 
+                product_sale_stock = :product_sale_stock,
+                product_reservation_stock = :product_reservation_stock,
+                category_id = :category_id
+            where
+                product_id = :product_id
+        ''')
+        session.execute(sql, {
+            'product_id' : product.product_id,
+            'product_brand' :product.product_brand,
+            'product_name' : product.product_name,
+            'product_detail' : product.product_detail,
+            'product_image' : product.product_image,
+            'product_price' : product.product_price,
+            'product_sale_stock' : product.product_sale_stock,
+            'product_reservation_stock' : product.product_reservation_stock,
+            "category_id" : product.category_id
+        })
+        session.commit()
+
+    except Exception as e :
+        print(e)
+
+    return RedirectResponse(url='/products', status_code=303)
+
+
 #########
 # uvicorn 서버 실행 
 #########
 if __name__ == "__main__":
     import uvicorn
-    
-    # Uvicorn 서버 실행
-    # "파일이름:FastAPI객체명" -> "03_crud:app"
-    # host="0.0.0.0": 외부 접속 허용
-    # port=8085: 웹 서버가 사용할 포트 번호 (8000번 대신 지정)
-    # reload=True: 코드 변경 시 서버 자동 재시작 (개발용 옵션)
     uvicorn.run("admin:app", port=8085, reload=True, host="0.0.0.0")
     #########
     #  uvicorn  서버 실행 끝. 여기가 코드의 마지막입니다.

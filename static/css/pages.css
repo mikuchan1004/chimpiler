@@ -770,6 +770,15 @@
     background-color: white;
 }
 
+.modify_popup {
+    border: 2px solid black;
+    padding: 20px;
+    position: absolute;
+    top: 20px;
+    left: 30px;
+    background-color: white;
+}
+
 /* 팝업을 화면에서 숨겨버리는 클래스 */
 .hide {
     display: none;

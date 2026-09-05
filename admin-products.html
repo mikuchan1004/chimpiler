@@ -8,6 +8,44 @@
     <link rel="stylesheet" href="/static/css/components.css">
     <link rel="stylesheet" href="/static/css/pages.css">
     <link rel="stylesheet" href="/static/css/responsive.css">
+    <script>
+        // 스크립트를 쓸 때 Google Gemini의 도움을 받았습니다.
+        window.onload = () => {
+            // '상품 추가' 버튼 클릭 시 팝업 열기  (hide 클래스 제거)
+            document.querySelector('#productCreateButton').addEventListener('click', () => {
+                document.querySelector('.add_popup').classList.remove('hide')
+            })
+            // 모든 '수정' 버튼에 클릭 이벤트 걸어주기 
+            document.querySelectorAll('.modify-btn').forEach(btn => {
+                btn.addEventListener('click' , (e) =>{
+                    const target = e.currentTarget // 클릭한  수정 버튼 
+                    const popup = document.querySelector('.modify_popup') // 밖에 빼둔 수정 팝업
+
+                    // 버튼이 숨겨두고 있던 data- 값들을 팝업창 input 칸에 집어넣기 
+                    popup.querySelector('#product_id').value = target.dataset.id;
+                    popup.querySelector('#product_brand').value = target.dataset.brand;
+                    popup.querySelector('#product_name').value = target.dataset.name;
+                    popup.querySelector('#product_detail').value = target.dataset.detail;
+                    popup.querySelector('#product_price').value = target.dataset.price;
+                    popup.querySelector('#product_sale_stock').value = target.dataset.sale;
+                    popup.querySelector('#product_reservation_stock').value = target.dataset.res;
+                    popup.querySelector('#category_id').value = target.dataset.category;
+
+                    // 삭제 버튼의 링크 주소도 해당 상품 ID로 변경 
+                    popup.querySelector('a').href = `/api/remove/${target.dataset.id}`
+
+                   // 숨겨져 있던 팝업창 보여주기 
+                   popup.classList.remove('hide')  
+                })
+            })
+            // 팝업창들의 '닫기' 버튼 클릭 시 팝업 닫기
+          document.querySelectorAll('.close').forEach(closeBtn => {
+            closeBtn.addEventListener('click' , (e) => {
+                e.target.closest('.add_popup, .modify_popup').classList.add('hide');
+            })
+          })
+        }
+    </script>
 </head>
 <body>
     <header class="admin-header">
@@ -33,6 +71,58 @@
                 </form>
             </div>
         </div>
+        <!-- 처음 페이지에 들어왔을 때는 팝업이 숩겨져 있어야 하니까.. hide 클래스 추가 -->
+        <div class="add_popup hide">
+            <h2>상품 추가</h2>
+            <form method="post" action="/api/add" enctype="multipart/form-data">
+                <input type="text" name="product_brand" id="product_brand"placeholder='상품 브랜드 입력'><br>
+                <br>
+                <input type="text" name="product_name" id="product_name" placeholder="상품명 입력"><br>
+                <br>
+                <textarea name="product_detail" id="product_detail" placeholder="상품 설명 입력"></textarea>
+                <br>
+                상품 사진 첨부 : <input type="file" name="product_image">
+                <br>
+                <input type="number" name="product_price" id="product_price" placeholder="가격 입력"><br>
+                <br>
+                <input type="number" name="product_sale_stock" id="product_sale_stock"  placeholder="판매 재고 입력"><br>
+                <br>
+                <input type="number" name="product_reservation_stock" id="product_reservation_stock" placeholder="예약 재고 입력"><br>
+                <br>
+                <input type="number" name="category_id" id="category_id" placeholder="카테고리 ID 입력(1~6)"><br>
+                <br>
+                <input class="add" type="submit" value="추가">
+                <input class="close" type="button" value="닫기">
+            </form>
+        </div>
+        <div class="modify_popup hide">
+            <h2>상품 수정</h2>
+            <form method="post" action="/api/modify" enctype="multipart/form-data">
+                <input type="number" name="product_id" id="product_id" readonly><br>
+                <br>
+                 <input type="text" name="product_brand" id="product_brand" placeholder='상품 브랜드 입력'><br>
+                <br>
+                <input type="text" name="product_name" id="product_name" placeholder="상품명 입력"><br>
+                <br>
+                <textarea name="product_detail" id="product_detail" placeholder="상품 설명 입력"></textarea>
+                <br>
+                상품 사진 첨부 : <input type="file" name="product_image">
+                <br>
+                <input type="number" name="product_price" id="product_price" placeholder="가격 입력"><br>
+                <br>
+                <input type="number" name="product_sale_stock" id="product_sale_stock"  placeholder="판매 재고 입력"><br>
+                <br>
+                <input type="number" name="product_reservation_stock" id="product_reservation_stock" placeholder="예약 재고 입력"><br>
+                <br>
+                <input type="number" name="category_id" id="category_id" placeholder="카테고리 ID 입력(1~6)"><br>
+                <br>
+                <input class="modify" type="submit" value="수정">
+                <a href="#">
+                    <input type="submit" value="삭제">
+                </a>
+                <input class="close" type="button" value="닫기">
+            </form>
+        </div>
         <div class="table-wrap">
             <table class="data-table" id="adminProductTable">
                 <thead>
@@ -47,21 +137,37 @@
                     </tr>
                 </thead>
                 <tbody>
+                    {% if product_list %}
+                    {% for product in product_list %}
                     <tr>
-                        <td>1</td>
-                        <td>데일리 비타 코어</td>
-                        <td>29,800원</td>
-                        <td>24</td>
-                        <td>0</td>
+                        <td>{{product.product_id}}</td>
+                        <td>{{product.product_name}}</td>
+                        <td>{{product.product_price}}</td>
+                        <td>{{product.product_sale_stock}}</td>
+                        <td>{{product.product_reservation_stock}}</td>
                         <td>
                             <span class="badge success">판매중</span>
                         </td>
                         <td>
-                            <button class="button secondary small" id="stockEditButton">재고 보충</button> <button
-                                class="button small">수정</button>
+                            <button class="button secondary small" id="stockEditButton">재고 보충</button> 
+                            <!-- 
+                            각 행마다 있는 '수정' 버튼에 data-* 라는 이름으로 해당 상품의 정보를 숨겨놓는 것. 
+                            by Google Gemini 
+                            -->
+                            <button class="button small modify-btn"
+                            data-id="{{product.product_id}}"
+                            data-brand="{{product.product_brand}}"
+                            data-name="{{product.product_name}}"
+                            data-detail="{{product.product_detail}}"
+                            data-price="{{product.product_price}}"
+                            data-sale="{{product.product_sale_stock}}"
+                            data-res="{{product.product_reservation_stock}}"
+                            data-category="{{product.category_id}}" >수정</button>
                             <button class="button danger small" id="productSoldOutButton" type="button">일시 품절처리</button>
                         </td>
                     </tr>
+                        {% endfor %}
+                    {% endif %}
                 </tbody>
             </table>
         </div>
