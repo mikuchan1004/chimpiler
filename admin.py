@@ -72,16 +72,24 @@ def product_list (request: Request, session: Session = Depends(get_session)) :
 def add_product(product : Product = Form(), session: Session = Depends(get_session)):
     print('/api/add 실행')
     try :
-        # 파일에 첨부되어 들어왔는지를 확인 
+        # -----------------------------------------------   
+        # [이미지 파일 업로드 및 서버 저장 로직]  (주석은 Google Gemini가 남겨줬습니다.)
+        # --------------------------------------------------
+        image_path = ""
+        # 1. 폼(Form)을 통해 실제 사진 파일이 첨부되어 들어왔는지 확인합니다.
         if product.product_image and product.product_image.filename:
+            # 2. 서버의 'static/images/' 폴더 안에 저장될 파일의 전체 경로를 만듭니다.
+            #  (예: static/images/cloth1.jpg)
             file_location = dir / product.product_image.filename
-            # 업로드된 파일 내용을  static/images 폴더에 실제로 쓰기 
+            # 3. 서버 컴퓨터의 디스크에 진짜 실물 파일로 쓰기(저장) 작업을 시작합니다.
+            #'wb'는 바이너리(이미지/파일 데이터) 쓰기 모드로 파일을 연다는 뜻입니다.
             with file_location.open('wb') as buffer:
+                # 4. 사용자가 업로드한 파일의 실제 데이터 Stream(.file)을 
+                # 방금 열어둔 서버의 파일 공간(buffer)으로 쏙 복사해 넣습니다.
                 shutil.copyfileobj(product.product_image.file, buffer)
-
-            # DB에 저장될 이미지 파일 경로
+           # 5. 파일 저장이 무사히 끝났으니, 데이터베이스(DB)의 product_image 컬럼에 
+           # 문자열로 기록해 둘 웹 접근용 경로를 만듭니다. (예: /static/images/cloth1.jpg)
             image_path = f'/static/images/{product.product_image.filename}'
-
         sql = text ('''
             insert into product
             (
