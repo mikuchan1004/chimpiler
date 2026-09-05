@@ -8,7 +8,7 @@ from fastapi.responses import RedirectResponse
 from sqlalchemy import text, URL                         
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
-import shutill
+import shutil
 
 from DTO.ProductDTO import Product
 
@@ -74,10 +74,10 @@ def add_product(product : Product = Form(), session: Session = Depends(get_sessi
     try :
         # 파일에 첨부되어 들어왔는지를 확인 
         if product.product_image and product.product_image.filename:
-            file_loaction = dir / product.product_image.filename
+            file_location = dir / product.product_image.filename
             # 업로드된 파일 내용을  static/images 폴더에 실제로 쓰기 
-            with file_loaction.open('wb') as buffer:
-                shutill.copyfileobj(product.product_image.filename, buffer)
+            with file_location.open('wb') as buffer:
+                shutil.copyfileobj(product.product_image.file, buffer)
 
             # DB에 저장될 이미지 파일 경로
             image_path = f'/static/images/{product.product_image.filename}'
