@@ -82,4 +82,4 @@ if __name__ == "__main__":
     # host="0.0.0.0": 외부 접속 허용
     # port=8085: 웹 서버가 사용할 포트 번호 (8000번 대신 지정)
     # reload=True: 코드 변경 시 서버 자동 재시작 (개발용 옵션)
-    uvicorn.run("api:app", port=8085, reload=True, host="0.0.0.0")
+    uvicorn.run("admin:app", port=8085, reload=True, host="0.0.0.0")
