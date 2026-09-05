@@ -5,18 +5,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>회원가입 | CHIMPILER</title>
-  <link rel="stylesheet" href="/static/css/common.css">
-  <link rel="stylesheet" href="/static/css/components.css">
-  <link rel="stylesheet" href="/static/css/pages.css">
-  <link rel="stylesheet" href="/static/css/responsive.css">
+  <link rel="stylesheet" href="static/css/common.css">
+  <link rel="stylesheet" href="static/css/components.css">
+  <link rel="stylesheet" href="static/css/pages.css">
+  <link rel="stylesheet" href="static/css/responsive.css">
 </head>
 
 <body>
   <main class="auth-shell">
-    <section class="card auth-card">
+    <section class="card auth-card" method="post" action="/gicho">
       <span class="eyebrow">WELCOME</span>
-      
-      <form id="signupForm" class="form-grid" method="post" action="/signup">
+      <h1 class="auth-title">회원가입</h1>
+      <form id="signupForm" class="form-grid">
         <label class="form-field full"><span class="form-label">아이디</span><span class="input-row">
 
             <input class="form-control" id="signupUserId" name="user_id" value="id">
@@ -29,7 +29,7 @@
             value="password">
         </label>
         <label class="form-field full"><span class="form-label">
-            비밀번호 확인</span><input class="form-control" id="signupPasswordConfirm" name="user_password_chk" type="password" value="chk">
+            비밀번호 확인</span><input class="form-control" id="signupPasswordConfirm" type="password" value="chk">
 
         </label>
         <label class="form-field full"><span class="form-label">
@@ -44,7 +44,7 @@
             <button class="button secondary" id="signupAddressButton" type="button">검색</button></span></label>
         <label class="form-field full"><span class="form-label">
 
-            상세 주소</span><input class="form-control" id="signupAddressDetail" name="user_addr_detail">
+            상세 주소</span><input class="form-control" id="signupAddressDetail" value="상세하게">
 
         </label>
         <label class="form-field full"><span class="form-label">
@@ -59,11 +59,10 @@
 
               인증</button></span></label>
         <label class="form-field full check-field"><input id="termsAgreement" type="checkbox"><span><a
-              href="/terms">이용약관</a>에 동의합니다.</span></label>
-              <!-- py으로 보낸다 -->
+              href="terms.html">이용약관</a>에 동의합니다.</span></label>
 
-        <button class="button full form-field" id="signupSubmitButton" type="submit">회원가입</button><a
-          class="button secondary full form-field" href="/login">취소</a>
+        <button class="button full form-field" id="signupSubmitButton">회원가입</button><a
+          class="button secondary full form-field" href="login.html">취소</a>
       </form>
     </section>
   </main>

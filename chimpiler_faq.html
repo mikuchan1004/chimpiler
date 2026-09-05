@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>자주 묻는 질문 - Chimpiler Healthcare</title>
+<style>
+*{box-sizing:border-box}
+body{
+    margin:0;
+    background:#f3f3f3;
+    font-family:Arial,"Malgun Gothic",sans-serif;
+    color:#333;
+}
+.page{
+    width:1080px;
+    max-width:94%;
+    min-height:725px;
+    margin:42px auto 0;
+    background:#fff;
+    border:2px solid #741383;
+}
+header{
+    height:86px;
+    border-bottom:2px solid red;
+    display:grid;
+    grid-template-columns:225px minmax(0,1fr) 225px;
+    align-items:center;
+    gap:15px;
+    padding:0 24px;
+}
+.menu{
+    height:36px;
+    border:1px solid #4d9854;
+    display:flex;
+    align-items:center;
+    padding-left:10px;
+    font-size:13px;
+}
+.logo{
+    height:64px;
+    border:1px solid #4d9854;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:34px;
+    font-weight:bold;
+    color:#050505;
+    white-space:nowrap;
+}
+.user{
+    height:28px;
+    border:1px solid #4d9854;
+    display:flex;
+    justify-content:flex-end;
+    align-items:center;
+    padding-right:5px;
+    font-size:12px;
+    white-space:nowrap;
+}
+main{
+    height:536px;
+    padding:25px 23px 0;
+}
+.tabs{
+    display:flex;
+    gap:15px;
+    margin-bottom:19px;
+}
+.tabs button{
+    height:40px;
+    padding:0 37px;
+    border:0;
+    border-radius:7px;
+    background:#6930d6;
+    color:#fff;
+    font-size:15px;
+    font-weight:bold;
+}
+.tabs button:nth-child(2){padding:0 28px}
+.tabs button:nth-child(3){padding:0 29px}
+
+.board{
+    height:418px;
+    border:2px solid #333;
+    position:relative;
+}
+.faq-row{
+    height:38px;
+    border-bottom:1px solid #333;
+    display:grid;
+    grid-template-columns:80px 1fr 100px 90px;
+    align-items:center;
+    padding:0 42px;
+    font-size:25px;
+}
+.faq-row:first-child{height:73px}
+.faq-row span:first-child{font-weight:normal}
+.bottom{
+    position:absolute;
+    left:0;
+    right:0;
+    bottom:0;
+    height:225px;
+}
+.search{
+    position:absolute;
+    left:50%;
+    bottom:33px;
+    transform:translateX(-50%);
+    width:225px;
+    height:25px;
+    border:1px solid #333;
+    padding:3px 7px;
+    font-size:11px;
+}
+.admin{
+    position:absolute;
+    right:17px;
+    bottom:33px;
+    width:172px;
+    height:50px;
+    border:1px solid #6930d6;
+    border-radius:7px;
+    background:white;
+    color:#6930d6;
+    font-size:16px;
+}
+footer{
+    height:82px;
+    border-top:2px solid red;
+    padding:28px 24px;
+    position:relative;
+    font-size:13px;
+}
+.top{
+    position:absolute;
+    right:-14px;
+    bottom:17px;
+    width:43px;
+    height:43px;
+    border:1px solid #aaa;
+    border-radius:50%;
+    background:#fff;
+    color:#741383;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:11px;
+}
+@media(max-width:800px){
+    header{grid-template-columns:130px 1fr 160px;padding:0 10px}
+    .logo{font-size:24px}
+    .user{font-size:10px}
+    .faq-row{font-size:20px;grid-template-columns:65px 1fr 85px 75px;padding:0 20px}
+}
+</style>
+</head>
+<body>
+<div class="page">
+    <header>
+        <div class="menu">☰ 메뉴</div>
+        <div class="logo">CHIMPILER HEALTHCARE</div>
+        <div class="user">장바구니&nbsp;&nbsp; 회원가입&nbsp;&nbsp; 로그인</div>
+    </header>
+
+    <main>
+        <div class="tabs">
+            <button>공지사항</button>
+            <button>자주묻는 질문</button>
+            <button>일대일 문의</button>
+        </div>
+
+        <section class="board">
+            <div class="faq-row">
+                <span>번호</span>
+                <span>자주 묻는 질문 1번</span>
+                <span>조회수</span>
+                <span>날짜</span>
+            </div>
+            <div class="faq-row">
+                <span>번호</span>
+                <span>자주 묻는 질문 2번</span>
+                <span>조회수</span>
+                <span>날짜</span>
+            </div>
+            <div class="faq-row">
+                <span>번호</span>
+                <span>자주 묻는 질문 3번</span>
+                <span>조회수</span>
+                <span>날짜</span>
+            </div>
+            <div class="faq-row">
+                <span>번호</span>
+                <span>자주 묻는 질문 4번</span>
+                <span>조회수</span>
+                <span>날짜</span>
+            </div>
+
+            <div class="bottom">
+                <input class="search" type="search" placeholder="⌕ 검색">
+                <button class="admin">관리자 전용 글쓰기</button>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        © 2026 Chimpiler
+        <div class="top" onclick="window.scrollTo({top:0,behavior:'smooth'})">TOP</div>
+    </footer>
+</div>
+</body>
+</html>
