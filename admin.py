@@ -37,15 +37,15 @@ def get_session():
 # 페이지 이동 라우터
 ##########
 # 관리자 대시보드 페이지
-@app.get('/dashboard')
+@app.get('/admin')
 def dashboard(request: Request, session: Session = Depends(get_session)):
-    print('/dashboard 실행')
+    print('/admin 실행')
     return templates.TemplateResponse(request, 'admin-dashboard.html')
 
 # 메인 페이지 이동 
-@app.get('/main')
+@app.get('/')
 def main (request:Request, session:Session = Depends(get_session)):
-    print('/main 실행')
+    print('/ 실행')
     return templates.TemplateResponse(request, 'main.html')
 ##########
 # 페이지 이동 라우터 끝
@@ -55,7 +55,7 @@ def main (request:Request, session:Session = Depends(get_session)):
 # 상품/재고관리 CRUD
 ##########
 # 상품 목록 이동 및 출력 
-@app.get('/products')
+@app.get('/admin/products')
 def product_list (request: Request, session: Session = Depends(get_session)) :
     print('상품 목록 출력')
     sql = text ('''
@@ -114,7 +114,7 @@ def add_product(product : Product = Form(), session: Session = Depends(get_sessi
     except Exception as e :
         print(e)
 
-    return RedirectResponse(url='/products', status_code=303)
+    return RedirectResponse(url='/admin/products', status_code=303)
 
 # 상품 수정 
 @app.post('/api/modify')
@@ -156,7 +156,7 @@ def  update_product(product : Product = Form(), session: Session = Depends(get_s
     except Exception as e :
         print(e)
 
-    return RedirectResponse(url='/products', status_code=303)
+    return RedirectResponse(url='/admin/products', status_code=303)
 
 
 #########
