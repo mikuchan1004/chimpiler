@@ -11,8 +11,8 @@ from pathlib import Path
 import shutil
 
 from DTO.ProductDTO import Product
-
-dir = Path('/static/images')
+# /static/images : 절대 경로로 하면 컴퓨터 최상위 루트부터 찾기 때문에 오류가 발생할 수 있으니 주의
+dir = Path('static/images') 
 
 app = FastAPI()  # FastAPI 웹 서버 인스턴스 생성
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -72,11 +72,18 @@ def product_list (request: Request, session: Session = Depends(get_session)) :
 def add_product(product : Product = Form(), session: Session = Depends(get_session)):
     print('/api/add 실행')
     try :
-        # 첨부된 이미지 파일이 static/images 폴더에 실제로 저장됨.
-        image_name = f'{product.product_image.filename}'
-        image_path = dir / image_name
+        # 첨부된 이미지 파일이 static/images 폴더에 실제로 저장
+        filename = f'{product.product_image.filename}'
+        image_path = dir / filename 
         with image_path.open('wb') as buffer :
             shutil.copyfileobj(product.product_image.file, buffer)
+        db_image_path = f'/static/images/{filename}'
+        #=========================================
+        # model.dump()는 Pydantic 객체 안에 들어있는 데이터들을 파이썬의 dict(딕셔너리) 형태로 한 방에 
+        # 짠! 하고 바꿔주는 아주 효과적인 메서드라고합니다. by Google Gemini
+        #=========================================
+        params = product.model.dump() 
+        params['product_image'] = db_image_path
         sql = text ('''
             insert into product
             (
@@ -100,16 +107,7 @@ def add_product(product : Product = Form(), session: Session = Depends(get_sessi
             :category_id
             )
         ''')
-        session.execute(sql, {
-            'product_brand' :product.product_brand,
-            'product_name' : product.product_name,
-            'product_detail' : product.product_detail,
-            'product_image' : product.product_image,
-            'product_price' : product.product_price,
-            'product_sale_stock' : product.product_sale_stock,
-            'product_reservation_stock' : product.product_reservation_stock,
-            "category_id" : product.category_id
-        })
+        session.execute(sql, params)
         session.commit()
     except Exception as e :
         print(e)
@@ -121,10 +119,13 @@ def add_product(product : Product = Form(), session: Session = Depends(get_sessi
 def  update_product(product : Product = Form(), session: Session = Depends(get_session)):
     print('/api/modify 실행' , product)
     try:
-        image_name = f'{product.product_image.filename}'
-        image_path = dir / image_name
+        filename = f'{product.product_image.filename}'
+        image_path = dir / filename 
         with image_path.open('wb') as buffer :
             shutil.copyfileobj(product.product_image.file, buffer)
+        db_image_path = f'/static/images/{filename}'
+        params = product.model.dump() 
+        params['product_image'] = db_image_path
         sql = text('''
             update product
             set 
@@ -140,20 +141,26 @@ def  update_product(product : Product = Form(), session: Session = Depends(get_s
             where
                 product_id = :product_id
         ''')
-        session.execute(sql, {
-            'product_id' : product.product_id,
-            'product_brand' :product.product_brand,
-            'product_name' : product.product_name,
-            'product_detail' : product.product_detail,
-            'product_image' : product.product_image,
-            'product_price' : product.product_price,
-            'product_sale_stock' : product.product_sale_stock,
-            'product_reservation_stock' : product.product_reservation_stock,
-            "category_id" : product.category_id
-        })
+        session.execute(sql, params)
         session.commit()
 
     except Exception as e :
+        print(e)
+
+    return RedirectResponse(url='/admin/products', status_code=303)
+
+# 상품 삭제 
+@app.get('/api/delete/{product_id}')
+def delete_product(product_id : int, session:Session = Depends(get_session)):
+    print('/api/delete 실행', product_id)
+    try:
+        sql = text('''
+            delete from product
+            where product_id = :product_id
+        ''')
+        session.execute(sql,{'product_id' : product_id})
+        session.commit()
+    except Exception as e:
         print(e)
 
     return RedirectResponse(url='/admin/products', status_code=303)
