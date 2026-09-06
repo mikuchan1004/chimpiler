@@ -32,10 +32,11 @@ def price(value) :
     return f'{ int(value) :,}'
 templates.env.filters['price'] = price
 
-print(random.randint(1,10))
+# print(random.randint(1,10))
 
 @app.get('/')
 def login(request: Request, session: Session = Depends(get_session)) :
+    print('/ 메인페이지')
 
     # 전체 상품 로드구간
     sql = text('''
@@ -176,16 +177,122 @@ def productsAlign(value: str, session: Session = Depends(get_session)):
         'product_list' : product_list,
     }
 
-# @app.get('/products/{category}')
-        
 
-@app.get('/products/detail')
-def login(request: Request) :
-    return templates.TemplateResponse(request, 'product-detail.html')
+@app.get('/product/detail/{product_id}')
+def login(request: Request, product_id:int, session: Session = Depends(get_session)) :
+
+    sql = text('''
+        select * from product p
+        join category as c on (p.category_id = c.category_id)
+        where product_id = :product_id
+    ''')
+
+    result = session.execute(sql, {
+        'product_id' : product_id
+    }) 
+    product_list = result.mappings().fetchall()
+
+    sql_view_count = text('''
+        update product
+        set product_view_count = product_view_count + 1
+        where product_id = :product_id
+    ''')
+    session.execute(sql_view_count, {
+        'product_id' : product_id
+    })
+
+    # print(product_list[0]['product_price'], type(product_list[0]['product_price']))
+
+    return templates.TemplateResponse(request, 'product-detail.html', {
+        'product_list' : product_list
+    })
+
 
 @app.get('/cart')
 def login(request: Request) :
     return templates.TemplateResponse(request, 'cart.html')
+
+# 레이아웃 페이지 이동용_관리자페이지
+@app.get('/admin')
+def login(request: Request) :
+    return templates.TemplateResponse(request, 'admin-dashboard.html')
+
+@app.get('/admin/inquiries')
+def login(request: Request) :
+    return templates.TemplateResponse(request, 'admin-inquiries.html')
+
+@app.get('/admin/orders')
+def login(request: Request) :
+    return templates.TemplateResponse(request, 'admin-orders.html')
+
+@app.get('/admin/products')
+def login(request: Request) :
+    return templates.TemplateResponse(request, 'admin-products.html')
+
+@app.get('/admin/reservations')
+def login(request: Request) :
+    return templates.TemplateResponse(request, 'admin-reservations.html')
+
+@app.get('/admin/users')
+def login(request: Request) :
+    return templates.TemplateResponse(request, 'admin-users.html')
+
+# 레이아웃 페이지 이동용_AI건강체크
+@app.get('/ai-health')
+def login(request: Request) :
+    return templates.TemplateResponse(request, 'ai-health.html')
+
+# 레이아웃 페이지 이동용_주문서작성
+@app.get('/checkout')
+def login(request: Request) :
+    return templates.TemplateResponse(request, 'checkout.html')
+
+# 레이아웃 페이지 이동용_커뮤니티
+@app.get('/notice')
+def login(request: Request) :
+    return templates.TemplateResponse(request, 'notice.html')
+
+@app.get('/faq')
+def login(request: Request) :
+    return templates.TemplateResponse(request, 'faq.html')
+
+@app.get('/inquiry-write')
+def login(request: Request) :
+    return templates.TemplateResponse(request, 'inquiry-write.html')
+
+# 레이아웃 페이지 이동용_로그인/회원가입
+@app.get('/login')
+def login(request: Request) :
+    return templates.TemplateResponse(request, 'login.html')
+
+@app.get('/signup')
+def login(request: Request) :
+    return templates.TemplateResponse(request, 'signup.html')
+
+@app.get('/terms')
+def login(request: Request) :
+    return templates.TemplateResponse(request, 'terms.html')
+
+# 레이아웃 페이지 이동용_마이페이지
+@app.get('/mypage')
+def login(request: Request) :
+    return templates.TemplateResponse(request, 'mypage-dashboard.html')
+
+@app.get('/mypage/inquiries')
+def login(request: Request) :
+    return templates.TemplateResponse(request, 'mypage-inquiries.html')
+
+@app.get('/mypage/orders')
+def login(request: Request) :
+    return templates.TemplateResponse(request, 'mypage-orders.html')
+
+@app.get('/mypage/profile')
+def login(request: Request) :
+    return templates.TemplateResponse(request, 'mypage-profile.html')
+
+@app.get('/mypage/reservations')
+def login(request: Request) :
+    return templates.TemplateResponse(request, 'mypage-reservations.html')
 
 
 if __name__ == '__main__' :

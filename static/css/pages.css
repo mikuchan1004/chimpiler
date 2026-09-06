@@ -830,3 +830,15 @@
     font-size: clamp(90px, 20vw, 180px);
     line-height: .9;
 }
+
+/* 관리자 공통 레이아웃 */
+.admin-body {
+    min-width: 320px;
+    background: var(--surface);
+}
+
+.admin-welcome {
+    margin-left: auto;
+    color: rgba(255, 255, 255, 0.75);
+    white-space: nowrap;
+}

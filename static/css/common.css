@@ -195,6 +195,7 @@ button {
   position: absolute;
   inset: 0;
   background: rgba(6, 18, 30, .55);
+  transition: opacity 0.3s ease;
   opacity: 0;
 }
 
@@ -208,6 +209,7 @@ button {
   background: white;
   box-shadow: var(--shadow);
   transform: translateX(-102%);
+  transition: transform 0.3s ease;
   overflow-y: auto;
 }
 
@@ -442,4 +444,174 @@ main {
   font-weight: 900;
   line-height: 1;
   white-space: nowrap;
+}
+
+/* PC 화면: 헤더 아래 가로형 메가 메뉴 */
+@media (min-width: 981px) {
+    .drawer {
+        top: 74px;
+    }
+
+    .drawer-panel {
+        top: 0;
+        left: 0;
+
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 30px;
+
+        width: 100%;
+        height: auto;
+        padding: 30px max(40px, calc((100% - 1200px) / 2));
+
+        transform: translateY(-14px) scaleY(0.96);
+        transform-origin: top center;
+        clip-path: inset(0 0 100% 0);
+        opacity: 0;
+
+        transition:
+            clip-path 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+            transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+            opacity 0.2s ease;
+
+        overflow: visible;
+    }
+
+    .drawer.is-open .drawer-panel {
+        transform: translateY(0) scaleY(1);
+        clip-path: inset(0 0 0 0);
+        opacity: 1;
+    }
+
+    .drawer-title {
+        grid-column: 1 / -1;
+        margin: 0;
+        padding-bottom: 18px;
+        border-bottom: 1px solid var(--line);
+    }
+
+    .drawer-close {
+        position: absolute;
+        top: 25px;
+        right: max(40px, calc((100% - 1200px) / 2));
+        float: none;
+    }
+
+    .drawer-group {
+        padding: 0;
+        border-top: 0;
+    }
+
+    .drawer-group strong {
+        margin-bottom: 14px;
+        color: var(--navy);
+        font-size: 17px;
+    }
+
+    .drawer-links {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .drawer-links a:hover {
+        color: var(--purple-dark);
+        font-weight: 700;
+    }
+
+    /* 메뉴들이 위에서부터 차례로 등장 */
+    .drawer-panel .drawer-group {
+        opacity: 0;
+        transform: translateY(-12px);
+
+        transition:
+            opacity 0.25s ease,
+            transform 0.35s ease;
+    }
+
+    .drawer.is-open .drawer-group {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    /* 그룹별 등장 시간 차이 */
+    .drawer.is-open .drawer-group:nth-of-type(1) {
+        transition-delay: 0.08s;
+    }
+
+    .drawer.is-open .drawer-group:nth-of-type(2) {
+        transition-delay: 0.13s;
+    }
+
+    .drawer.is-open .drawer-group:nth-of-type(3) {
+        transition-delay: 0.18s;
+    }
+
+    .drawer.is-open .drawer-group:nth-of-type(4) {
+        transition-delay: 0.23s;
+    }
+
+    .drawer.is-open .drawer-group:nth-of-type(5) {
+        transition-delay: 0.28s;
+    }
+}
+
+/* 모바일 드로어 펼침 효과 */
+@media (max-width: 980px) {
+    .drawer-panel {
+        transform: translateX(-20px) scaleX(0.96);
+        transform-origin: left center;
+
+        clip-path: inset(0 100% 0 0);
+        opacity: 0;
+
+        transition:
+            clip-path 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+            transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+            opacity 0.2s ease;
+    }
+
+    .drawer.is-open .drawer-panel {
+        transform: translateX(0) scaleX(1);
+        clip-path: inset(0 0 0 0);
+        opacity: 1;
+    }
+
+    /* 각 메뉴 그룹의 기본 상태 */
+    .drawer-panel .drawer-group {
+        opacity: 0;
+        transform: translateY(-10px);
+
+        transition:
+            opacity 0.25s ease,
+            transform 0.3s ease;
+    }
+
+    /* 메뉴를 열었을 때 */
+    .drawer.is-open .drawer-group {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    /* 각 메뉴가 위에서부터 순서대로 나타남 */
+    .drawer.is-open .drawer-group:nth-of-type(1) {
+        transition-delay: 0.08s;
+    }
+
+    .drawer.is-open .drawer-group:nth-of-type(2) {
+        transition-delay: 0.12s;
+    }
+
+    .drawer.is-open .drawer-group:nth-of-type(3) {
+        transition-delay: 0.16s;
+    }
+
+    .drawer.is-open .drawer-group:nth-of-type(4) {
+        transition-delay: 0.2s;
+    }
+
+    .drawer.is-open .drawer-group:nth-of-type(5) {
+        transition-delay: 0.24s;
+    }
 }

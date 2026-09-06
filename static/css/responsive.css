@@ -405,3 +405,19 @@
     grid-template-columns: 1fr;
   }
 }
+
+@media (max-width: 980px) {
+    .admin-nav {
+        overflow-x: auto;
+        white-space: nowrap;
+        scrollbar-width: none;
+    }
+
+    .admin-nav::-webkit-scrollbar {
+        display: none;
+    }
+
+    .admin-welcome {
+        margin-left: 12px;
+    }
+}
