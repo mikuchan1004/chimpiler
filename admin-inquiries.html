@@ -5,6 +5,51 @@
 {% endblock %}
 
 {% block script %}
+{% block script %}
+<script>
+    // 💡 [1] 브라우저한테 "화면(HTML) 요소들을 전부 다 그린 다음에 이 안의 코드를 실행해라!" 하고 명령하는 부분이에요.
+    // 집을 다 짓지도 않았는데 가구를 배치할 수 없는 것처럼, 화면이 완성된 후에 스크립트가 실행되어야 에러가 안 납니다.
+    window.onload = () => {
+
+        // [2] 화면(HTML)에 그려진 주요 부품(태그)들을 자바스크립트 변수로 찾아와서 저장해두는 작업입니다.
+        const rows = document.querySelectorAll('#adminInquiryTable tbody tr')     // 문의 목록 표의 '모든 줄(행)'들을 싹 긁어모읍니다.
+        const form = document.querySelector('#inquiryAnswerForm')                // 오른쪽에 있는 '답변 입력 폼' 전체 상자를 찾습니다.
+        const typeDisplay = document.querySelector('#selectedInquiryType')       // 답변 폼 안의 '문의 유형'이 들어갈 텍스트 위치를 찾습니다.
+        const titleDisplay = document.querySelector('#selectedInquiryTitle')     // 답변 폼 안의 '문의 제목'이 들어갈 텍스트 위치를 찾습니다.
+        const answerTextarea = document.querySelector('#inquiryAnswer')          // 답변을 직접 작성하는 '글상자(textarea)'를 찾습니다.
+    
+        // [3] 목록에 있는 문의 줄(row) '하나하나'마다 마우스 클릭 이벤트를 걸어주는 반복문입니다.
+        rows.forEach(row => {
+            row.addEventListener('click', (e) => {
+                
+                // [3-1] 기존에 선택되어 있던 줄의 '선택 강조 표시(회색 배경)'를 지우고, 방금 클릭한 줄에만 강조 표시를 붙입니다.
+                rows.forEach(r => r.classList.remove('selected'))
+                row.classList.add('selected')
+                
+                // [3-2] 클릭한 줄의 HTML 태그 속성(data-*)에 숨겨두었던 진짜 문의 정보들을 쏙쏙 뽑아옵니다.
+                const id = row.dataset.id             // 문의 번호 (예: 1)
+                const type = row.dataset.type         // 문의 종류 (예: 배송 문의)
+                const title = row.dataset.title       // 문의 제목 (예: 언제 배송되나요?)
+                const answer = row.dataset.answer || '' // 기존 답변 내용 (답변이 없으면 빈 문자열)
+    
+                // [3-3] 뽑아낸 데이터들을 오른쪽 답변 폼의 각 위치에 실제로 꽂아넣어 화면에 보여줍니다.
+                typeDisplay.textContent = type         // 문의 종류 텍스트 교체
+                titleDisplay.textContent = title       // 문의 제목 텍스트 교체
+                answerTextarea.value = answer          // 답변 글상자에 기존 답변 내용 채우기
+    
+                // [3-4] '답변 등록' 버튼을 눌렀을 때, 백엔드 서버의 해당 문의 번호 주소로 데이터를 쏘도록 Form의 전송 주소(action)를 바꿉니다.
+                // 예: 버튼을 누르면 '/api/answer/1' 주소로 답변 내용이 전송됩니다.
+                form.action = `/api/answer/${id}`
+            })
+        })
+    }
+</script>
+<style>
+    /* 💡 [마우스 커서 & 선택 효과] 표의 줄에 마우스를 올리면 손가락 모양 커서로 바꾸고, 클릭된 줄은 연회색 배경에 굵은 글씨로 바꿉니다. */
+    #adminInquiryTable tbody tr { cursor: pointer; }
+    #adminInquiryTable tbody tr.selected { background-color: #f3f4f6; font-weight: bold; }
+</style>
+{% endblock %}
 {% endblock %}
 
 {% block main %}
@@ -30,29 +75,41 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>8</td>
-                        <td>human</td>
-                        <td>배송문의</td>
-                        <td>배송일 문의</td>
+                    {% if inquiry_list %}
+                    {% for inquiry in inquiry_list %}
+                    <tr data-id="{{inquiry.inquiry_id}}"
+                            data-type="{{inquiry.inquiry_type}}"
+                            data-title="{{inquiry.inquiry_title}}"
+                            data-answer="{{inquiry.inquiry_answer if inquiry.inquiry_answer else '' }}" >
+                        <td>{{inquiry.inquiry_id}}</td>
+                        <td>{{inquiry.user_id}}</td>
+                        <td>{{inquiry.inquiry_type}}</td>
+                        <td>{{inquiry.inquiry_title}}</td>
                         <td>
+                            {% if inquiry.inquiry_answer %}
+                            <span class="badge success">답변완료</span>
+                            {% else %}
                             <span class="badge warning">답변대기</span>
+                            {% endif %}
                         </td>
                     </tr>
+                    {% endfor %}
+                    {% endif %}
                 </tbody>
             </table>
         </div>
-        <form class="panel" id="inquiryAnswerForm">
+        <form method="post" action="/api/answer/0" class="panel" id="inquiryAnswerForm">
             <h2>문의 답변</h2>
             <p>
-                <strong>배송일 문의</strong>
+                <strong id="selectedInquiryType">목록에서 문의를 선택해 주세요.</strong>
             </p>
-            <p class="muted">언제 배송이 시작되나요?</p>
+            <p class="muted" id="selectedInquiryTitle">제목이 여기에 표시됩니다.</p> 
             <label class="form-field">
                 <span class="form-label">답변</span>
-                <textarea class="form-control" id="inquiryAnswer" name="inquiry_answer"></textarea>
+                <textarea class="form-control" id="inquiryAnswer" name="inquiry_answer" placeholder="답변을 입력해주세요..."></textarea>
             </label>
-            <button class="button full" id="inquiryAnswerButton">답변 등록</button>
+                <button type="submit" class="button full" id="inquiryAnswerButton">답변 등록</button>
+
         </form>
     </div>
 </main>
