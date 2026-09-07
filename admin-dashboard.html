@@ -5,6 +5,14 @@
 {% endblock %}
 
 {% block script %}
+<script>
+    const date = new Date();
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const formattedDate = `${year}-${month}-${day}`;
+    document.querySelector('.nowdate').innerHTML = formattedDate
+</script>
 {% endblock %}
 
 {% block main %}
@@ -14,24 +22,28 @@
             <span class="eyebrow">ADMIN</span>
             <h1 class="page-title">운영 대시보드</h1>
         </div>
-        <span>2026.09.04 기준</span>
+        <span class="nowdate"></span>
     </header>
     <section class="dashboard-cards">
         <article class="card metric">
-            <span>오늘 주문</span>
-            <div class="metric-value">12</div>
+            <span>주문 현황</span>
+            <div class="metric-value">누르면 이동합니다</div>
         </article>
         <article class="card metric">
-            <span>예약 대기</span>
-            <div class="metric-value">8</div>
+            <span>예약 현황</span>
+            <div class="metric-value">누르면 이동합니다</div>
         </article>
         <article class="card metric">
-            <span>답변 대기</span>
-            <div class="metric-value">4</div>
+            <span>문의 현황</span>
+            <a href="/admin/inquiries">
+                <div class="metric-value">누르면 이동합니다</div>
+            </a>
         </article>
         <article class="card metric">
-            <span>재고 부족</span>
-            <div class="metric-value">6</div>
+            <span>재고 현황</span>
+            <a href="/admin/products">
+                <div class="metric-value">누르면 이동합니다</div>
+            </a>
         </article>
     </section>
     <div class="split-view" style="margin-top:20px">
