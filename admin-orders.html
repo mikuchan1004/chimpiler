@@ -33,15 +33,17 @@
             </thead>
             <tbody>
                 <tr>
-                    <td>1004</td>
-                    <td>human</td>
-                    <td>홍길동</td>
-                    <td>49,000원</td>
+                {% if order_list %}
+                    {% for orders in order_list %}
+                    <td>{{orders.order_sheet_id}}</td>
+                    <td>{{orders.user_id}}</td>
+                    <td>{{orders.order_name}}</td>
+                    <td>{{orders.product_id}}</td>
                     <td>
-                        <span class="badge success">결제완료</span>
+                        <span class="badge warning">주문접수</span>
                     </td>
                     <td>
-                        <span class="badge warning">배송대기</span>
+                        <span class="badge success">주문완료</span>
                     </td>
                     <td>
                         <button class="button success small" id="deliveryCompleteButton">배송완료 처리</button>
@@ -51,6 +53,8 @@
                             발송</button>
                     </td>
                 </tr>
+                {%endfor%}
+                {%endif%}
             </tbody>
         </table>
     </div>
