@@ -15,14 +15,16 @@
 <button class="menu-button">☰ <span>메뉴</span>
 </button>
 <nav class="quick-nav"><a href="main.html#bestProductList">베스트</a><a href="ai-health.html">AI 건강 체크</a><a href="notice.html">커뮤니티</a><a href="products.html">이벤트</a></nav>
-<a class="brand" href="main.html">
+<a class="brand" href="/main">
 <strong class="brand-name">CHIMPILER HEALTHCARE</strong>
 </a>
-<nav class="user-nav">
-<a href="cart.html">장바구니</a>
-<a href="mypage-dashboard.html">마이페이지</a>
-<a href="login.html">로그인</a>
-</nav>
+            <nav class="user-nav">
+                <span id="user_name5" class="hid" hidden>{{ user_name }}님 환영합니다</span>
+                <a href="cart.html">장바구니</a>
+                <a class="signup-link" class="hid1" href="/signup">회원가입</a>
+                <a href="/login" class="로긴">로그인</a>
+                <a href="/main" id="main_logout5" class="hid" hidden>로그아웃</a>
+            </nav>
 </div>
 </header>
 <main class="community-shell">
@@ -63,5 +65,49 @@
 </div>
 <div id="pageBottom">
 </div>
+    <script>
+const cookies = document.cookie.split(';');
+
+// OOO님 환영합니다
+for (let cookie of cookies) { 
+    cookie = cookie.trim(); 
+ 
+    if (cookie.startsWith('log_chk=chk')) {
+
+        const hids = document.querySelectorAll('.hid');
+
+        for (let hid of hids) {
+            hid.hidden = false;
+            
+        }
+    } 
+}
+
+// 이건 로그아웃 버튼
+document.querySelector('#main_logout5').addEventListener('click', function() {
+    document.cookie = 'log_chk=; max-age=0; path=/';
+
+    document.querySelector('.hid2').hidden = true;
+});
+
+
+let plz = false;
+
+for (let cookie of cookies) {
+    cookie = cookie.trim();
+
+    if (cookie.startsWith('log_chk=chk')) {
+        plz = true;
+    }
+}
+
+const 로그인 = document.querySelector('.로긴');
+
+if (plz) {
+    로그인.hidden = true;
+} else {
+    로그인.hidden = false;
+}
+    </script>
 </body>
 </html>

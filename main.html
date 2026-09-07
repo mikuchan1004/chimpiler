@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="/static/css/responsive.css">
 </head>
 
+
 <body id="top">
 
     <header class="site-header">
@@ -23,12 +24,12 @@
 
             <nav class="quick-nav" aria-label="주요 메뉴">
                 <a href="#bestProductList">베스트</a>
-                <a href="ai-health.html">AI 건강 체크</a>
-                <a href="notice.html">커뮤니티</a>
-                <a href="products.html">이벤트</a>
+                <a href="/ai-health">AI 건강 체크</a>
+                <a href="/notice">커뮤니티</a>
+                <a href="/products">이벤트</a>
             </nav>
 
-            <a class="brand" href="main.html">
+            <a class="brand" href="/main">
                 <img
                     class="brand-logo"
                     src="static/images/chimpiler-logo.png"
@@ -38,9 +39,11 @@
             </a>
 
             <nav class="user-nav">
-                <a href="cart.html">장바구니</a>
-                <a class="signup-link" href="/signup">회원가입</a>
-                <a href="/login">로그인</a>
+                <span id="user_name5" class="hid" hidden>{{ user_name }}님 환영합니다</span>
+                <a href="/cart">장바구니</a>
+                <a class="signup-link" class="hid1" href="/signup">회원가입</a>
+                <a href="/login" class="로긴">로그인</a>
+                <a href="/main" id="main_logout5" class="hid" hidden>로그아웃</a>
             </nav>
 
         </div>
@@ -64,11 +67,11 @@
                     </p>
 
                     <div class="hero-actions">
-                        <a class="button" href="ai-health.html">
+                        <a class="button" href="/ai-health">
                             AI 건강관리 상담받기
                         </a>
 
-                        <a class="button secondary" href="products.html">
+                        <a class="button secondary" href="/products">
                             전체 상품 보기
                         </a>
                     </div>
@@ -94,7 +97,7 @@
                     </h2>
                 </div>
 
-                <a href="products.html">전체보기 →</a>
+                <a href="/products">전체보기 →</a>
             </div>
 
             <div class="product-carousel">
@@ -143,7 +146,7 @@
 
 
                     <article class="card product-card">
-                        <a href="product-detail.html">
+                        <a href="/product-detail">
 
                             <img
                                 class="product-image"
@@ -175,7 +178,7 @@
 
 
                     <article class="card product-card">
-                        <a href="product-detail.html">
+                        <a href="/product-detail">
 
                             <img
                                 class="product-image"
@@ -207,7 +210,7 @@
 
 
                     <article class="card product-card">
-                        <a href="product-detail.html">
+                        <a href="/product-detail">
 
                             <img
                                 class="product-image"
@@ -279,7 +282,7 @@
             <div class="random-product-grid" id="randomProductList">
 
                 <article class="card random-product-card">
-                    <a href="product-detail.html">
+                    <a href="/product-detail">
 
                         <img
                             src="static/images/supplement-02-bio-balance.png"
@@ -305,7 +308,7 @@
 
 
                 <article class="card random-product-card">
-                    <a href="product-detail.html">
+                    <a href="/product-detail">
 
                         <img
                             src="static/images/supplement-10-collagen-glow.png"
@@ -331,7 +334,7 @@
 
 
                 <article class="card random-product-card">
-                    <a href="product-detail.html">
+                    <a href="/product-detail">
 
                         <img
                             src="static/images/device-07-mini-relax.png"
@@ -357,7 +360,7 @@
 
 
                 <article class="card random-product-card">
-                    <a href="product-detail.html">
+                    <a href="/product-detail">
 
                         <img
                             src="static/images/sleep-04-aroma-mist.png"
@@ -419,9 +422,9 @@
                     <h3 class="footer-heading">SERVICE</h3>
 
                     <div class="footer-list">
-                        <a href="terms.html">이용약관</a>
-                        <a href="terms.html">개인정보처리방침</a>
-                        <a href="faq.html">이용안내</a>
+                        <a href="/terms">이용약관</a>
+                        <a href="/terms">개인정보처리방침</a>
+                        <a href="/faq">이용안내</a>
                     </div>
                 </section>
 
@@ -430,9 +433,9 @@
                     <h3 class="footer-heading">CS CENTER</h3>
 
                     <div class="footer-list">
-                        <a href="notice.html">공지사항</a>
-                        <a href="faq.html">자주 묻는 질문</a>
-                        <a href="inquiry-write.html">1:1 문의</a>
+                        <a href="/notice">공지사항</a>
+                        <a href="/faq">자주 묻는 질문</a>
+                        <a href="/inquiry-write">1:1 문의</a>
                     </div>
                 </section>
 
@@ -482,6 +485,51 @@
         <a class="floating-button" href="#siteFooter">
             ↓
         </a>
+        
+    <script>
+const cookies = document.cookie.split(';');
+
+// OOO님 환영합니다
+for (let cookie of cookies) { 
+    cookie = cookie.trim(); 
+ 
+    if (cookie.startsWith('log_chk=chk')) {
+
+        const hids = document.querySelectorAll('.hid');
+
+        for (let hid of hids) {
+            hid.hidden = false;
+            
+        }
+    } 
+}
+
+// 이건 로그아웃 버튼
+document.querySelector('#main_logout5').addEventListener('click', function() {
+    document.cookie = 'log_chk=; max-age=0; path=/';
+
+    document.querySelector('.hid2').hidden = true;
+});
+
+
+let plz = false;
+
+for (let cookie of cookies) {
+    cookie = cookie.trim();
+
+    if (cookie.startsWith('log_chk=chk')) {
+        plz = true;
+    }
+}
+
+const 로그인 = document.querySelector('.로긴');
+
+if (plz) {
+    로그인.hidden = true;
+} else {
+    로그인.hidden = false;
+}
+    </script>
 
     </div>
 
