@@ -9,6 +9,18 @@
 
 {% block main %}
 <script>
+    // 선택된 파일명을 화면에 표시해 주는 이벤트 함수
+    function updateFileName(input) {
+        // 선택된 input 태그 기준 가장 가까운 box 내 text 요소를 찾아서 적용
+        const display = input.parentElement.querySelector('.file-name-text');
+        if (input.files && input.files.length > 0) {
+            display.textContent = input.files[0].name;
+            display.style.color = '#111827';
+        } else {
+            display.textContent = '선택된 파일 없음';
+            display.style.color = '#6b7280';
+        }
+    }
     // 스크립트를 쓸 때 Google Gemini의 도움을 받았습니다.
     window.onload = () => {
         // --------------------------------------------------
@@ -25,19 +37,19 @@
         // 화면에 있는 모든 수정 버튼(.modify-btn)을 찾아서 하나씩 이벤트를 연결합니다.
         document.querySelectorAll('.modify-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                const target = e.currentTarget // 방금 주인님이 클릭한 바로 그 '수정' 버튼
+                const target = e.currentTarget // 방금 클릭한 바로 그 '수정' 버튼
                 const popup = document.querySelector('.modify_popup') // 화면에 딱 하나 마련해둔 '수정 팝업창'
 
                 // 수정 버튼에 태그(data-*) 형태로 몰래 숨겨둔 상품 정보들을 
                 // 팝업창 안에 있는 입력 칸(input)들에 하나씩 자동으로 채워 넣습니다.
-                popup.querySelector('#product_id').value = target.dataset.id;                // 상품 번호(ID)
-                popup.querySelector('#product_brand').value = target.dataset.brand;          // 브랜드명
-                popup.querySelector('#product_name').value = target.dataset.name;            // 상품 이름
-                popup.querySelector('#product_detail').value = target.dataset.detail;        // 상품 상세설명
-                popup.querySelector('#product_price').value = target.dataset.price;          // 가격
-                popup.querySelector('#product_sale_stock').value = target.dataset.sale;      // 판매 재고
-                popup.querySelector('#product_reservation_stock').value = target.dataset.res; // 예약 재고
-                popup.querySelector('#category_id').value = target.dataset.category;         // 카테고리 번호
+                popup.querySelector('[name = "product_id"]').value = target.dataset.id;                // 상품 번호(ID)
+                popup.querySelector('[name = "product_brand"]').value = target.dataset.brand;          // 브랜드명
+                popup.querySelector('[name = "product_name"]').value = target.dataset.name;            // 상품 이름
+                popup.querySelector('[name = "product_detail"]').value = target.dataset.detail;        // 상품 상세설명
+                popup.querySelector('[name = "product_price"]').value = target.dataset.price;          // 가격
+                popup.querySelector('[name = "product_sale_stock"]').value = target.dataset.sale;      // 판매 재고
+                popup.querySelector('[name = "product_reservation_stock"]').value = target.dataset.res; // 예약 재고
+                popup.querySelector('[name = "category_id"]').value = target.dataset.category;         // 카테고리 번호
 
                 // 팝업창 안의 '삭제' 버튼 링크 주소도 클릭한 상품의 번호에 맞춰서 동적으로 바꿔줍니다. (예: /api/remove/3)
                 popup.querySelector('a').href = `/api/delete/${target.dataset.id}`
@@ -54,7 +66,18 @@
         document.querySelectorAll('.close').forEach(closeBtn => {
             closeBtn.addEventListener('click', (e) => {
                 // 클릭된 닫기 버튼이 포함된 가장 가까운 팝업 상자를 찾아 다시 숨김 클래스('hide')를 붙여줍니다.
-                e.target.closest('.add_popup, .modify_popup').classList.add('hide');
+                e.target.closest('.add_popup, .modify_popup, .restock_popup').classList.add('hide');
+            })
+        })
+
+        document.querySelectorAll('.restock-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const target = e.currentTarget
+                const popup = document.querySelector('.restock_popup')
+                popup.querySelector('[name ="product_id"]').value = target.dataset.id;                // 상품 번호(ID)
+                popup.querySelector('[name = "product_sale_stock"]').value = target.dataset.sale;      // 판매 재고
+                popup.querySelector('[name = "product_reservation_stock"]').value = target.dataset.res; // 예약 재고
+                popup.classList.remove('hide')
             })
         })
     }
@@ -69,60 +92,6 @@
                 <button>⌕</button>
             </form>
         </div>
-    </div>
-    <!-- 처음 페이지에 들어왔을 때는 팝업이 숩겨져 있어야 하니까.. hide 클래스 추가 -->
-    <div class="add_popup hide">
-        <h2>상품 추가</h2>
-        <form method="post" action="/api/add" enctype="multipart/form-data">
-            <input type="text" name="product_brand" id="product_brand" placeholder='상품 브랜드 입력'><br>
-            <br>
-            <input type="text" name="product_name" id="product_name" placeholder="상품명 입력"><br>
-            <br>
-            <textarea name="product_detail" id="product_detail" placeholder="상품 설명 입력"></textarea>
-            <br>
-            상품 사진 첨부 : <input type="file" name="product_image">
-            <br>
-            <input type="number" name="product_price" id="product_price" placeholder="가격 입력"><br>
-            <br>
-            <input type="number" name="product_sale_stock" id="product_sale_stock" placeholder="판매 재고 입력"><br>
-            <br>
-            <input type="number" name="product_reservation_stock" id="product_reservation_stock"
-                placeholder="예약 재고 입력"><br>
-            <br>
-            <input type="number" name="category_id" id="category_id" placeholder="카테고리 ID 입력(1~6)"><br>
-            <br>
-            <input class="add" type="submit" value="추가">
-            <input class="close" type="button" value="닫기">
-        </form>
-    </div>
-    <div class="modify_popup hide">
-        <h2>상품 수정</h2>
-        <form method="post" action="/api/modify" enctype="multipart/form-data">
-            <input type="number" name="product_id" id="product_id" readonly><br>
-            <br>
-            <input type="text" name="product_brand" id="product_brand" placeholder='상품 브랜드 입력'><br>
-            <br>
-            <input type="text" name="product_name" id="product_name" placeholder="상품명 입력"><br>
-            <br>
-            <textarea name="product_detail" id="product_detail" placeholder="상품 설명 입력"></textarea>
-            <br>
-            상품 사진 첨부 : <input type="file" name="product_image">
-            <br>
-            <input type="number" name="product_price" id="product_price" placeholder="가격 입력"><br>
-            <br>
-            <input type="number" name="product_sale_stock" id="product_sale_stock" placeholder="판매 재고 입력"><br>
-            <br>
-            <input type="number" name="product_reservation_stock" id="product_reservation_stock"
-                placeholder="예약 재고 입력"><br>
-            <br>
-            <input type="number" name="category_id" id="category_id" placeholder="카테고리 ID 입력(1~6)"><br>
-            <br>
-            <input class="modify" type="submit" value="수정">
-            <a href="#">
-                <input type="button" value="삭제">
-            </a>
-            <input class="close" type="button" value="닫기">
-        </form>
     </div>
     <div class="table-wrap">
         <table class="data-table" id="adminProductTable">
@@ -156,7 +125,9 @@
                     </td>
                     {% endif %}
                     <td>
-                        <button class="button secondary small" id="stockEditButton">재고 보충</button>
+                        <button class="button secondary small restock-btn" id="stockEditButton"
+                            data-id="{{product.product_id}}" data-sale="{{product.product_sale_stock}}"
+                            data-res="{{product.product_reservation_stock}}">재고 보충</button>
                         <!-- 
                                 [수정 버튼 및 커스텀 데이터 속성(data-*)]
                                 -  HTML 표준 문법인 data-* 속성을 이용해 각 상품의 정보를 버튼 자체에 숨겨둡니다.
@@ -168,7 +139,18 @@
                             data-detail="{{product.product_detail}}" data-price="{{product.product_price}}"
                             data-sale="{{product.product_sale_stock}}" data-res="{{product.product_reservation_stock}}"
                             data-category="{{product.category_id}}">수정</button>
-                        <button class="button danger small" id="productSoldOutButton" type="button">일시 품절처리</button>
+                        <!-- 일시 품절 버튼을 <a> 태그로 감싸서 바로 GET 요청을 보내도록 처리 -->
+                        {% if product.product_active == 2 %}
+                        <a href="/api/available/{{product.product_id}}">
+                            <button class="button danger small" id="productAvailableButton" type="button">일시 품절
+                                해제</button>
+                        </a>
+                        {% else %}
+                        <a href="/api/soldout/{{product.product_id}}">
+                            <button class="button danger small" id="productSoldOutButton" type="button">일시 품절
+                                처리</button>
+                        </a>
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
@@ -177,26 +159,100 @@
         </table>
     </div>
 </main>
-<div class="modal" id="stockEditModal">
-    <div class="modal-dialog">
-        <header class="modal-header">
-            <h2 class="modal-title">재고 보충</h2>
-            <button class="modal-close">×</button>
-        </header>
-        <div class="modal-body form-grid">
-            <label class="form-field">
-                <span>판매재고</span>
-                <input class="form-control" id="saleStockInput" type="number">
-            </label>
-            <label class="form-field">
-                <span>예약재고</span>
-                <input class="form-control" id="reservationStockInput" type="number">
-            </label>
+<!-- [1] 상품 추가 팝업 -->
+<div class="popup-overlay add_popup hide">
+    <div class="popup-card">
+        <div class="popup-header">
+            <h2 class="popup-title">상품 추가</h2>
+            <button type="button" class="popup-close-btn close">&times;</button>
         </div>
-        <footer class="modal-footer">
-            <button class="button secondary">취소</button>
-            <button class="button">저장</button>
-        </footer>
+        <form method="post" action="/api/add" enctype="multipart/form-data">
+            <div class="popup-body">
+                <input class="form-control" type="text" name="product_brand" placeholder='상품 브랜드 입력'><br><br>
+                <input class="form-control" type="text" name="product_name" placeholder="상품명 입력"><br><br>
+                <textarea class="form-control" name="product_detail" placeholder="상품 설명 입력"></textarea><br>
+                <div class="file-upload-wrapper">
+                    <span class="file-upload-label">상품 사진 첨부</span>
+                    <div class="file-upload-box">
+                        <!-- label의 for 속성과 input의 id를 연결합니다 -->
+                        <label for="addProductImage" class="btn-file-select">📷 파일 선택</label>
+                        <input type="file" name="product_image" id="addProductImage" class="file-upload-input"
+                            onchange="updateFileName(this)">
+                        <span class="file-name-text" id="addfileNameDisplay">선택된 파일 없음</span>
+                    </div>
+                </div>
+                <input class="form-control" type="number" name="product_price" placeholder="가격 입력"><br><br>
+                <input class="form-control" type="number" name="product_sale_stock" placeholder="판매 재고 입력"><br><br>
+                <input class="form-control" type="number" name="product_reservation_stock"
+                    placeholder="예약 재고 입력"><br><br>
+                <input class="form-control" type="number" name="category_id" placeholder="카테고리 ID 입력(1~6)"><br>
+            </div>
+            <div class="popup-footer">
+                <input class="btn btn-secondary close" type="button" value="닫기">
+                <input class="btn btn-primary add" type="submit" value="추가">
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- [2] 상품 수정 팝업 -->
+<div class="popup-overlay modify_popup hide">
+    <div class="popup-card">
+        <div class="popup-header">
+            <h2 class="popup-title">상품 수정</h2>
+            <button type="button" class="popup-close-btn close">&times;</button>
+        </div>
+        <form method="post" action="/api/modify" enctype="multipart/form-data">
+            <div class="popup-body">
+                <input class="form-control" type="number" name="product_id" readonly><br><br>
+                <input class="form-control" type="text" name="product_brand" placeholder='상품 브랜드 입력'><br><br>
+                <input class="form-control" type="text" name="product_name" placeholder="상품명 입력"><br><br>
+                <textarea class="form-control" name="product_detail" placeholder="상품 설명 입력"></textarea><br>
+                <div class="file-upload-wrapper">
+                    <span class="file-upload-label">상품 사진 첨부</span>
+                    <div class="file-upload-box">
+                        <!-- label의 for 속성과 input의 id를 연결합니다 -->
+                        <label for="modifyProductImage" class="btn-file-select">📷 파일 선택</label>
+                        <input type="file" name="product_image" id="modifyProductImage" class="file-upload-input"
+                            onchange="updateFileName(this)">
+                        <span class="file-name-text" id="modifyfileNameDisplay">선택된 파일 없음</span>
+                    </div>
+                </div>
+                <input class="form-control" type="number" name="product_price" placeholder="가격 입력"><br><br>
+                <input class="form-control" type="number" name="product_sale_stock" placeholder="판매 재고 입력"><br><br>
+                <input class="form-control" type="number" name="product_reservation_stock"
+                    placeholder="예약 재고 입력"><br><br>
+                <input class="form-control" type="number" name="category_id" placeholder="카테고리 ID 입력(1~6)"><br>
+            </div>
+            <div class="popup-footer">
+                <a href="#" class="delete-link">
+                    <input class="btn btn-secondary" type="button" value="삭제">
+                </a>
+                <input class="btn btn-secondary close" type="button" value="닫기">
+                <input class="btn btn-primary modify" type="submit" value="수정">
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- [3] 재고 보충 팝업 -->
+<div class="popup-overlay restock_popup hide">
+    <div class="popup-card">
+        <div class="popup-header">
+            <h2 class="popup-title">재고 보충</h2>
+            <button type="button" class="popup-close-btn close">&times;</button>
+        </div>
+        <form method="post" action="/api/restock">
+            <div class="popup-body">
+                <input class="form-control" type="number" name="product_id" readonly><br><br>
+                <input class="form-control" type="number" name="product_sale_stock" placeholder="판매 재고 입력"><br><br>
+                <input class="form-control" type="number" name="product_reservation_stock" placeholder="예약 재고 입력"><br>
+            </div>
+            <div class="popup-footer">
+                <input class="btn btn-secondary close" type="button" value="닫기">
+                <input class="btn btn-primary restock" type="submit" value="재고 보충">
+            </div>
+        </form>
     </div>
 </div>
 {% endblock %}
