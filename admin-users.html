@@ -29,19 +29,37 @@
                 </tr>
             </thead>
             <tbody>
+                {% if user_list %}
+                {% for users in user_list%}
                 <tr>
-                    <td>human</td>
-                    <td>홍길동</td>
-                    <td>010-1234-5678</td>
-                    <td>0</td>
+                    <td>{{users.user_id}}</td>
+                    <td>{{users.user_name}}</td>
+                    <td>{{users.user_phone}}</td>
+                    <td>{{users.user_warning_count}}</td>
                     <td>
+                    {% if users.user_status == '정지' %}
+                        <span class="badge danger">정지</span>
+                    {% else %}
                         <span class="badge success">정상</span>
+                    {% endif %}
                     </td>
                     <td>
-                        <button class="button secondary small">경고</button> <button
-                            class="button danger small">정지</button>
+                        <a href="/api/warning/{{users.user_id}}">
+                            <button class="button secondary small">경고</button> 
+                        </a>
+                        <a href="/api/warning/delete/{{users.user_id}}">
+                            <button class="button secondary small">경고 제거</button> 
+                        </a>
+                        <a href="/api/suspension/{{users.user_id}}">
+                            <button class="button danger small">계정 정지</button>
+                        </a>
+                        <a href="/api/unsuspend/{{users.user_id}}">
+                            <button class="button secondary small">정지 해제</button>
+                        </a>
                     </td>
                 </tr>
+                {% endfor %}
+                {% endif %}
             </tbody>
         </table>
     </div>
