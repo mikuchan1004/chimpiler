@@ -327,3 +327,188 @@ textarea.form-control {
     background: currentColor;
     margin-right: 6px;
 }
+/* ==========================================
+   Popup / Modal Component Styles
+   ========================================== */
+
+/* 1. 모달 배경 레이어 (Dimmed Overlay) */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+}
+
+/* 팝업 배경 (모달 오버레이) */
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px); /* 배경 살짝 흐리게 */
+}
+
+/* 팝업 본체 카드 */
+.popup-card {
+  background-color: #ffffff;
+  width: 90%;
+  max-width: 420px;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  animation: popup-slide-up 0.25s ease-out;
+}
+
+/* 헤더 영역 (제목 + 닫기 버튼) */
+.popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.popup-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.popup-close-btn {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  color: #9ca3af;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+}
+
+.popup-close-btn:hover {
+  color: #374151;
+}
+
+/* 본문 영역 */
+.popup-body {
+  font-size: 0.95rem;
+  color: #4b5563;
+  line-height: 1.5;
+  margin-bottom: 24px;
+}
+
+/* 하단 버튼 영역 */
+.popup-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.2s ease;
+}
+
+.btn-secondary {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.btn-secondary:hover {
+  background-color: #e5e7eb;
+}
+
+.btn-primary {
+  background-color: #2563eb;
+  color: #ffffff;
+}
+
+.btn-primary:hover {
+  background-color: #1d4ed8;
+}
+
+/* 등장 애니메이션 */
+@keyframes popup-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 팝업을 화면에서 숨겨버리는 클래스 */
+.hide {
+    display: none;
+}
+
+/* ==========================================
+   Custom File Input Style
+   ========================================== */
+.file-upload-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.file-upload-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #374151;
+}
+
+.file-upload-box {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* 실제 원본 input[type="file"]은 숨깁니다 */
+.file-upload-input {
+    display: none !important;
+}
+
+/* 커스텀 파일 선택 버튼 */
+.btn-file-select {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 16px;
+    background-color: #f3f4f6;
+    color: #374151;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-file-select:hover {
+    background-color: #e5e7eb;
+    border-color: #9ca3af;
+}
+
+/* 선택된 파일명을 표시해 주는 텍스트 박스 */
+.file-name-text {
+    font-size: 0.85rem;
+    color: #6b7280;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 220px;
+}
