@@ -6,43 +6,63 @@
 
 {% block script %}
 <script>
-    window.onload = () => {
+    // window.onload = () => {
         
-        document.querySelector('#productSortSelect').addEventListener('click', async function() {
+    //     document.querySelector('#productSortSelect').addEventListener('change', async function() {
 
-            let productSortSelect = document.querySelector('#productSortSelect').value
-            console.log(productSortSelect)
+    //         let productSortSelect = document.querySelector('#productSortSelect').value
+    //         console.log(productSortSelect)
 
-            let response = await fetch('/products/align?value='+productSortSelect, {
-                method: 'GET'
-            })
+    //         let keyword = document.querySelector('#productSearchInput').value
+    //         console.log(keyword)
 
-            let result = await response.json()
+    //         let response = await fetch('/products/align?value='+productSortSelect+'&category_id={{ category_id }}'+ '&keyword=' + keyword , {
+    //             method: 'GET'
+    //         })
 
-            let productList = document.querySelector('#productList')
+    //         let result = await response.json()
+    //         let productList = document.querySelector('#productList')
 
-            productList.innerHTML = ''
+    //         productList.innerHTML = ''
 
-            for(let i=0; i<result['product_list'].length; i++) {
-                productList.innerHTML += `
-                    <article class="card product-card">
-                        <a href="#">
-                            <img class="product-image" src="${result['product_list'][i]['product_image']}" alt="">
-                            <div class="product-body">
-                                <span class="product-brand">${result['product_list'][i]['product_brand']}</span>
-                                <h2 class="product-name">${result['product_list'][i]['product_name']}</h2>
-                                <strong class="product-price">${result['product_list'][i]['product_price'].toLocalString()}원</strong>
-                                <div class="product-meta">
-                                    <span>재고 ${result['product_list'][i]['product_sale_stock']}</span>
-                                    <span>조회 ${result['product_list'][i]['product_view_count']}</span>
-                                </div>
-                            </div>
-                        </a>
-                    </article>
-                `
-            }
-        })
-    }
+    //         for (let i=0; i<result['product_list'].length; i++) {
+
+    //             let productStatus = ''
+
+    //             if (result['product_list'][i]['product_active'] == 2) {
+    //                 productStatus = '<span class="badge danger">판매중지</span>'
+    //             } else if (result['product_list'][i]['product_sale_stock'] == 0) {
+    //                 productStatus = '<span class="badge warning">일시품절</span>'
+    //             } else {
+    //                 productStatus = '<span class="badge success">판매중</span>'
+    //             }
+
+    //             productList.innerHTML += `
+    //                 <article class="card product-card">
+    //                     <a href="/product/detail/${result['product_list'][i]['product_id']}">
+    //                         <img class="product-image" src="${result['product_list'][i]['product_image']}" alt="">
+    //                         <div class="product-body">
+    //                             <div class="product-brand-row">
+    //                                 <span class="product-brand">
+    //                                     ${result['product_list'][i]['product_brand']}
+    //                                 </span>
+
+    //                                 ${productStatus}
+    //                             </div>
+    //                             <h2 class="product-name">${result['product_list'][i]['product_name']}</h2>
+    //                             <strong class="product-price">${result['product_list'][i]['product_price'].toLocaleString()}원</strong>
+    //                             <div class="product-meta">
+    //                                 <span>재고 ${result['product_list'][i]['product_sale_stock']}</span>
+    //                                 <span>조회 ${result['product_list'][i]['product_view_count']}</span>
+    //                             </div>
+    //                         </div>
+    //                     </a>
+    //                 </article>
+    //             `
+    //         }
+    //     })
+
+    // }
 </script>
 {% endblock %}
 
@@ -55,26 +75,44 @@
             <p class="page-description">생활에 필요한 헬스케어 상품을 한눈에 살펴보세요.</p>
         </header>
         <nav class="category-nav" id="categoryNavigation">
-            <a class="category-link active" href="/products">전체 상품</a>
-            <a class="category-link" href="/products/1">건강기능식품</a>
-            <a class="category-link" href="#">운동용품</a>
-            <a class="category-link" href="#">건강기기</a>
-            <a class="category-link" href="#">수면·휴식</a>
-            <a class="category-link" href="#">건강식품</a>
-            <a class="category-link" href="#">생활건강</a>
+            <a class="category-link {% if category_id == 0 %}active{% endif %}" href="/products?align={{ align }}">전체 상품</a>
+            <a class="category-link {% if category_id == 1 %}active{% endif %}" href="/products?category_id=1&align={{ align }}">건강기능식품</a>
+            <a class="category-link {% if category_id == 2 %}active{% endif %}" href="/products?category_id=2&align={{ align }}">운동용품</a>
+            <a class="category-link {% if category_id == 3 %}active{% endif %}" href="/products?category_id=3&align={{ align }}">건강기기</a>
+            <a class="category-link {% if category_id == 4 %}active{% endif %}" href="/products?category_id=4&align={{ align }}">수면·휴식</a>
+            <a class="category-link {% if category_id == 5 %}active{% endif %}" href="/products?category_id=5&align={{ align }}">건강식품</a>
+            <a class="category-link {% if category_id == 6 %}active{% endif %}" href="/products?category_id=6&align={{ align }}">생활건강</a>
         </nav>
         <div class="product-toolbar">
+            {% if keyword %}
+            <strong id="productCount">'{{ keyword }}' 검색 결과 전체 {{ product_count }}개</strong>
+            {% else %}
             <strong id="productCount">전체 {{ product_count }}개</strong>
-            <form class="search-box" id="productSearchForm">
-                <input id="productSearchInput" type="search" placeholder="상품 검색">
-                <button type="submit" aria-label="검색">⌕</button>
+            {% endif %}
+            <form class="search-box" id="productSearchForm" method="get" action="/products">
+                <input id="productSearchInput" type="search" placeholder="상품 전체 검색" name="keyword" value="{% if keyword %}{{ keyword }}{% endif %}">
+                <button type="submit" aria-label="상품 검색">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <circle cx="11" cy="11" r="7"></circle>
+                        <path d="m20 20-4-4"></path>
+                    </svg>
+                </button>
             </form>
-            <select class="form-control" id="productSortSelect" aria-label="정렬">
-                <option value="align_view">조회순</option>
-                <option value="align_price_low">낮은 가격순</option>
-                <option value="align_price_high">높은 가격순</option>
-                <option value="align_name">이름순</option>
-            </select>
+            <form class="product-sort-form" action="/products" method="get">
+                <input type="hidden" name="category_id" value="{{ category_id }}">
+                <input type="hidden" name="keyword" value="{% if keyword %}{{ keyword }}{% endif %}">
+                <input type="hidden" name="page" value="1">
+
+                <select class="form-control" id="productSortSelect" name="align" aria-label="정렬">
+                    <option value="align_view" {% if align == 'align_view' %}selected{% endif %}>조회순</option>
+                    <option value="align_price_low" {% if align == 'align_price_low' %}selected{% endif %}>낮은 가격순</option>
+                    <option value="align_price_high" {% if align == 'align_price_high' %}selected{% endif %}>높은 가격순</option>
+                    <option value="align_name" {% if align == 'align_name' %}selected{% endif %}>이름순</option>
+                </select>
+
+                <button type="submit" class="button small">정렬</button>
+            </form>
         </div>
         <div class="product-grid" id="productList">
             {% for products in product_list %}
@@ -82,7 +120,18 @@
                     <a href="/product/detail/{{ products['product_id'] }}">
                         <img class="product-image" src="{{ products['product_image'] }}" alt="">
                         <div class="product-body">
-                            <span class="product-brand">{{ products['product_brand'] }}</span>
+                            <div class="product-brand-row">
+                                <span class="product-brand">
+                                    {{ products['product_brand'] }}
+                                </span>
+                                {% if products['product_active'] == 2 %}
+                                    <span class="badge danger">판매중지</span>
+                                {% elif products['product_sale_stock'] == 0 %}
+                                    <span class="badge warning">일시품절</span>
+                                {% else %}
+                                    <span class="badge success">판매중</span>
+                                {% endif %}
+                            </div>
                             <h2 class="product-name">{{ products['product_name'] }}</h2>
                             <strong class="product-price">{{ products['product_price'] | price }}원</strong>
                             <div class="product-meta">
@@ -94,13 +143,23 @@
                 </article>
             {% endfor %}
         </div>
+        {% if product_count > 0 %}
         <nav class="pagination" aria-label="페이지 이동">
-            <button class="page-button">이전</button>
-            <button class="page-button active">1</button>
-            <button class="page-button">2</button>
-            <button class="page-button">3</button>
-            <button class="page-button">다음</button>
+            {% if page > 1 %}
+            <a class="page-button" href="/products?page={{ page - 1 }}&category_id={{ category_id }}&align={{ align }}&keyword={{ keyword }}">이전</a>
+            {% endif %}
+
+            {% for i in range(1, total_page + 1) %}
+            <a class="page-button {% if i == page %}active{% endif %}" href="/products?page={{ i }}&category_id={{ category_id }}&align={{ align }}&keyword={{ keyword }}">
+                {{ i }}
+            </a>
+            {% endfor %}
+
+            {% if page < total_page %}
+            <a class="page-button" href="/products?page={{ page + 1 }}&category_id={{ category_id }}&align={{ align }}&keyword={{ keyword }}">다음</a>
+            {% endif %}
         </nav>
+        {% endif %}
     </div>
 </main>
 {% endblock %}

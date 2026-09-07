@@ -29,13 +29,33 @@ def get_session():
 
 # 원 단위 세 자리씩 끊어서 ',' 찍어주는 함수
 def price(value) :
-    return f'{ int(value) :,}'
+    return f'{int(value):,}'
 templates.env.filters['price'] = price
 
 # print(random.randint(1,10))
 
+@app.get('/chat')
+def chatBot(request: Request, answer:str, session: Session = Depends(get_session)) :
+    sql = text('''
+        select chat_answer
+        from ai_chatbot
+        where chat_keyword = :answer
+    ''')
+
+    result = session.execute(sql, {
+        'answer' : answer
+    })
+
+    chat_result = result.mappings().fetchone()
+    print('chat_result', chat_result)
+
+    return {
+        'chat_result' : chat_result
+    }
+
+
 @app.get('/')
-def login(request: Request, session: Session = Depends(get_session)) :
+def mainPage(request: Request, session: Session = Depends(get_session)) :
     print('/ 메인페이지')
 
     # 전체 상품 로드구간
@@ -45,7 +65,7 @@ def login(request: Request, session: Session = Depends(get_session)) :
 
     result = session.execute(sql) 
     product_list_main = result.mappings().fetchall()
-    print(product_list_main)
+    # print(product_list_main)
 
     product_random_main = []
 
@@ -64,7 +84,7 @@ def login(request: Request, session: Session = Depends(get_session)) :
 
     result_view = session.execute(sql_view)
     product_view_main = result_view.mappings().fetchall()
-    print('product_view_main', product_view_main)
+    # print('product_view_main', product_view_main)
 
     # print(product_view_main[0])
 
@@ -82,7 +102,7 @@ def login(request: Request, session: Session = Depends(get_session)) :
     })
 
 @app.get('/random_product')
-def random_product(session: Session = Depends(get_session)):
+def randomProduct(session: Session = Depends(get_session)):
 
     sql = text('''
         select * from product
@@ -115,71 +135,82 @@ def random_product(session: Session = Depends(get_session)):
         'product_random_4' : product_random[3]
     }
 
-@app.get('/view_product')
-def view_product():
-    pass
-
 @app.get('/products')
-def login(request: Request, session: Session = Depends(get_session)) :
+def products(
+    request: Request, 
+    page: int = 1,
+    category_id: int = 0,
+    align: str = 'align_view',
+    keyword: str = '',
+    session: Session = Depends(get_session)) :
 
-    sql = text('''
+    if page < 1:
+        page = 1
+
+    if align == 'align_price_low':
+        order = 'product_price'
+
+    elif align == 'align_price_high':
+        order = 'product_price desc'
+
+    elif align == 'align_name':
+        order = 'product_name'
+
+    else:
+        order = 'product_view_count desc'
+
+    page_view = (page * 8) - 8
+
+    sql = text(f'''
         select * from product
-        order by product_view_count desc
+        where (:category_id = 0 or category_id = :category_id)
+        and (:keyword = '' or product_name like :search_keyword)
+        order by {order}, product_id
+        limit :page_view, 8
     ''')
 
-    result = session.execute(sql) 
+    result = session.execute(sql, {
+        'category_id': category_id,
+        'keyword': keyword,
+        'search_keyword': '%' + keyword + '%',
+        'page_view': page_view
+    }) 
     product_list = result.mappings().fetchall()
 
     sql_count = text('''
-        select count(*) from product
+        select count(*) as product_count
+        from product
+        where (:category_id = 0 or category_id = :category_id)
+        and (:keyword = '' or product_name like :search_keyword)
     ''')
 
-    result_count = session.execute(sql_count) 
-    product_count = result_count.mappings().fetchall()
-
-    # print(product_count[0]['count(*)'])
-
-    return templates.TemplateResponse(request, 'products.html', {
-        'product_list' : product_list,
-        'product_count' : product_count[0]['count(*)']
+    result_count = session.execute(sql_count, {
+        'category_id': category_id,
+        'keyword': keyword,
+        'search_keyword': '%' + keyword + '%'
     })
 
-@app.get('/products/align')
-def productsAlign(value: str, session: Session = Depends(get_session)):
-    if value == 'align_view' :
-        sql = text('''
-            select * from product
-            order by product_view_count desc
-        ''')
+    product_count_list = result_count.mappings().fetchall()
+    product_count = product_count_list[0]['product_count']
 
-    elif value == 'align_price_low' :
-        sql = text('''
-            select * from product
-            order by product_price
-        ''')
+    # 전체 페이지 수 계산
+    total_page = int(product_count / 8)
 
-    elif value == 'align_price_high' :
-        sql = text('''
-            select * from product
-            order by product_price desc
-        ''')
+    if product_count % 8 != 0:
+        total_page += 1
 
-    elif value == 'align_name' :
-        sql = text('''
-            select * from product
-            order by product_name
-        ''')
-
-    result = session.execute(sql) 
-    product_list = result.mappings().fetchall()
-
-    return {
-        'product_list' : product_list,
-    }
-
+    return templates.TemplateResponse(request, 'products.html', {
+        'product_list': product_list,
+        'product_count': product_count,
+        'total_page': total_page,
+        'page': page,
+        'category_id': category_id,
+        'align': align,
+        'keyword': keyword
+    })
 
 @app.get('/product/detail/{product_id}')
-def login(request: Request, product_id:int, session: Session = Depends(get_session)) :
+def productsDetail(request: Request, product_id:int, session: Session = Depends(get_session)) :
 
     sql = text('''
         select * from product p
@@ -207,57 +238,56 @@ def login(request: Request, product_id:int, session: Session = Depends(get_sessi
         'product_list' : product_list
     })
 
-
 @app.get('/cart')
-def login(request: Request) :
+def cart(request: Request) :
     return templates.TemplateResponse(request, 'cart.html')
 
 # 레이아웃 페이지 이동용_관리자페이지
 @app.get('/admin')
-def login(request: Request) :
+def admin(request: Request) :
     return templates.TemplateResponse(request, 'admin-dashboard.html')
 
 @app.get('/admin/inquiries')
-def login(request: Request) :
+def adminInquiries(request: Request) :
     return templates.TemplateResponse(request, 'admin-inquiries.html')
 
 @app.get('/admin/orders')
-def login(request: Request) :
+def adminOrders(request: Request) :
     return templates.TemplateResponse(request, 'admin-orders.html')
 
 @app.get('/admin/products')
-def login(request: Request) :
+def adminProducts(request: Request) :
     return templates.TemplateResponse(request, 'admin-products.html')
 
 @app.get('/admin/reservations')
-def login(request: Request) :
+def adminReservations(request: Request) :
     return templates.TemplateResponse(request, 'admin-reservations.html')
 
 @app.get('/admin/users')
-def login(request: Request) :
+def adminUsers(request: Request) :
     return templates.TemplateResponse(request, 'admin-users.html')
 
 # 레이아웃 페이지 이동용_AI건강체크
 @app.get('/ai-health')
-def login(request: Request) :
+def adminAihealth(request: Request) :
     return templates.TemplateResponse(request, 'ai-health.html')
 
 # 레이아웃 페이지 이동용_주문서작성
 @app.get('/checkout')
-def login(request: Request) :
+def checkout(request: Request) :
     return templates.TemplateResponse(request, 'checkout.html')
 
 # 레이아웃 페이지 이동용_커뮤니티
 @app.get('/notice')
-def login(request: Request) :
+def commNotice(request: Request) :
     return templates.TemplateResponse(request, 'notice.html')
 
 @app.get('/faq')
-def login(request: Request) :
+def commFaq(request: Request) :
     return templates.TemplateResponse(request, 'faq.html')
 
 @app.get('/inquiry-write')
-def login(request: Request) :
+def commInquirywrite(request: Request) :
     return templates.TemplateResponse(request, 'inquiry-write.html')
 
 # 레이아웃 페이지 이동용_로그인/회원가입
@@ -266,34 +296,168 @@ def login(request: Request) :
     return templates.TemplateResponse(request, 'login.html')
 
 @app.get('/signup')
-def login(request: Request) :
+def signup(request: Request) :
     return templates.TemplateResponse(request, 'signup.html')
 
 @app.get('/terms')
-def login(request: Request) :
+def terms(request: Request) :
     return templates.TemplateResponse(request, 'terms.html')
 
 # 레이아웃 페이지 이동용_마이페이지
 @app.get('/mypage')
-def login(request: Request) :
+def mypage(request: Request) :
     return templates.TemplateResponse(request, 'mypage-dashboard.html')
 
 @app.get('/mypage/inquiries')
-def login(request: Request) :
+def mypageInquiries(request: Request) :
     return templates.TemplateResponse(request, 'mypage-inquiries.html')
 
 @app.get('/mypage/orders')
-def login(request: Request) :
+def mypageOrders(request: Request) :
     return templates.TemplateResponse(request, 'mypage-orders.html')
 
 @app.get('/mypage/profile')
-def login(request: Request) :
+def mypageProfile(request: Request) :
     return templates.TemplateResponse(request, 'mypage-profile.html')
 
 @app.get('/mypage/reservations')
-def login(request: Request) :
+def mypageReservations(request: Request) :
     return templates.TemplateResponse(request, 'mypage-reservations.html')
 
+
+# 사용없음 정리
+# @app.get('/products/align')
+# def productsAlign(value: str, category_id:int = 0, keyword:str = '', session: Session = Depends(get_session)):
+#     if value == 'align_view' :
+#         sql = text('''
+#             select * from product
+#             where (:category_id = 0 or category_id = :category_id)
+#             and (:keyword = '' or product_name like :search_keyword)
+#             order by product_view_count desc
+#         ''')
+
+#     elif value == 'align_price_low' :
+#         sql = text('''
+#             select * from product
+#             where (:category_id = 0 or category_id = :category_id)
+#             and (:keyword = '' or product_name like :search_keyword)
+#             order by product_price
+#         ''')
+
+#     elif value == 'align_price_high' :
+#         sql = text('''
+#             select * from product
+#             where (:category_id = 0 or category_id = :category_id)
+#             and (:keyword = '' or product_name like :search_keyword)
+#             order by product_price desc
+#         ''')
+
+#     elif value == 'align_name' :
+#         sql = text('''
+#             select * from product
+#             where (:category_id = 0 or category_id = :category_id)
+#             and (:keyword = '' or product_name like :search_keyword)
+#             order by product_name
+#         ''')
+#     else:
+#         sql = text('''
+#             select * from product
+#             where (:category_id = 0 or category_id = :category_id)
+#             and (:keyword = '' or product_name like :search_keyword)
+#             order by product_view_count desc
+#         ''')
+
+#     result = session.execute(sql, {
+#         'category_id' : category_id,
+#         'keyword': keyword,
+#         'search_keyword': '%' + keyword + '%'
+#     }) 
+
+#     product_list = result.mappings().fetchall()
+
+#     return {
+#         'product_list' : product_list,
+
+#     }
+
+# @app.get('/products/page/{page}')
+# def productsPage(request: Request, page: int, session: Session = Depends(get_session)):
+#     print('page : ', page)
+
+#     sql = text('''
+#         select * from product
+#         limit :page_view, 8
+#     ''')
+
+#     result = session.execute(sql, {
+#         'page_view' : (page * 8) - 8
+#     })
+#     product_page_list = result.mappings().fetchall()
+#     print(product_page_list)
+
+#     sql_all = text('''
+#         select * from product        
+#     ''')
+#     result_all = session.execute(sql_all)
+#     product_list = result_all.mappings().fetchall()
+
+#     product_count = len(product_list)
+
+#     total_page = int(product_count / 8)
+
+#     if product_count % 8 != 0 :
+#         total_page += 1
+
+#     return templates.TemplateResponse(request, 'products.html', {
+#         'product_list' : product_page_list,
+#         'product_count' : product_count,
+#         'total_page' : total_page,
+#         'page' : page,
+#         'category_id' : 0,
+#         'keyword' : ''
+#     })
+
+# @app.get('/product/category/{category_id}')
+# def productsCategory(request: Request, category_id:int, session: Session = Depends(get_session)):
+#     sql = text('''
+#         select * from product
+#         where category_id = :category_id
+#         order by product_view_count desc
+#     ''')
+
+#     result = session.execute(sql, {
+#         'category_id' : category_id
+#     })
+#     product_category_list = result.mappings().fetchall()
+#     # print('product_category_list', product_category_list)
+
+#     return templates.TemplateResponse(request, 'products.html', {
+#         'product_list' : product_category_list,
+#         'product_count' : len(product_category_list),
+#         'category_id' : category_id
+#     })
+
+# @app.get('/product/search')
+# def productSearch(request: Request, keyword: str, session: Session = Depends(get_session)):
+#     # print('keyword', keyword)
+
+#     sql_search = text('''
+#         select * from product
+#         where product_name like :keyword
+#         order by product_view_count desc
+#     ''')
+    
+#     result = session.execute(sql_search, {
+#         'keyword' : '%' + keyword + '%'
+#     }) 
+#     product_search_list = result.mappings().fetchall()
+
+#     return templates.TemplateResponse(request, 'products.html', {
+#         'product_list' : product_search_list,
+#         'product_count' : len(product_search_list),
+#         'category_id' : 0,
+#         'keyword' : keyword
+#     })
 
 if __name__ == '__main__' :
     import uvicorn

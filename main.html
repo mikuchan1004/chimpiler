@@ -31,7 +31,7 @@
                 ) {
                     randomProductList.innerHTML += `
                         <article class="card random-product-card">
-                            <a href="#">
+                            <a href="/product/detail/${result['product_list'][i]['product_id']}">
                                 <img src="${result['product_list'][i]['product_image']}" alt="${result['product_list'][i]['product_name']}">
                                 <div>
                                     <span class="product-brand">${result['product_list'][i]['product_brand']}</span>
@@ -93,7 +93,19 @@
                     <a href="/product/detail/{{ view_main['product_id'] }}">
                         <img class="product-image" src="{{ view_main['product_image'] }}" alt="{{ view_main['product_name'] }}">
                         <div class="product-body">
-                            <span class="product-brand">{{ view_main['product_brand'] }}</span>
+                            <div class="product-brand-row">
+                                <span class="product-brand">
+                                    {{ view_main['product_brand'] }}
+                                </span>
+                                {% if view_main['product_active'] == 2 %}
+                                    <span class="badge danger">판매중지</span>
+                                {% elif view_main['product_sale_stock'] == 0 %}
+                                    <span class="badge warning">일시품절</span>
+                                {% else %}
+                                    <span class="badge success">판매중</span>
+                                {% endif %}
+                            </div>
+                            <!-- <span class="product-brand">{{ view_main['product_brand'] }}</span> -->
                             <h3 class="product-name">{{ view_main['product_name'] }}</h3>
                             <strong class="product-price">{{ view_main['product_price'] | price }}원</strong>
                             <div class="product-meta">

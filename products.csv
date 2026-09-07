@@ -31,6 +31,7 @@ DEV007,건강기기,MOTIONA,미니 마사지건,69000,03_devices/device-07-mini-
 DEV008,건강기기,GRIPLY,디지털 악력계,45000,03_devices/device-08-grip-meter.png
 DEV009,건강기기,MEASURE ME,스마트 바디 줄자,28900,03_devices/device-09-smart-tape.png
 DEV010,건강기기,WALKWISE,휴대용 만보기,19900,03_devices/device-10-step-go.png
+
 SLP001,수면·휴식,DREAM NEST,메모리폼 숙면 베개,49900,04_sleep_rest/sleep-01-dream-pillow.png
 SLP002,수면·휴식,MOON SILK,프리미엄 실크 수면안대,18000,04_sleep_rest/sleep-02-silk-night.png
 SLP003,수면·휴식,HUSH LAB,백색소음기,39500,04_sleep_rest/sleep-03-white-noise.png
@@ -41,6 +42,7 @@ SLP007,수면·휴식,POSTURE CLOUD,허리 받침 쿠션,38000,04_sleep_rest/sle
 SLP008,수면·휴식,SOOTHE STEP,전기 족욕기,45900,04_sleep_rest/sleep-08-foot-spa.png
 SLP009,수면·휴식,QUIETLY,수면용 이어플러그,12900,04_sleep_rest/sleep-09-quiet-plug.png
 SLP010,수면·휴식,LUMA NIGHT,베드사이드 무드등,29900,04_sleep_rest/sleep-10-mood-sleep.png
+
 FOD001,건강식품,LEAN MONKEY,프로틴 밸런스 파우더,32900,05_healthy_food/food-01-protein-balance.png
 FOD002,건강식품,NUTRIBITE,저당 너트바 세트,18900,05_healthy_food/food-02-nut-bar.png
 FOD003,건강식품,LIGHT GRAIN,곤약 현미밥,21900,05_healthy_food/food-03-konjac-rice.png
@@ -51,6 +53,7 @@ FOD007,건강식품,BEAN NOTE,검은콩 두유 세트,15900,05_healthy_food/food
 FOD008,건강식품,FRESH LOOP,퀴노아 샐러드 키트,27900,05_healthy_food/food-08-quinoa-kit.png
 FOD009,건강식품,FOREST HANDFUL,프리미엄 견과 믹스,22500,05_healthy_food/food-09-nut-mix.png
 FOD010,건강식품,SUNNY ROOT,허니 유자차,17900,05_healthy_food/food-10-citron-warm.png
+
 DAY001,생활건강,AQUA SMILE,데스크형 구강세정기,59900,06_daily_health/daily-01-oral-clean.png
 DAY002,생활건강,BRIGHT LOOP,소닉 전동칫솔,49900,06_daily_health/daily-02-sonic-care.png
 DAY003,생활건강,MONKEY SAFE,보호 마스크 10매,12900,06_daily_health/daily-03-air-guard.png

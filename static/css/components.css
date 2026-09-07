@@ -228,6 +228,10 @@ textarea.form-control {
 }
 
 .page-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
     min-width: 40px;
     min-height: 40px;
     border: 1px solid var(--line);

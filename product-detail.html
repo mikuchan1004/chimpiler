@@ -56,6 +56,55 @@
 
                   totalPrice.innerText = `${total.toLocaleString()}원`
             }
+
+            let cartAddButton = document.querySelector('#cartAddButton')
+            let buyNowButton = document.querySelector('#buyNowButton')
+            let reservationButton = document.querySelector('#reservationButton')
+            let reservationStock = document.querySelector('.reservation-stock')
+            let salesStock = document.querySelector('.sales-stock')
+
+            if(productSaleStock == 0) {
+                  cartAddButton.classList.add('hidden')
+                  buyNowButton.classList.add('hidden')
+                  salesStock.classList.add('hidden')
+                  reservationButton.classList.remove('hidden')
+                  reservationStock.classList.remove('hidden')
+            } else {
+                  cartAddButton.classList.remove('hidden')
+                  buyNowButton.classList.remove('hidden')
+                  salesStock.classList.remove('hidden')
+                  reservationButton.classList.add('hidden')
+                  reservationStock.classList.add('hidden')
+            }
+
+            let reservationConfirmModal = document.querySelector('#reservationConfirmModal')
+
+            reservationButton.addEventListener('click', function(){
+                  reservationConfirmModal.classList.add('is-open')
+            })
+
+            let modalCloseButton = document.querySelector('.modal-close')
+            let modalCancleButton = reservationConfirmModal.querySelector('.button.secondary')
+
+            modalCloseButton.addEventListener('click', function(){
+                  reservationConfirmModal.classList.remove('is-open')
+            })
+            modalCancleButton.addEventListener('click', function(){
+                  reservationConfirmModal.classList.remove('is-open')
+            })
+
+            let detailTabs = document.querySelectorAll('.detail-tabs .tab')
+
+            detailTabs.forEach(function(tab) {
+
+                  tab.addEventListener('click', function(){
+                        detailTabs.forEach(function(tab) {
+                              tab.classList.remove('active')
+                        })
+
+                        this.classList.add('active')
+                  })
+            })
       }
 </script>
 {% endblock %}
@@ -73,12 +122,27 @@
                         <span class="badge">{{ products['category_name'] }}</span>
                         <h1 class="detail-title" id="productName">{{ products['product_name'] }}</h1>
                         <p class="muted">{{ products['product_detail'] }}</p>
-                        <div class="detail-price" id="productPrice">{{ products['product_price'] | price}}원</div>
-                        <div class="summary-row">
+                        <a class="ai-purchase-link" href="/ai-health">
+                              <span>💡</span>
+                              <div>
+                                    <strong>AI 건강상담 후 구매하기</strong>
+                                    <small>나에게 맞는 상품인지 확인해 보세요</small>
+                              </div>
+                              <b>→</b>
+                        </a>
+                        <div class="product-price-box">
+                              <span class="product-price-label">판매가</span>
+
+                              <strong class="product-price">
+                                    {{ products['product_price'] | price }}원
+                              </strong>
+                        </div>
+                        <!-- <div class="detail-price" id="productPrice">{{ products['product_price'] | price}}원</div> -->
+                        <div class="summary-row sales-stock">
                               <span>판매 재고</span>
                               <strong id="saleStock">{{ products['product_sale_stock'] }}개</strong>
                         </div>
-                        <div class="summary-row">
+                        <div class="summary-row reservation-stock">
                               <span>예약 재고</span>
                               <strong id="reservationStock">{{ products['product_reservation_stock'] }}개</strong>
                         </div>
@@ -87,7 +151,7 @@
                                     <span class="form-label">수량</span>
                                     <span class="quantity">
                                           <button type="button" id="quantityMinus">−</button>
-                                          <input id="productQuantity" value="1" inputmode="numeric" min="1" max="{{ products['product_sale_stock'] }}">
+                                          <input id="productQuantity" value="0" inputmode="numeric" min="1" max="{{ products['product_sale_stock'] }}">
                                           <button type="button" id="quantityPlus">＋</button>
                                     </span>
                               <!-- </label> -->
