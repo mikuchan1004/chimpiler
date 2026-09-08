@@ -27,22 +27,26 @@
     <section class="dashboard-cards">
         <article class="card metric">
             <span>주문 현황</span>
-            <div class="metric-value">누르면 이동합니다</div>
-        </article>
-        <article class="card metric">
-            <span>예약 현황</span>
-            <div class="metric-value">누르면 이동합니다</div>
-        </article>
-        <article class="card metric">
-            <span>문의 현황</span>
-            <a href="/admin/inquiries">
-                <div class="metric-value">누르면 이동합니다</div>
+            <a href="/admin/orders">
+                <div class="metric-value">{{order_count}}건</div>
             </a>
         </article>
         <article class="card metric">
-            <span>재고 현황</span>
+            <span>예약 현황</span>
+            <a href="/admin/reservations">
+                <div class="metric-value">{{reservation_count}}건</div>
+            </a>
+        </article>
+        <article class="card metric">
+            <span>답변대기중</span>
+            <a href="/admin/inquiries">
+                <div class="metric-value">{{inquiry_count}}건</div>
+            </a>
+        </article>
+        <article class="card metric">
+            <span>품절 상품</span>
             <a href="/admin/products">
-                <div class="metric-value">누르면 이동합니다</div>
+                <div class="metric-value">{{sold_count}}건</div>
             </a>
         </article>
     </section>
@@ -60,22 +64,22 @@
                         </tr>
                     </thead>
                     <tbody>
+                        {% if recent_orders %}
+                            {% for orders in recent_orders%}
                         <tr>
-                            <td>1004</td>
-                            <td>human</td>
-                            <td>49,000원</td>
+                            <td>{{orders.order_sheet_id}}</td>
+                            <td>{{orders.order_name}}</td>
+                            <td>{{orders.order_total_price}}</td>
                             <td>
-                                <span class="badge warning">상품준비중</span>
+                            {% if orders.order_status_id == 1 %}
+                                <span class="badge warning">주문 접수</span>
+                            {% else %}
+                                <span class="badge success">주문 완료</span>
+                            {% endif %}
                             </td>
                         </tr>
-                        <tr>
-                            <td>1003</td>
-                            <td>tester</td>
-                            <td>29,800원</td>
-                            <td>
-                                <span class="badge success">주문완료</span>
-                            </td>
-                        </tr>
+                            {% endfor %}
+                        {% endif %}
                     </tbody>
                 </table>
             </div>
