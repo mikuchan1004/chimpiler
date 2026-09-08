@@ -53,8 +53,82 @@ def get_session():
 @app.get('/admin')
 def dashboard(request: Request, session: Session = Depends(get_session)):
     print('/admin 실행')
-    # admin-dashboard.html 화면을 띄워줌
-    return templates.TemplateResponse(request, 'admin-dashboard.html')
+
+    #===========================
+    # 품절 상품의 수를 조회하는 SQL문
+    #===========================
+    sql1 = text('''
+    select count(*)
+    from product
+    where product_sale_stock = 0;
+    ''')
+    results1 = session.execute(sql1).mappings().fetchall()
+
+    print(results1)
+    print(results1[0]['count(*)'])
+
+    #=========================
+    # 답변 대기중인 믄의의 수를 조회하는 SQL문
+    #=========================
+    sql2= text('''
+    select count(*)
+    from inquiry
+    where inquiry_status_id = 1;
+    ''')
+
+    results2 = session.execute(sql2).mappings().fetchall()
+
+    print(results2)
+    print(results2[0]['count(*)'])
+
+    #==========================
+    # 최근 주문 
+    #==========================
+    sql3 = text ('''
+            select 
+                o.order_sheet_id,
+                o.user_id,
+                o.order_name,
+                os.order_total_price,
+                st.order_status_name,
+                ds.delivery_status_name
+            from orders o 
+            left join order_sheet os 
+                on o.order_sheet_id = os.order_sheet_id
+            left join order_status st 
+                on o.order_status_id = st.order_status_id
+            left join delivery d 
+                on os.order_sheet_id = d.order_sheet_id
+            left join delivery_status ds 
+                on d.delivery_status_id = ds.delivery_status_id
+        ''')
+    results3 = session.execute(sql3).mappings().fetchall()
+
+    #=========================
+    # 주문 건수 조회
+    #=========================
+    sql4 = text('''
+        select count(*)
+        from orders
+    ''')
+    results4  = session.execute(sql4).mappings().fetchall()
+
+    #========================
+    # 예약 건수 조회
+    #========================
+    sql5 = text('''
+        select count(*)
+        from reservation
+    ''')
+    results5 = session.execute(sql5).mappings().fetchall()
+
+    return templates.TemplateResponse(request, 'admin-dashboard.html' , {
+        'sold_count' : results1[0]['count(*)'], # 품절 상품의 수를 화면에 뿌려줍니다 
+        'inquiry_count' : results2[0]['count(*)'], # 답변 대기중인 문의의 수를 화면에 뿌려줍나다.
+        'recent_orders' : results3,
+        'order_count' : results4[0]['count(*)'],
+        'reservation_count' : results5[0]['count(*)']
+    })
 
 # [메인 페이지] http://주소/ 접속 시
 @app.get('/')
@@ -256,22 +330,68 @@ def restock_product(
 
     return RedirectResponse(url='/admin/products', status_code=303)
 
+# [검색 기능]
+@app.get('/api/product/search')
+def search_product (request:Request, keyword: str = "", session:Session = Depends(get_session)):
+    sql = text('''
+        select * from product
+        where (:keyword = '' or product_name like :search_keyword)
+    ''')
+
+    result = session.execute(sql, {
+    'keyword' : keyword,
+    'search_keyword' : '%' + keyword + '%'
+    })
+
+    search_product_list = result.mappings().fetchall()
+
+    return templates.TemplateResponse(request, 'admin-products.html', {
+        'product_list' : search_product_list
+    })
+
 #==============================================================================
 # 5. 회원 관리 기능
 #==============================================================================
 
-# [회원 조회]
+# [회원 및 후기 신고 내역 조회]
 @app.get('/admin/users')
 def user_list (request: Request, session: Session = Depends(get_session)):
-    sql = text ('''
+    print('회원 및 후기 신고 내역 조회')
+    sql1 = text ('''
         select * from users
     ''')
     
-    results = session.execute(sql).mappings().fetchall()
-    
+    results1 = session.execute(sql1).mappings().fetchall()
+
+    sql2 = text ('''
+        select rr.report_id, pr.user_id, us.user_name, pr.product_review, pr.product_review_id, rr.report_detail from product_review as pr
+        join review_report as rr
+        on (pr.product_review_id = rr.product_review_id)
+        join users as us
+        on (pr.user_id = us.user_id)
+    ''')
+
+    results2 = session.execute(sql2).mappings().fetchall()
+
     return templates.TemplateResponse(request, 'admin-users.html', {
-            'user_list' : results
-        })
+        'user_list' : results1,
+        'review_report_list' : results2
+    })
+
+# [후기 신고 삭제]
+@app.post("/api/report/delete/{product_review_id}")
+def report_delete(product_review_id:int, session: Session = Depends(get_session)):
+    print('후기 신고 삭제 기능 실행', product_review_id)
+    
+    sql = text('''
+        delete from review_report
+        where product_review_id = :product_review_id
+    ''')
+    session.execute(sql,{'product_review_id' : product_review_id})
+    session.commit()
+
+    return RedirectResponse(url='/admin/users', status_code=303)
+
 
 # [회원 경고 추가]
 @app.get('/api/warning/{user_id}') 
@@ -345,6 +465,25 @@ def user_unsuspend(user_id : str, session:Session = Depends(get_session)):
 
     return RedirectResponse(url='/admin/users', status_code=303)
 
+# [검색 기능]
+@app.get('/api/user/search')
+def search_user (request:Request, keyword: str = "", session:Session = Depends(get_session)):
+    sql = text('''
+        select * from users
+        where (:keyword = '' or user_name or user_id like :search_keyword)
+    ''')
+
+    result = session.execute(sql, {
+    'keyword' : keyword,
+    'search_keyword' : '%' + keyword + '%'
+    })
+
+    search_list = result.mappings().fetchall()
+
+    return templates.TemplateResponse(request, 'admin-users.html', {
+        'user_list' : search_list
+    })
+
 #==============================================================================
 # 6. 문의관리 기능
 #==============================================================================
@@ -371,8 +510,8 @@ def answer_inquiry(inquiry_id : int, inquiry_answer : str = Form(), session:Sess
         update inquiry
         set 
             inquiry_answer = :inquiry_answer,
-            inquiry_status = '답변완료',
-        where inquriy_id = :inquiry_id
+            inquiry_status_id = 2 
+        where inquiry_id = :inquiry_id
     ''')
     session.execute(sql, {
         'inquiry_id' : inquiry_id,
@@ -391,12 +530,72 @@ def answer_inquiry(inquiry_id : int, inquiry_answer : str = Form(), session:Sess
 def order_list (request: Request, session: Session = Depends(get_session)):
     print('주문/배송 조회')
     sql = text ('''
-        select * from orders
+        select 
+            o.order_sheet_id,
+            o.user_id,
+            o.order_name,
+            os.order_total_price,
+            st.order_status_name,
+            ds.delivery_status_name
+        from orders o 
+        left join order_sheet os 
+            on o.order_sheet_id = os.order_sheet_id
+        left join order_status st 
+            on o.order_status_id = st.order_status_id
+        left join delivery d 
+            on os.order_sheet_id = d.order_sheet_id
+        left join delivery_status ds 
+            on d.delivery_status_id = ds.delivery_status_id
     ''')
     results = session.execute(sql).mappings().fetchall()
 
     return templates.TemplateResponse(request, 'admin-orders.html', {
         'order_list' : results
+    })
+
+#==============================================================================
+# 8. 예약 관리
+#==============================================================================
+
+#[예약 목록 조회]
+@app.get('/admin/reservations')
+def reservation_list (request: Request, session: Session = Depends(get_session)):
+    print ('예약 목록 조회')
+
+    # 예약 목록 조회 SQL문 
+    sql = text('''
+        select 
+            r.reservation_id,
+            u.user_name,
+            p.product_name,
+            r.reservation_quantity,
+            rs.reservation_status_name
+        from reservation as r
+        left join product as p 
+            on r.product_id = p.product_id
+        left join reservation_status as rs
+            on r.reservation_status_id = rs.reservation_status_id
+        left join users as u
+            on r.user_id = u.user_id
+    ''')
+    # 대기 중인 예약 목록 조회 SQL문 
+    sql2 = text('''
+        select 
+            count(*)
+        from reservation as r 
+        left join reservation_status as rs 
+            on r.reservation_status_id = rs.reservation_status_id
+        where 
+            rs.reservation_status_name = '예약대기'
+    ''')
+
+    results = session.execute(sql).mappings().fetchall()
+
+    results2 = session.execute(sql2).mappings().fetchall()
+
+    return templates.TemplateResponse(request, 'admin-reservations.html', {
+        'reservation_list' : results,
+        'reservation_wait' : results2[0]['count(*)']
     })
 
 #==============================================================================
