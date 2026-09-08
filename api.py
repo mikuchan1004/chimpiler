@@ -8,8 +8,9 @@ from fastapi.responses import RedirectResponse
 
 from starlette.middleware.sessions import SessionMiddleware
 
-import random
+from datetime import datetime, timedelta
 
+import random
 
 app = FastAPI()
 app.add_middleware(
@@ -34,15 +35,18 @@ def get_session():
         yield session
         session.commit() 
 
-# 원 단위 세 자리씩 끊어서 ',' 찍어주는 함수
 def price(value) :
     return f'{int(value):,}'
 templates.env.filters['price'] = price
-
 # print(random.randint(1,10))
 
 @app.get('/chat')
-def chatBot(request: Request, answer:str, session: Session = Depends(get_session)) :
+def chatBot(answer:str, session: Session = Depends(get_session)) :
+    print('''
+    ========================================
+    /chat : 챗봇 실행
+    ========================================
+    ''')
     sql = text('''
         select chat_answer
         from ai_chatbot
@@ -60,13 +64,16 @@ def chatBot(request: Request, answer:str, session: Session = Depends(get_session
         'chat_result' : chat_result
     }
 
-
 @app.get('/')
 def mainPage(request: Request, session: Session = Depends(get_session)) :
-    print('/ 메인페이지')
+    print('''
+    ========================================
+    / : 메인 페이지 실행
+    ========================================
+    ''')
 
-    print(request.session.get('isLogin'))
-    print(request.session.get('id'))
+    # print(request.session.get('isLogin'))
+    # print(request.session.get('id'))
 
     # 전체 상품 로드구간
     sql = text('''
@@ -113,6 +120,11 @@ def mainPage(request: Request, session: Session = Depends(get_session)) :
 
 @app.get('/random_product')
 def randomProduct(session: Session = Depends(get_session)):
+    print('''
+    ========================================
+    /random_product : 메인페이지 랜덤 상품 실행
+    ========================================
+    ''')
 
     sql = text('''
         select * from product
@@ -153,6 +165,11 @@ def products(
     align: str = 'align_view',
     keyword: str = '',
     session: Session = Depends(get_session)) :
+    print('''
+    ========================================
+    /products : 전체 상품목록 실행
+    ========================================
+    ''')
 
     if page < 1:
         page = 1
@@ -220,7 +237,12 @@ def products(
     })
 
 @app.get('/product/detail/{product_id}')
-def productsDetail(request: Request, product_id:int, session: Session = Depends(get_session)) :
+def productsDetail(request: Request, product_id:int, reservation: str = None, session: Session = Depends(get_session)) :
+    print('''
+    ========================================
+    /product/detail : 상품 상세 실행
+    ========================================
+    ''')
 
     sql = text('''
         select * from product p
@@ -241,6 +263,7 @@ def productsDetail(request: Request, product_id:int, session: Session = Depends(
     session.execute(sql_view_count, {
         'product_id' : product_id
     })
+    session.commit()
 
     sql_review = text('''
         select pr.* , us.user_name from product_review as pr
@@ -272,31 +295,26 @@ def productsDetail(request: Request, product_id:int, session: Session = Depends(
     if rating_avg == None :
         rating_avg = 0
 
-    # print(request.session.get('user_name')[0])
-    # print(len(request.session.get('user_name')[1:]))
+    sql_reservation_turn = text('''
+        select count(*) + 1 as reservation_turn from reservation 
+        where product_id = :product_id and reservation_status_id = 3
+    ''')
 
-    # aster = ''
-    # for i in range(len(request.session.get('user_name')[1:])) :
-    #     # print('*')
-    #     aster += '*' 
-    #     user_name = request.session.get('user_name')[0]
-    #     aster_name = user_name + aster
-    #     print(aster_name)
+    reservation_turn_result = session.execute(sql_reservation_turn, {
+        'product_id' : product_id
+    })
+    reservation_turn = reservation_turn_result.mappings().fetchone()
+    print(reservation_turn)
 
-    # for i in range(len(request.session.get('user_id')[3:])-1) :
-    #     aster += '*'
-    #     user_id = request.session.get('user_id')[:2]
-    #     print(user_id)
-    #     aster_id = user_id + aster
-    #     print(aster_id)
-
-    # print(product_list[0]['product_price'], type(product_list[0]['product_price']))
+    # print('reservation : ', reservation)
 
     return templates.TemplateResponse(request, 'product-detail.html', {
         'product_list' : product_list,
         'review_list' : review_list,
         'rating_avg' : rating_avg,
-        'review_count' : rating['review_count']
+        'review_count' : rating['review_count'],
+        'reservation' : reservation,
+        'reservation_turn' : reservation_turn
     })
 
 @app.post('/product/review')
@@ -306,7 +324,11 @@ def productReview (
     review_content:str = Form(),
     user_id:str = Form(),
     session: Session = Depends(get_session)):
-
+    print('''
+    ========================================
+    /product/review : 리뷰 작성 실행
+    ========================================
+    ''')
     print(product_id)
     print(review_score)
     print(review_content)
@@ -323,21 +345,192 @@ def productReview (
         'product_id' : product_id,
         'user_id' : user_id
     })
+    session.commit()
 
     return RedirectResponse(
         url=f'/product/detail/{product_id}',
         status_code=303
     )
 
+@app.post('/product/review/report')
+def productReviewReport(
+    product_review_id:int = Form(), 
+    product_id:int = Form(), 
+    report_detail: str = Form(),
+    session: Session = Depends(get_session)) :
+    print('''
+    ========================================
+    /product/review/report : 후기 신고 실행
+    ========================================
+    ''')
+    sql_report = text('''
+        insert into review_report(report_detail, product_review_id)
+        value (:report_detail, :product_review_id)
+    ''')
 
+    session.execute(sql_report, {
+        'report_detail' : report_detail,
+        'product_review_id' : product_review_id
+    })
+    session.commit()
+
+    return RedirectResponse(
+        url=f'/product/detail/{product_id}',
+        status_code=303
+    )
+
+@app.post('/product/reservation')
+def productReservation (
+    request: Request,
+    product_id:int = Form(), 
+    reservation_quantity: int = Form(),
+    session: Session = Depends(get_session)):
+    print('''
+    ========================================
+    /product/reservation : 상품 예약 실행
+    ========================================
+    ''')
+
+    user_id = request.session.get('user_id')
+
+    if user_id == None :
+        return RedirectResponse(
+            url='/login',
+            status_code=303
+        )
+    
+    now = datetime.now()
+    reservationDate = now.strftime('%Y-%m-%d %H:%M:%S')
+
+    if reservation_quantity <= 0 or reservation_quantity > 10 :
+        return RedirectResponse(
+            url=f'/product/detail/{product_id}?reservation=failed',
+            status_code=303
+        )
+    
+    sql_reservation = text('''
+        insert into reservation(reservation_date, reservation_quantity, product_id, user_id, reservation_status_id)
+        values(:reservation_date, :reservation_quantity, :product_id, :user_id, :reservation_status_id)
+    ''')
+
+    session.execute(sql_reservation, {
+        'reservation_date' : reservationDate, 
+        'reservation_quantity' : reservation_quantity, 
+        'product_id' : product_id, 
+        'user_id' : user_id, 
+        'reservation_status_id' : 3
+    })
+
+    session.commit()
+
+    return RedirectResponse(
+        url=f'/product/detail/{product_id}?reservation=success',
+        status_code=303
+    )
 
 @app.get('/cart')
-def cart(request: Request) :
-    return templates.TemplateResponse(request, 'cart.html')
+def cart(
+    request: Request,
+    user_id: str,
+    session: Session = Depends(get_session)) :
+    print('''
+    ========================================
+    /cart : 장바구니 실행
+    ========================================
+    ''')
+
+    print('장바구니에 담긴 ID : ',user_id)
+
+    sql_cart = text('''
+        select *, 
+        ca.product_quantity as cart_quantity, 
+        sum(ca.product_quantity) * pr.product_price as cart_price 
+        from cart as ca
+        join users as us on (ca.user_id = us.user_id)
+        join product as pr on (ca.product_id = pr.product_id)
+        where ca.user_id = :user_id
+        group by pr.product_name
+    ''')
+
+    result_cart = session.execute(sql_cart, {
+        'user_id' : user_id
+    })
+    cart_list = result_cart.mappings().fetchall()
+
+    return templates.TemplateResponse(request, 'cart.html', {
+        'cart_list' : cart_list
+    })
+
+@app.post('/cart')
+def cartAdd(
+    request: Request,
+    cart_quantity:int = Form(),
+    product_id:int = Form(),
+    session: Session = Depends(get_session)) :
+    print('''
+    ========================================
+    /cart : 장바구니 담기 실행
+    ========================================
+    ''')
+
+    user_id = request.session.get('user_id')
+
+    print('cart_quantity : ', cart_quantity)
+    print('user_id : ', user_id)
+    print('product_id : ', product_id)
+
+    sql_cart_get = text('''
+        select * from cart
+        where user_id = :user_id and product_id = :product_id
+    ''')
+
+    result_cart_get = session.execute(sql_cart_get, {
+        'user_id' : user_id,
+        'product_id' : product_id
+    })
+
+    result_cart = result_cart_get.mappings().fetchone()
+    print('result_cart : ', result_cart)
+
+    if result_cart == None :
+        sql_cart_add = text('''
+            insert into cart(user_id, product_id, product_quantity)
+            values(:user_id, :product_id, :product_quantity)
+        ''')
+
+        session.execute(sql_cart_add, {
+            'user_id' : user_id,
+            'product_id' : product_id,
+            'product_quantity' : cart_quantity
+        })
+        session.commit()
+    else :
+        sql_cart_update = text('''
+            update cart
+            set product_quantity = product_quantity + :product_quantity
+            where user_id = :user_id and product_id = :product_id
+        ''')
+
+        session.execute(sql_cart_update, {
+            'product_quantity' : cart_quantity,
+            'user_id' : user_id,
+            'product_id' : product_id
+        })
+        session.commit()
+
+    return RedirectResponse(
+        url=f'/cart?user_id={user_id}',
+        status_code=303
+    )
 
 # 레이아웃 페이지 이동용_관리자페이지
 @app.get('/admin')
 def admin(request: Request) :
+    print('''
+    ========================================
+    /admin : 관리자페이지 실행
+    ========================================
+    ''')
 
     if request.session.get('user_id') == 'admin' :
         return templates.TemplateResponse(request, 'admin-dashboard.html')
@@ -349,12 +542,21 @@ def admin(request: Request) :
 
 @app.get('/error-404')
 def error(request: Request):
+    print('''
+    ========================================
+    /error-404 : 관리자페이지 접근 불가 실행
+    ========================================
+    ''')
     return templates.TemplateResponse(request, 'error-404.html')
 
 
 @app.get('/admin/inquiries')
 def adminInquiries(request: Request) :
-
+    print('''
+    ========================================
+    /admin/inquiries : 관리자페이지 문의 관리 실행
+    ========================================
+    ''')
     if request.session.get('user_id') == 'admin' :
         return templates.TemplateResponse(request, 'admin-inquiries.html')
     else :
@@ -365,6 +567,11 @@ def adminInquiries(request: Request) :
 
 @app.get('/admin/orders')
 def adminOrders(request: Request) :
+    print('''
+    ========================================
+    /admin/orders : 관리자페이지 주문 관리 실행
+    ========================================
+    ''')
     if request.session.get('user_id') == 'admin' :
         return templates.TemplateResponse(request, 'admin-orders.html')
     else :
@@ -374,7 +581,13 @@ def adminOrders(request: Request) :
         )
 
 @app.get('/admin/products')
+
 def adminProducts(request: Request) :
+    print('''
+    ========================================
+    /admin/products : 관리자페이지 상품 관리 실행
+    ========================================
+    ''')
     if request.session.get('user_id') == 'admin' :
         return templates.TemplateResponse(request, 'admin-products.html')
     else :
@@ -385,6 +598,11 @@ def adminProducts(request: Request) :
 
 @app.get('/admin/reservations')
 def adminReservations(request: Request) :
+    print('''
+    ========================================
+    /admin/reservations : 관리자페이지 예약 관리 실행
+    ========================================
+    ''')
     if request.session.get('user_id') == 'admin' :
         return templates.TemplateResponse(request, 'admin-reservations.html')
     else :
@@ -395,6 +613,11 @@ def adminReservations(request: Request) :
 
 @app.get('/admin/users')
 def adminUsers(request: Request) :
+    print('''
+    ========================================
+    /admin/users : 관리자페이지 회원 관리 실행
+    ========================================
+    ''')
     if request.session.get('user_id') == 'admin' :
         return templates.TemplateResponse(request, 'admin-users.html')
     else :
@@ -406,33 +629,68 @@ def adminUsers(request: Request) :
 # 레이아웃 페이지 이동용_AI건강체크
 @app.get('/ai-health')
 def adminAihealth(request: Request) :
+    print('''
+    ========================================
+    /ai-health : AI 건강 체크 실행
+    ========================================
+    ''')
     return templates.TemplateResponse(request, 'ai-health.html')
 
 # 레이아웃 페이지 이동용_주문서작성
 @app.get('/checkout')
 def checkout(request: Request) :
+    print('''
+    ========================================
+    /checkout : 주문서 작성 실행
+    ========================================
+    ''')
     return templates.TemplateResponse(request, 'checkout.html')
 
 # 레이아웃 페이지 이동용_커뮤니티
 @app.get('/notice')
 def commNotice(request: Request) :
+    print('''
+    ========================================
+    /notice : 커뮤니티 공지사항 실행
+    ========================================
+    ''')
     return templates.TemplateResponse(request, 'notice.html')
 
 @app.get('/faq')
 def commFaq(request: Request) :
+    print('''
+    ========================================
+    /faq : 커뮤니티 자주 묻는 질문 실행
+    ========================================
+    ''')
     return templates.TemplateResponse(request, 'faq.html')
 
 @app.get('/inquiry-write')
 def commInquirywrite(request: Request) :
+    print('''
+    ========================================
+    /inquiry-write : 커뮤니티 일대일 문의 실행
+    ========================================
+    ''')
     return templates.TemplateResponse(request, 'inquiry-write.html')
 
 @app.get('/login')
 def login_loading(request: Request):
+    print('''
+    ========================================
+    /login : 로그인 페이지 로딩
+    ========================================
+    ''')
     return templates.TemplateResponse(request, 'login.html')
 
 # 레이아웃 페이지 이동용_로그인/회원가입
 @app.post('/login')
 def login(request: Request, user_id:str = Form(), user_password:str = Form(), session: Session = Depends(get_session)) :
+    print('''
+    ========================================
+    /login : 로그인 페이지 실행
+    ========================================
+    ''')
 
     sql = text('''
         select * from users
@@ -454,22 +712,24 @@ def login(request: Request, user_id:str = Form(), user_password:str = Form(), se
             request.session['user_id'] = user_id
             request.session['user_name'] = login_check['user_name']
 
+            print('/login : 로그인 성공')
             return RedirectResponse(
                 url='/',
                 status_code=303
             )
 
+    print('/login : 로그인 실패')
     return templates.TemplateResponse(request, 'login.html', {
         'login_error': '아이디 또는 비밀번호가 일치하지 않습니다.'
     })
 
-    # print('@@@@@@@@@@@@@@@@@@@@@@@')
-    # print('user_id', user_id)
-    # print('user_password', user_password)
-    # return templates.TemplateResponse(request, 'login.html')
-
 @app.get('/logout')
 def logout(request:Request):
+    print('''
+    ========================================
+    /logout : 로그아웃 페이지 실행
+    ========================================
+    ''')
     request.session.clear()
 
     return RedirectResponse(
@@ -479,31 +739,66 @@ def logout(request:Request):
 
 @app.get('/signup')
 def signup(request: Request) :
+    print('''
+    ========================================
+    /signup : 회원가입 페이지 실행
+    ========================================
+    ''')
     return templates.TemplateResponse(request, 'signup.html')
 
 @app.get('/terms')
 def terms(request: Request) :
+    print('''
+    ========================================
+    /terms : 이용약관 페이지 실행
+    ========================================
+    ''')
     return templates.TemplateResponse(request, 'terms.html')
 
 # 레이아웃 페이지 이동용_마이페이지
 @app.get('/mypage')
 def mypage(request: Request) :
+    print('''
+    ========================================
+    /mypage : 마이페이지 실행
+    ========================================
+    ''')
     return templates.TemplateResponse(request, 'mypage-dashboard.html')
 
 @app.get('/mypage/inquiries')
 def mypageInquiries(request: Request) :
+    print('''
+    ========================================
+    /mypage/inquiries : 마이페이지 일대일 문의 실행
+    ========================================
+    ''')
     return templates.TemplateResponse(request, 'mypage-inquiries.html')
 
 @app.get('/mypage/orders')
 def mypageOrders(request: Request) :
+    print('''
+    ========================================
+    /mypage/orders : 마이페이지 주문 관리 실행
+    ========================================
+    ''')
     return templates.TemplateResponse(request, 'mypage-orders.html')
 
 @app.get('/mypage/profile')
 def mypageProfile(request: Request) :
+    print('''
+    ========================================
+    /mypage/profile : 마이페이지 회원 정보 실행
+    ========================================
+    ''')
     return templates.TemplateResponse(request, 'mypage-profile.html')
 
 @app.get('/mypage/reservations')
 def mypageReservations(request: Request) :
+    print('''
+    ========================================
+    /mypage/reservations : 마이페이지 예약 관리 실행
+    ========================================
+    ''')
     return templates.TemplateResponse(request, 'mypage-reservations.html')
 
 
@@ -640,6 +935,64 @@ def mypageReservations(request: Request) :
 #         'category_id' : 0,
 #         'keyword' : keyword
 #     })
+
+# @app.get('/product/detail/{product_id}')
+# def productsDetail(request: Request, product_id:int, reservation: str = None, session: Session = Depends(get_session)) :
+# print(request.session.get('user_name')[0])
+# print(len(request.session.get('user_name')[1:]))
+
+# aster = ''
+# for i in range(len(request.session.get('user_name')[1:])) :
+#     # print('*')
+#     aster += '*' 
+#     user_name = request.session.get('user_name')[0]
+#     aster_name = user_name + aster
+#     print(aster_name)
+
+# for i in range(len(request.session.get('user_id')[3:])-1) :
+#     aster += '*'
+#     user_id = request.session.get('user_id')[:2]
+#     print(user_id)
+#     aster_id = user_id + aster
+#     print(aster_id)
+
+# @app.post('/product/reservation')
+# def productReservation (
+    # print('reservation_quantity : ', reservation_quantity)
+    # nowAfter = now + timedelta(days=1)
+    # reservationExpiration = nowAfter.strftime('%Y-%m-%d %H:%M:%S')
+
+    # print('현재시간 : ', reservationDate)
+    # print('24시간뒤 : ', reservationExpiration)
+    # sql_stock_chk = text('''
+    #     select * from product
+    #     where product_id = :product_id
+    # ''')
+    # result_stock = session.execute(sql_stock_chk, {
+    #     'product_id' : product_id
+    # })
+    # result_stock_list = result_stock.mappings().fetchone()
+    # print('result_stock_list : ', result_stock_list)
+
+    # if reservation_quantity > result_stock_list['product_reservation_stock'] :
+    #     return RedirectResponse(
+    #         url=f'/product/detail/{product_id}?reservation=failed',
+    #         status_code=303
+    #     )
+    # session.execute(sql_reservation, {
+    #     'reservation_expiration' : reservationExpiration 
+    # })
+    # sql_sale_stock_minus = text('''
+    #     update product
+    #     set product_reservation_stock = product_reservation_stock - :reservation_quantity
+    #     where product_id = :product_id
+    # ''')
+
+    # session.execute(sql_sale_stock_minus, {
+    #     'reservation_quantity' : reservation_quantity,
+    #     'product_id' : product_id
+    # })
+    # session.commit()
 
 if __name__ == '__main__' :
     import uvicorn

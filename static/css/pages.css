@@ -599,11 +599,10 @@
     border-radius: 16px;
     background-color: white;
     box-shadow: 0 7px 18px rgba(23, 32, 51, .05);
-    transition: transform .2s, box-shadow .2s;
+    transition: box-shadow .2s;
 }
 
 .review-item:hover {
-    transform: translateY(-2px);
     box-shadow: 0 10px 24px rgba(23, 32, 51, .09);
 }
 
@@ -1269,4 +1268,47 @@
 .product-rating-empty {
     color: var(--muted);
     font-size: 13px;
+}
+
+.review-report-modal .modal-dialog {
+    width: min(440px, calc(100vw - 32px));
+}
+
+.review-report-guide {
+    margin: 0 0 16px;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.review-report-textarea {
+    width: 100%;
+    min-height: 130px;
+    padding: 13px 14px;
+    line-height: 1.6;
+    resize: vertical;
+}
+
+.review-report-notice {
+    margin: 13px 0 0;
+    padding: 10px 12px;
+    border-radius: 9px;
+    background-color: var(--surface);
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.review-report-submit {
+    min-height: 44px;
+    padding: 0 20px;
+    border: 0;
+    border-radius: 10px;
+    background-color: #d85b5b;
+    color: white;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.review-report-submit:hover {
+    background-color: #bd4545;
 }

@@ -5,6 +5,52 @@
 {% endblock %}
 
 {% block script %}
+<script>
+    window.onload = () => {
+        const cartItems = document.querySelectorAll('.cart-item')
+
+        cartItems.forEach(function(cartItem){
+            const productQuantity = cartItem.querySelector('.product-quantity')
+            const productQuantityMax = Number(productQuantity.max)
+
+            const quantityMinus = cartItem.querySelector('.quantity-minus')
+            const quantityPlus = cartItem.querySelector('.quantity-plus')
+
+            const productTotalPrice = cartItem.querySelector('.cart-item-total-price')
+            const productPrice = cartItem.querySelector('.cart-item-price')
+
+            quantityMinus.addEventListener('click', function(){
+                if( Number(productQuantity.value) > 1 ) {
+                    productQuantity.value = Number(productQuantity.value) - 1
+                } else {
+                    alert('1개보다 적게 선택할 수 없습니다.')
+                }
+
+                calcTotalPrice()
+            })
+
+            quantityPlus.addEventListener('click',function(){
+                if( Number(productQuantity.value) < productQuantityMax ) {
+                    productQuantity.value = Number(productQuantity.value) + 1
+                } else if (productQuantity.value >= productQuantityMax) {
+                    alert('현재 재고보다 많이 선택할 수 없습니다.')
+                }
+
+                calcTotalPrice()
+            })
+
+            function calcTotalPrice() {
+                  const quantity = Number(productQuantity.value)
+                  const price = Number(productPrice.value)
+
+                  let total = quantity * price
+
+                  productTotalPrice.innerText = `총 ${total.toLocaleString()}원`
+            }
+        })
+    }
+
+</script>
 {% endblock %}
 
 {% block main %}
@@ -19,42 +65,27 @@
                 id="cartSelectedDeleteButton" type="button">선택 삭제</button></div>
         <div class="cart-layout">
             <section class="card" id="cartItemList">
+                {% for carts in cart_list %}
                 <article class="cart-item">
                     <input class="cart-checkbox" type="checkbox" checked aria-label="상품 선택">
-                    <img class="cart-thumb" src="static/images/supplement-01-vita-core.png" alt="">
+                    <img class="cart-thumb" src="{{ carts['product_image'] }}" alt="{{ carts['product_name'] }}">
                     <div>
-                        <strong>데일리 비타 코어 멀티비타민</strong>
-                        <p class="muted">29,800원</p>
+                        <strong>{{ carts['product_name'] }}</strong>
+                        <p class="muted">{{ carts['product_price'] | price }}원</p>
                         <span class="quantity">
-                            <button>−</button>
-                            <input value="1">
-                            <button>＋</button>
+                            <button type="button" class="quantity-minus">−</button>
+                            <input class="product-quantity" value="{{ carts['product_quantity'] }}" inputmode="numeric" min="1" max="{{ carts['product_sale_stock'] }}">
+                            <button type="button" class="quantity-plus">＋</button>
                         </span>
                     </div>
                     <div class="cart-item-actions">
-                        <strong>29,800원</strong>
+                        <strong class="cart-item-total-price">총 {{ (carts['product_quantity'] * carts['product_price']) | price }}원</strong>
+                        <input type="hidden" class="cart-item-price" value="{{ carts['product_price'] }}">
                         <br>
                         <button class="button secondary small">삭제</button>
                     </div>
                 </article>
-                <article class="cart-item">
-                    <input class="cart-checkbox" type="checkbox" checked aria-label="상품 선택">
-                    <img class="cart-thumb" src="static/images/fitness-02-power-band.png" alt="">
-                    <div>
-                        <strong>파워 루프 운동 밴드 세트</strong>
-                        <p class="muted">19,900원</p>
-                        <span class="quantity">
-                            <button>−</button>
-                            <input value="1">
-                            <button>＋</button>
-                        </span>
-                    </div>
-                    <div class="cart-item-actions">
-                        <strong>19,900원</strong>
-                        <br>
-                        <button class="button secondary small">삭제</button>
-                    </div>
-                </article>
+                {% endfor %}
             </section>
             <aside class="panel sticky-summary">
                 <h2>결제 예정 금액</h2>

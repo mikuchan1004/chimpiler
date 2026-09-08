@@ -8,21 +8,21 @@
 <script>
       window.onload = () => {
             const productQuantity = document.querySelector('#productQuantity')
-            const productSaleStock = Number(productQuantity.max)
+            const productMaxQuantity = Number(productQuantity.max)
             const totalPrice = document.querySelector('#totalPrice')
             const totalPriceValue = document.querySelector('#totalPriceValue')
 
-            document.querySelector('#quantityPlus').addEventListener('click', function(){
-                  if(Number(productQuantity.value) < productSaleStock ) {
-                        productQuantity.value = Number(productQuantity.value) +  1
+            document.querySelector('#quantityPlus').addEventListener('click', function () {
+                  if (Number(productQuantity.value) < productMaxQuantity) {
+                        productQuantity.value = Number(productQuantity.value) + 1
 
                         calcTotalPrice()
                   } else {
-                        return alert('현재 재고보다 많은 수량은 입력하실 수 없습니다.')
+                        return alert('최대 선택 가능한 수량을 초과했습니다.')
                   }
             })
-            document.querySelector('#quantityMinus').addEventListener('click', function(){
-                  if(productQuantity.value > 1) {
+            document.querySelector('#quantityMinus').addEventListener('click', function () {
+                  if (productQuantity.value > 1) {
                         productQuantity.value = Number(productQuantity.value) - 1
 
                         calcTotalPrice()
@@ -37,9 +37,9 @@
                   if (quantity < 1) {
                         alert('수량은 1개 이상 입력해야 합니다.')
                         productQuantity.value = 1
-                  } else if (quantity > productSaleStock) {
-                        alert('현재 재고보다 많은 수량은 선택할 수 없습니다.')
-                        productQuantity.value = productSaleStock
+                  } else if (quantity > productMaxQuantity) {
+                        alert('최대 선택 가능한 수량을 초과했습니다.')
+                        productQuantity.value = productMaxQuantity
                   } else if (quantity % 1 != 0) {
                         alert('수량은 정수만 입력할 수 있습니다.')
                         productQuantity.value = 1
@@ -48,7 +48,7 @@
                   calcTotalPrice()
             })
 
-            function calcTotalPrice () {
+            function calcTotalPrice() {
                   const quantity = Number(productQuantity.value)
                   const price = Number(totalPriceValue.value)
 
@@ -57,54 +57,93 @@
                   totalPrice.innerText = `${total.toLocaleString()}원`
             }
 
-            let cartAddButton = document.querySelector('#cartAddButton')
-            let buyNowButton = document.querySelector('#buyNowButton')
-            let reservationButton = document.querySelector('#reservationButton')
-            let reservationStock = document.querySelector('.reservation-stock')
-            let salesStock = document.querySelector('.sales-stock')
+            // let cartAddButton = document.querySelector('#cartAddButton')
+            // let buyNowButton = document.querySelector('#buyNowButton')
+            // let reservationStock = document.querySelector('.reservation-stock')
+            // let salesStock = document.querySelector('.sales-stock')
 
-            if(productSaleStock == 0) {
-                  cartAddButton.classList.add('hidden')
-                  buyNowButton.classList.add('hidden')
-                  salesStock.classList.add('hidden')
-                  reservationButton.classList.remove('hidden')
-                  reservationStock.classList.remove('hidden')
-            } else {
-                  cartAddButton.classList.remove('hidden')
-                  buyNowButton.classList.remove('hidden')
-                  salesStock.classList.remove('hidden')
-                  reservationButton.classList.add('hidden')
-                  reservationStock.classList.add('hidden')
+            // if(productMaxQuantity == 0) {
+            //       cartAddButton.classList.add('hidden')
+            //       buyNowButton.classList.add('hidden')
+            //       salesStock.classList.add('hidden')
+            //       reservationButton.classList.remove('hidden')
+            //       reservationStock.classList.remove('hidden')
+            // } else {
+            //       cartAddButton.classList.remove('hidden')
+            //       buyNowButton.classList.remove('hidden')
+            //       salesStock.classList.remove('hidden')
+            //       reservationButton.classList.add('hidden')
+            //       reservationStock.classList.add('hidden')
+            // }
+
+            let reservationButton = document.querySelector('#reservationButton')
+            let reservationConfirmModal = document.querySelector('#reservationConfirmModal')
+            let reservationQuantity = document.querySelector('#reservationQuantity')
+
+            if (reservationButton) {
+                  reservationButton.addEventListener('click', function () {
+                        reservationQuantity.value = productQuantity.value
+                        reservationConfirmModal.classList.add('is-open')
+                  })
             }
 
-            let reservationConfirmModal = document.querySelector('#reservationConfirmModal')
-
-            reservationButton.addEventListener('click', function(){
-                  reservationConfirmModal.classList.add('is-open')
-            })
-
-            let modalCloseButton = document.querySelector('.modal-close')
+            let modalCloseButton = reservationConfirmModal.querySelector('.modal-close')
             let modalCancleButton = reservationConfirmModal.querySelector('.button.secondary')
 
-            modalCloseButton.addEventListener('click', function(){
-                  reservationConfirmModal.classList.remove('is-open')
-            })
-            modalCancleButton.addEventListener('click', function(){
-                  reservationConfirmModal.classList.remove('is-open')
-            })
+            if (modalCloseButton) {
+                  modalCloseButton.addEventListener('click', function () {
+                        reservationConfirmModal.classList.remove('is-open')
+                  })
+            }
+
+            
+
+            if (modalCancleButton) {
+                  modalCancleButton.addEventListener('click', function () {
+                        reservationConfirmModal.classList.remove('is-open')
+                  })
+            }
 
             let detailTabs = document.querySelectorAll('.detail-tabs .tab')
 
-            detailTabs.forEach(function(tab) {
+            detailTabs.forEach(function (tab) {
 
-                  tab.addEventListener('click', function(){
-                        detailTabs.forEach(function(tab) {
+                  tab.addEventListener('click', function () {
+                        detailTabs.forEach(function (tab) {
                               tab.classList.remove('active')
                         })
 
                         this.classList.add('active')
                   })
             })
+
+            let reviewReportButton = document.querySelectorAll('.review-report-button')
+            console.log(reviewReportButton)
+
+            // reviewReportClose = document.querySelector
+            // reviewReportCancle = 
+
+            reviewReportButton.forEach(function (button) {
+                  button.addEventListener('click', function () {
+                        let reportModal = this.parentElement.querySelector('.review-report-modal')
+                        reportModal.classList.add('is-open')
+
+                        reportModal.querySelector('.review-report-close').addEventListener('click', function () {
+                              reportModal.classList.remove('is-open')
+                        })
+                        reportModal.querySelector('.review-report-cancel').addEventListener('click', function () {
+                              reportModal.classList.remove('is-open')
+                        })
+                  })
+            })
+
+            let cartAddButton = document.querySelector('#cartAddButton')
+            let cartQuantity = document.querySelector('#cartQuantity')
+
+            cartAddButton.addEventListener('click', function(){
+                  cartQuantity.value = productQuantity.value
+            })
+
       }
 </script>
 {% endblock %}
@@ -115,27 +154,21 @@
             <div class="detail-grid">
                   {% for products in product_list %}
                   <div class="detail-media">
-                        <img class="detail-image" id="productMainImage"
-                              src="{{ products['product_image'] }}" alt="{{ products['product_name'] }}">
+                        <img class="detail-image" id="productMainImage" src="{{ products['product_image'] }}"
+                              alt="{{ products['product_name'] }}">
                   </div>
                   <section class="detail-purchase" aria-label="상품 구매 정보">
                         <span class="badge">{{ products['category_name'] }}</span>
                         <h1 class="detail-title" id="productName">{{ products['product_name'] }}</h1>
                         <p class="muted">{{ products['product_detail'] }}</p>
                         <div class="product-rating-summary">
-                        {% if review_count > 0 %}
-                        <span class="product-rating-star">★</span>
-
-                        <strong>{{ rating_avg }}</strong>
-
-                        <a href="#reviews">
-                              후기 {{ review_count }}개
-                        </a>
-                        {% else %}
-                        <span class="product-rating-empty">
-                              아직 등록된 후기가 없습니다.
-                        </span>
-                        {% endif %}
+                              {% if review_count > 0 %}
+                              <span class="product-rating-star">★</span>
+                              <strong>{{ rating_avg }}</strong>
+                              <a href="#reviews">후기 {{ review_count }}개</a>
+                              {% else %}
+                              <span class="product-rating-empty">아직 등록된 후기가 없습니다.</span>
+                              {% endif %}
                         </div>
                         <a class="ai-purchase-link" href="/ai-health">
                               <span>💡</span>
@@ -148,26 +181,22 @@
                         <div class="purchase-info-box">
                               <div class="product-price-box">
                                     <span class="product-price-label">판매가</span>
-
-                                    <strong class="product-price">
-                                          {{ products['product_price'] | price }}원
-                                    </strong>
+                                    <strong class="product-price">{{ products['product_price'] | price }}원</strong>
                               </div>
-
                               <div class="product-stock-list">
+                                    {% if products['product_sale_stock'] != 0 %}
                                     <div class="summary-row sales-stock">
                                           <span>판매 재고</span>
-                                          <strong id="saleStock">
-                                          {{ products['product_sale_stock'] }}개
-                                          </strong>
+                                          <strong id="saleStock">{{ products['product_sale_stock'] }}개</strong>
                                     </div>
-
+                                    {% else %}
                                     <div class="summary-row reservation-stock">
-                                          <span>예약 재고</span>
-                                          <strong id="reservationStock">
-                                          {{ products['product_reservation_stock'] }}개
-                                          </strong>
+                                          <!-- <span>예약 재고</span> -->
+                                          <!-- <strong id="reservationStock">{{ products['product_reservation_stock'] }}개</strong> -->
+                                           <span>판매 상태</span>
+                                          <strong>예약 접수 중</strong>
                                     </div>
+                                    {% endif %}
                               </div>
                         </div>
                         <div class="detail-options">
@@ -175,19 +204,23 @@
                               <div class="product-quantity-row">
                                     <span class="form-label">수량</span>
 
+                                    {% if products['product_sale_stock'] != 0 %}
                                     <span class="quantity">
                                           <button type="button" id="quantityMinus">−</button>
-
-                                          <input
-                                                id="productQuantity"
-                                                value="0"
-                                                inputmode="numeric"
-                                                min="1"
-                                                max="{{ products['product_sale_stock'] }}"
-                                          >
-
+                                          <input id="productQuantity" value="0" inputmode="numeric" min="1"
+                                                max="{{ products['product_sale_stock'] }}">
                                           <button type="button" id="quantityPlus">＋</button>
                                     </span>
+                                    {% else %}
+                                    <span class="quantity">
+                                          <button type="button" id="quantityMinus">−</button>
+                                          <!-- <input id="productQuantity" value="0" inputmode="numeric" min="1"
+                                                max="{{ products['product_reservation_stock'] }}"> -->
+                                          <input id="productQuantity" value="0" inputmode="numeric" min="1"
+                                                max="10">
+                                          <button type="button" id="quantityPlus">＋</button>
+                                    </span>
+                                    {% endif %}
                               </div>
                               <!-- </label> -->
                               <div class="summary-row total">
@@ -197,9 +230,32 @@
                               </div>
                         </div>
                         <div class="purchase-bar">
-                              <button class="button secondary" id="cartAddButton">장바구니</button>
-                              <a class="button" id="buyNowButton" href="/checkout">구매하기</a>
-                              <button class="button hidden" id="reservationButton">예약구매</button>
+                              {% if request.session.get('isLogin') == True %}
+                                    {% if products['product_active'] == 2 %}
+                                    <button class="button sold-out-button" type="button" disabled>판매 중지 상품</button>
+
+                                    {% elif products['product_sale_stock'] != 0 %}
+                                    <form method="post" action="/cart">
+                                          <input type="hidden" name="cart_quantity" id="cartQuantity" value="0">
+                                          <input type="hidden" name="product_id" value="{{ products['product_id'] }}">
+                                          <button class="button secondary" id="cartAddButton">장바구니</button>
+                                    </form>
+                                    <a class="button" id="buyNowButton" href="/checkout">구매하기</a>
+                                    {% else %}
+                                    <!-- {% if products['product_reservation_stock'] > 0 %}
+                                          <button class="button" id="reservationButton" type="button">
+                                                예약구매
+                                          </button>
+                                    {% else %}
+                                          <button class="button sold-out-button" type="button" disabled>
+                                                예약 재고 없음
+                                          </button>
+                                    {% endif %} -->
+                                          <button class="button" id="reservationButton" type="button">예약 신청</button>
+                                    {% endif %}
+                              {% else %}
+                              <a class="button" href="/login">로그인 상태에서 이용 가능한 서비스입니다</a>
+                              {% endif %}
                         </div>
                   </section>
                   <section class="detail-content">
@@ -215,7 +271,6 @@
                         </article>
                         <article class="detail-panel" id="reviews">
                               <h2>상품후기</h2>
-
                               {% if request.session.get('isLogin') == True %}
                               <form class="review-form" action="/product/review" method="post">
                                     <input type="hidden" name="product_id" value="{{ products['product_id'] }}">
@@ -225,41 +280,31 @@
                                           <strong>별점</strong>
 
                                           <label>
-                                          <input type="radio" name="review_score" value="5" checked>
-                                          ⭐ 5점
+                                                <input type="radio" name="review_score" value="5" checked>⭐ 5점
                                           </label>
-
                                           <label>
-                                          <input type="radio" name="review_score" value="4">
-                                          ⭐ 4점
+                                                <input type="radio" name="review_score" value="4">⭐ 4점
                                           </label>
-
                                           <label>
-                                          <input type="radio" name="review_score" value="3">
-                                          ⭐ 3점
+                                                <input type="radio" name="review_score" value="3">⭐ 3점
                                           </label>
-
                                           <label>
-                                          <input type="radio" name="review_score" value="2">
-                                          ⭐ 2점
+                                                <input type="radio" name="review_score" value="2">⭐ 2점
                                           </label>
-
                                           <label>
-                                          <input type="radio" name="review_score" value="1">
-                                          ⭐ 1점
+                                                <input type="radio" name="review_score" value="1">⭐ 1점
                                           </label>
                                     </div>
 
                                     <label class="form-field">
                                           <span class="form-label">후기 내용</span>
-                                          <textarea class="form-control" name="review_content" rows="5" placeholder="상품을 사용한 후기를 작성해 주세요." required></textarea>
+                                          <textarea class="form-control" name="review_content" rows="5"
+                                                placeholder="상품을 사용한 후기를 작성해 주세요." required></textarea>
                                     </label>
 
                                     <div class="review-submit">
                                           <br>
-                                          <button class="button" type="submit">
-                                          후기 등록
-                                          </button>
+                                          <button class="button" type="submit">후기 등록</button>
                                     </div>
                               </form>
                               {% else %}
@@ -273,56 +318,97 @@
                                     <!-- {{ review_list }} -->
                                     <div class="review-list-head">
                                           <h3>등록된 후기</h3>
-                                          <span>
-                                                총 {{ review_list | length }}개
-                                          </span>
+                                          <span>총 {{ review_list | length }}개</span>
                                     </div>
                               </div>
 
                               {% if review_list %}
-                                    {% for review in review_list %}
-                                            <article class="review-item">
-                                                <header class="review-item-head">
-                                                <div class="review-writer">
-                                                      <span class="review-profile">
-                                                      {{ review['user_name'][0] }}{% for i in range((review['user_name']) | length - 1) %}*{% endfor %}
-                                                      </span>
+                              {% for review in review_list %}
+                              <article class="review-item">
+                                    <header class="review-item-head">
+                                          <div class="review-writer">
+                                                <span class="review-profile">
+                                                      {{ review['user_name'][0] }}{% for i in
+                                                      range((review['user_name']) | length - 1) %}*{% endfor %}
+                                                </span>
 
-                                                      <div>
-                                                            <strong>
-                                                            {{ review['user_id'][:2] }}{% for i in range((review['user_id']) | length - 2) %}*{% endfor %}
-                                                            </strong>
-                                                      </div>
+                                                <div>
+                                                      <strong>
+                                                            {{ review['user_id'][:2] }}{% for i in
+                                                            range((review['user_id']) | length - 2) %}*{% endfor %}
+                                                      </strong>
                                                 </div>
+                                          </div>
 
-                                                <div class="review-rating">
-                                                      <span class="review-stars">
+                                          <div class="review-rating">
+                                                <span class="review-stars">
                                                       {% for i in range(1,6) %}
-                                                            {% if i <= review['product_rating'] %}
-                                                                  ★
-                                                            {% else %}
-                                                                  ☆
-                                                            {% endif %}
-                                                      {% endfor %}
-                                                      </span>
+                                                      {% if i <= review['product_rating'] %} ★ {% else %} ☆ {% endif %}
+                                                            {% endfor %} </span>
+                                                            <strong>{{ review['product_rating'] }}점</strong>
+                                          </div>
+                                          <form class="review-report-form" method="post"
+                                                action="/product/review/report">
+                                                <input type="hidden" name="product_id"
+                                                      value="{{ products['product_id'] }}">
 
-                                                      <strong>{{ review['product_rating'] }}점</strong>
-                                                </div>
-                                                <button class="review-report-button" type="button" data-review-id="{{ review['product_review_id'] }}">
+                                                <!-- 이 버튼은 모달만 열기 -->
+                                                {% if request.session.get('isLogin') == True %}
+                                                <button class="review-report-button" type="button">
                                                       <span>⚑</span>
                                                       신고
                                                 </button>
-                                                </header>
+                                                {% endif %}
 
-                                                <div class="review-content">{{ review['product_review'] }}</div>
-                                          </article>
-                                          {% endfor %}
-                                    {% else %}
-                                          <div class="review-empty">
-                                                <span>💬</span>
-                                                <strong>아직 등록된 후기가 없습니다.</strong>
-                                                <p>이 상품을 사용한 첫 번째 후기를 작성해 주세요.</p>
-                                          </div>
+                                                <!-- 이 리뷰에 해당하는 신고 사유 입력창 -->
+                                                <div class="modal review-report-modal">
+                                                      <div class="modal-dialog">
+                                                            <header class="modal-header">
+                                                                  <h2 class="modal-title">후기 신고</h2>
+
+                                                                  <button class="modal-close review-report-close"
+                                                                        type="button" aria-label="신고창 닫기">
+                                                                        ×
+                                                                  </button>
+                                                            </header>
+
+                                                            <div class="modal-body">
+                                                                  <p class="review-report-guide">이 후기를 신고하는 이유를 작성해 주세요.</p>
+
+                                                                  <textarea class="form-control review-report-textarea"
+                                                                        name="report_detail" rows="5" maxlength="1000"
+                                                                        placeholder="신고 사유를 입력해 주세요." required></textarea>
+
+                                                                  <p class="review-report-notice">신고자의 개인정보는 별도로 저장하지
+                                                                        않습니다.</p>
+                                                            </div>
+
+                                                            <footer class="modal-footer">
+                                                                  <button class="button secondary review-report-cancel"
+                                                                        type="button">
+                                                                        취소
+                                                                  </button>
+
+                                                                  <!-- 이 버튼을 눌렀을 때 실제 form 전송 -->
+                                                                  <button class="review-report-submit" type="submit"
+                                                                        name="product_review_id"
+                                                                        value="{{ review['product_review_id'] }}">
+                                                                        신고 접수
+                                                                  </button>
+                                                            </footer>
+                                                      </div>
+                                                </div>
+                                          </form>
+                                    </header>
+                                    <div class="review-content">{{ review['product_review'] }}</div>
+                              </article>
+                              {% endfor %}
+                              {% else %}
+                              <div class="review-empty">
+                                    <span>💬</span>
+                                    <strong>아직 등록된 후기가 없습니다.</strong>
+                                    <p>이 상품을 사용한 첫 번째 후기를 작성해 주세요.</p>
+                              </div>
                               {% endif %}
                         </article>
                         <article class="detail-panel" id="qna">
@@ -343,24 +429,82 @@
                               <p>결제 완료 후 상품 준비 및 배송이 시작됩니다.</p>
                         </article>
                   </section>
+                  <div class="modal {% if reservation == 'success' or reservation == 'failed' %}is-open{% endif %}" id="reservationConfirmModal">
+                        <div class="modal-dialog">
+                              {% if reservation == 'success' %}
+                              <header class="modal-header">
+                                    <h2 class="modal-title">예약 완료</h2>
+
+                                    <a class="modal-close" href="/product/detail/{{ products['product_id'] }}"
+                                          aria-label="예약 완료창 닫기">
+                                          ×
+                                    </a>
+                              </header>
+
+                              <div class="modal-body">
+                                    <p>예약이 완료되었습니다.</p>
+                                    <p>예약 현황은 마이페이지에서 확인할 수 있습니다.</p>
+                              </div>
+
+                              <footer class="modal-footer">
+                                    <a class="button" href="/product/detail/{{ products['product_id'] }}">
+                                          확인
+                                    </a>
+                              </footer>
+                              {% elif reservation == 'failed' %}
+                              <header class="modal-header">
+                                    <h2 class="modal-title">예약 실패</h2>
+
+                                    <a class="modal-close" href="/product/detail/{{ products['product_id'] }}"
+                                          aria-label="예약 실패창 닫기">
+                                          ×
+                                    </a>
+                              </header>
+
+                              <div class="modal-body">
+                                    <p>1회 예약 시 1개 미만 또는 10개 초과로 예약하실 수 없습니다.</p>
+                                    <p>수량을 선택한 후 다시 시도해 주세요.</p>
+                              </div>
+
+                              <footer class="modal-footer">
+                                    <a class="button" href="/product/detail/{{ products['product_id'] }}">
+                                          확인
+                                    </a>
+                              </footer>
+                              {% else %}
+                              <header class="modal-header">
+                                    <h2 class="modal-title">상품을 예약하시겠습니까?</h2>
+
+                                    <button class="modal-close" type="button" aria-label="예약창 닫기">
+                                          ×
+                                    </button>
+                              </header>
+
+                              <div class="modal-body">
+                                    <p>
+                                          현재 예상 대기 순위:
+                                          <strong id="reservationQueueNumber">{{ reservation_turn['reservation_turn'] }}</strong>
+                                    </p>
+                              </div>
+
+                              <footer class="modal-footer">
+                                    <button class="button secondary" type="button">
+                                          취소
+                                    </button>
+
+                                    <form method="post" action="/product/reservation">
+                                          <input type="hidden" name="product_id" value="{{ products['product_id'] }}">
+                                          <input type="hidden" name="reservation_quantity" id="reservationQuantity"
+                                                value="0">
+
+                                          <button class="button" type="submit">예약하기</button>
+                                    </form>
+                              </footer>
+                              {% endif %}
+                        </div>
+                  </div>
                   {% endfor %}
             </div>
       </div>
 </main>
-<div class="modal" id="reservationConfirmModal">
-      <div class="modal-dialog">
-            <header class="modal-header">
-                  <h2 class="modal-title">상품을 예약하시겠습니까?</h2>
-                  <button class="modal-close">×</button>
-            </header>
-            <div class="modal-body">
-                  <p>현재 예약 대기 순위: <strong id="reservationQueueNumber">0번</strong>
-                  </p>
-            </div>
-            <footer class="modal-footer">
-                  <button class="button secondary">취소</button>
-                  <button class="button">예약하기</button>
-            </footer>
-      </div>
-</div>
 {% endblock %}

@@ -33,11 +33,10 @@
                 <span class="welcome" id="welcomeMessage">
                     {{ request.session.get('user_name') }} 님 환영합니다
                 </span>
-                <a href="/cart">장바구니</a>
+                <a href="/cart?user_id={{ request.session.get('user_id') }}">장바구니</a>
                 <a href="/mypage">마이페이지</a>
                 <a href="/logout">로그아웃</a>
                 {% else %}
-                <a href="/cart">장바구니</a>
                 <a class="signup-link" href="/signup">회원가입</a>
                 <a href="/login">로그인</a>
                 {% endif %}
@@ -90,7 +89,13 @@
                 <a href="/mypage/orders">주문·배송 조회</a>
                 <a href="/mypage/reservations">예약 관리</a>
                 <a href="/mypage/inquiries">문의 내역</a>
+            </div><br>
+            {% if request.session.get('user_id') == 'admin' %}
+            <strong>관리자페이지</strong>
+            <div class="drawer-links">
+                <a href="/admin">관리자페이지</a>
             </div>
+            {% endif %}
         </section>
     </nav>
     </aside>

@@ -47,6 +47,22 @@
     opacity: .45;
 }
 
+.button.sold-out-button {
+    color: #7b8491;
+    background-color: #dfe3e8;
+    border-color: #dfe3e8;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.button.sold-out-button:hover {
+    color: #7b8491;
+    background-color: #dfe3e8;
+    border-color: #dfe3e8;
+    transform: none;
+    box-shadow: none;
+}
+
 .card {
     border: 1px solid #e2ebe9;
     border-radius: var(--radius);
