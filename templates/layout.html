@@ -29,10 +29,18 @@
                 <strong class="brand-name">CHIMPILER HEALTHCARE</strong>
             </a>
             <nav class="user-nav" aria-label="사용자 메뉴">
-                <span class="welcome" id="welcomeMessage">OOO님 환영합니다</span>
+                {% if request.session.get('isLogin') == True %}
+                <span class="welcome" id="welcomeMessage">
+                    {{ request.session.get('user_name') }} 님 환영합니다
+                </span>
+                <a href="/cart">장바구니</a>
+                <a href="/mypage">마이페이지</a>
+                <a href="/logout">로그아웃</a>
+                {% else %}
                 <a href="/cart">장바구니</a>
                 <a class="signup-link" href="/signup">회원가입</a>
                 <a href="/login">로그인</a>
+                {% endif %}
             </nav>
         </div>
     </header>
@@ -51,13 +59,13 @@
         <section class="drawer-group">
             <strong>상품</strong>
             <div class="drawer-links">
-                <a href="/products">전체상품</a>
-                <a href="/products">건강기능식품</a>
-                <a href="/products">운동용품</a>
-                <a href="/products">건강기기</a>
-                <a href="/products">수면·휴식</a>
-                <a href="/products">건강식품</a>
-                <a href="/products">생활건강</a>
+                <a href="/products?align={{ align }}">전체상품</a>
+                <a href="/products?category_id=1&align={{ align }}">건강기능식품</a>
+                <a href="/products?category_id=2&align={{ align }}">운동용품</a>
+                <a href="/products?category_id=3&align={{ align }}">건강기기</a>
+                <a href="/products?category_id=4&align={{ align }}">수면·휴식</a>
+                <a href="/products?category_id=5&align={{ align }}">건강식품</a>
+                <a href="/products?category_id=6&align={{ align }}">생활건강</a>
             </div>
         </section>
         <section class="drawer-group">

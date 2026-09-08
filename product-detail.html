@@ -122,6 +122,21 @@
                         <span class="badge">{{ products['category_name'] }}</span>
                         <h1 class="detail-title" id="productName">{{ products['product_name'] }}</h1>
                         <p class="muted">{{ products['product_detail'] }}</p>
+                        <div class="product-rating-summary">
+                        {% if review_count > 0 %}
+                        <span class="product-rating-star">★</span>
+
+                        <strong>{{ rating_avg }}</strong>
+
+                        <a href="#reviews">
+                              후기 {{ review_count }}개
+                        </a>
+                        {% else %}
+                        <span class="product-rating-empty">
+                              아직 등록된 후기가 없습니다.
+                        </span>
+                        {% endif %}
+                        </div>
                         <a class="ai-purchase-link" href="/ai-health">
                               <span>💡</span>
                               <div>
@@ -130,30 +145,50 @@
                               </div>
                               <b>→</b>
                         </a>
-                        <div class="product-price-box">
-                              <span class="product-price-label">판매가</span>
+                        <div class="purchase-info-box">
+                              <div class="product-price-box">
+                                    <span class="product-price-label">판매가</span>
 
-                              <strong class="product-price">
-                                    {{ products['product_price'] | price }}원
-                              </strong>
-                        </div>
-                        <!-- <div class="detail-price" id="productPrice">{{ products['product_price'] | price}}원</div> -->
-                        <div class="summary-row sales-stock">
-                              <span>판매 재고</span>
-                              <strong id="saleStock">{{ products['product_sale_stock'] }}개</strong>
-                        </div>
-                        <div class="summary-row reservation-stock">
-                              <span>예약 재고</span>
-                              <strong id="reservationStock">{{ products['product_reservation_stock'] }}개</strong>
+                                    <strong class="product-price">
+                                          {{ products['product_price'] | price }}원
+                                    </strong>
+                              </div>
+
+                              <div class="product-stock-list">
+                                    <div class="summary-row sales-stock">
+                                          <span>판매 재고</span>
+                                          <strong id="saleStock">
+                                          {{ products['product_sale_stock'] }}개
+                                          </strong>
+                                    </div>
+
+                                    <div class="summary-row reservation-stock">
+                                          <span>예약 재고</span>
+                                          <strong id="reservationStock">
+                                          {{ products['product_reservation_stock'] }}개
+                                          </strong>
+                                    </div>
+                              </div>
                         </div>
                         <div class="detail-options">
                               <!-- <label class="form-field"> -->
+                              <div class="product-quantity-row">
                                     <span class="form-label">수량</span>
+
                                     <span class="quantity">
                                           <button type="button" id="quantityMinus">−</button>
-                                          <input id="productQuantity" value="0" inputmode="numeric" min="1" max="{{ products['product_sale_stock'] }}">
+
+                                          <input
+                                                id="productQuantity"
+                                                value="0"
+                                                inputmode="numeric"
+                                                min="1"
+                                                max="{{ products['product_sale_stock'] }}"
+                                          >
+
                                           <button type="button" id="quantityPlus">＋</button>
                                     </span>
+                              </div>
                               <!-- </label> -->
                               <div class="summary-row total">
                                     <span>총 상품금액</span>
@@ -180,15 +215,128 @@
                         </article>
                         <article class="detail-panel" id="reviews">
                               <h2>상품후기</h2>
-                              <div class="panel">
-                                    <strong>★★★★★</strong>
-                                    <p>매일 간편하게 챙겨 먹기 좋아요.</p>
-                                    <button class="button secondary small" id="reviewReportButton">후기 신고</button>
+
+                              {% if request.session.get('isLogin') == True %}
+                              <form class="review-form" action="/product/review" method="post">
+                                    <input type="hidden" name="product_id" value="{{ products['product_id'] }}">
+                                    <input type="hidden" name="user_id" value="{{ request.session.get('user_id') }}">
+
+                                    <div class="review-score">
+                                          <strong>별점</strong>
+
+                                          <label>
+                                          <input type="radio" name="review_score" value="5" checked>
+                                          ⭐ 5점
+                                          </label>
+
+                                          <label>
+                                          <input type="radio" name="review_score" value="4">
+                                          ⭐ 4점
+                                          </label>
+
+                                          <label>
+                                          <input type="radio" name="review_score" value="3">
+                                          ⭐ 3점
+                                          </label>
+
+                                          <label>
+                                          <input type="radio" name="review_score" value="2">
+                                          ⭐ 2점
+                                          </label>
+
+                                          <label>
+                                          <input type="radio" name="review_score" value="1">
+                                          ⭐ 1점
+                                          </label>
+                                    </div>
+
+                                    <label class="form-field">
+                                          <span class="form-label">후기 내용</span>
+                                          <textarea class="form-control" name="review_content" rows="5" placeholder="상품을 사용한 후기를 작성해 주세요." required></textarea>
+                                    </label>
+
+                                    <div class="review-submit">
+                                          <br>
+                                          <button class="button" type="submit">
+                                          후기 등록
+                                          </button>
+                                    </div>
+                              </form>
+                              {% else %}
+                              <div class="review-login-guide">
+                                    <p>상품후기는 로그인 후 작성할 수 있습니다.</p>
+                                    <a class="button small" href="/login">로그인하기</a>
                               </div>
+                              {% endif %}
+
+                              <div class="review-list">
+                                    <!-- {{ review_list }} -->
+                                    <div class="review-list-head">
+                                          <h3>등록된 후기</h3>
+                                          <span>
+                                                총 {{ review_list | length }}개
+                                          </span>
+                                    </div>
+                              </div>
+
+                              {% if review_list %}
+                                    {% for review in review_list %}
+                                            <article class="review-item">
+                                                <header class="review-item-head">
+                                                <div class="review-writer">
+                                                      <span class="review-profile">
+                                                      {{ review['user_name'][0] }}{% for i in range((review['user_name']) | length - 1) %}*{% endfor %}
+                                                      </span>
+
+                                                      <div>
+                                                            <strong>
+                                                            {{ review['user_id'][:2] }}{% for i in range((review['user_id']) | length - 2) %}*{% endfor %}
+                                                            </strong>
+                                                      </div>
+                                                </div>
+
+                                                <div class="review-rating">
+                                                      <span class="review-stars">
+                                                      {% for i in range(1,6) %}
+                                                            {% if i <= review['product_rating'] %}
+                                                                  ★
+                                                            {% else %}
+                                                                  ☆
+                                                            {% endif %}
+                                                      {% endfor %}
+                                                      </span>
+
+                                                      <strong>{{ review['product_rating'] }}점</strong>
+                                                </div>
+                                                <button class="review-report-button" type="button" data-review-id="{{ review['product_review_id'] }}">
+                                                      <span>⚑</span>
+                                                      신고
+                                                </button>
+                                                </header>
+
+                                                <div class="review-content">{{ review['product_review'] }}</div>
+                                          </article>
+                                          {% endfor %}
+                                    {% else %}
+                                          <div class="review-empty">
+                                                <span>💬</span>
+                                                <strong>아직 등록된 후기가 없습니다.</strong>
+                                                <p>이 상품을 사용한 첫 번째 후기를 작성해 주세요.</p>
+                                          </div>
+                              {% endif %}
                         </article>
                         <article class="detail-panel" id="qna">
                               <h2>상품 Q&amp;A</h2>
-                              <button class="button secondary">상품 문의 작성</button>
+                              {% if request.session.get('isLogin') == True %}
+                              <a href="/inquiry-write">
+                                    <button class="button secondary">상품 문의 작성</button>
+                              </a>
+                              {% else %}
+                              <div class="review-login-guide">
+                                    <p>상품문의는 로그인 후 작성할 수 있습니다.</p>
+                                    <a class="button small" href="/login">로그인하기</a>
+                              </div>
+                              {% endif %}
                         </article>
                         <article class="detail-panel" id="deliveryGuide">
                               <h2>배송안내</h2>

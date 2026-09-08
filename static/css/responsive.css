@@ -418,6 +418,51 @@
     .chat-messages {
         height: 230px;
     }
+
+    .review-list {
+        margin-top: 28px;
+    }
+
+    .review-item {
+        padding: 17px;
+    }
+
+    .review-item-head {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 13px;
+    }
+
+    .review-rating {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .review-stars {
+        font-size: 17px;
+    }
+
+    .review-item-head {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 12px;
+    }
+
+    .review-writer {
+        grid-column: 1;
+    }
+
+    .review-report-button {
+        grid-column: 2;
+        grid-row: 1;
+        margin-left: 0;
+    }
+
+    .review-rating {
+        grid-column: 1 / 3;
+        margin-left: 0;
+        justify-content: space-between;
+    }
 }
 
 @media (max-width: 980px) {
