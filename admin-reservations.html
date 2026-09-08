@@ -11,7 +11,7 @@
 <main class="container admin-layout">
     <div class="admin-toolbar">
         <h1 class="page-title">예약관리</h1>
-        <span class="badge warning">예약 대기 8건</span>
+        <span class="badge warning">예약 대기 {{reservation_wait}}건</span>
     </div>
     <div class="table-wrap">
         <table class="data-table" id="adminReservationTable">
@@ -26,16 +26,20 @@
                 </tr>
             </thead>
             <tbody>
+                {% if reservation_list %}
+                    {% for reservation in reservation_list %}
                 <tr>
-                    <td>14</td>
-                    <td>human</td>
-                    <td>화이트 노이즈 머신</td>
-                    <td>1</td>
+                    <td>{{reservation.reservation_id}}</td>
+                    <td>{{reservation.user_name}}</td>
+                    <td>{{reservation.product_name}}</td>
+                    <td>{{reservation.reservation_quantity}}</td>
                     <td>1</td>
                     <td>
-                        <span class="badge">예약대기</span>
+                        <span class="badge">{{reservation.reservation_status_name}}</span>
                     </td>
                 </tr>
+                {% endfor %}
+            {% endif %}
             </tbody>
         </table>
     </div>
