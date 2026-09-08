@@ -35,7 +35,11 @@
                     <td>{{reservation.reservation_quantity}}</td>
                     <td>1</td>
                     <td>
-                        <span class="badge">{{reservation.reservation_status_name}}</span>
+                        {% if reservation.reservation_status_name == '예약완료' %}
+                        <span class="badge success">{{reservation.reservation_status_name}}</span>
+                        {% else %}
+                        <span class="badge warning">{{reservation.reservation_status_name}}</span>
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
