@@ -5,6 +5,18 @@
 {% endblock %}
 
 {% block script %}
+<script>
+    document.querySelectorAll('#reservationreminderButton').forEach(btn => {
+        btn.addEventListener('click' , () => {
+            alert('예약 알림이 발송되었습니다.')
+        })
+    })
+    document.querySelectorAll('#paymentreminderButton').forEach(btn => {
+        btn.addEventListener('click' , () => {
+            alert('결제 알림이 발송되었습니다.')
+        })
+    })
+</script>
 {% endblock %}
 
 {% block main %}
@@ -23,6 +35,7 @@
                     <th>수량</th>
                     <th>순번</th>
                     <th>상태</th>
+                    <th>관리</th>
                 </tr>
             </thead>
             <tbody>
@@ -40,6 +53,13 @@
                         {% else %}
                         <span class="badge warning">{{reservation.reservation_status_name}}</span>
                         {% endif %}
+                    </td>
+                    <td>
+                         <button class="button secondary small" id="reservationreminderButton" type="button">예약 알림 발송</button>
+                         <button class="button secondary small" id="paymentreminderButton" type="button">결제 알림 발송</button>
+                         <a href="/api/delete/reservations/{{reservation.reservation_id}}">
+                            <button class="button danger small" id="removereservationButton" type="button">예약 삭제</button>
+                         </a>
                     </td>
                 </tr>
                 {% endfor %}
