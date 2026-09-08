@@ -87,8 +87,8 @@
         <h1 class="page-title">상품/재고관리</h1>
         <div class="admin-actions">
             <button class="button" id="productCreateButton">상품 추가</button>
-            <form class="search-box">
-                <input id="adminProductSearchInput" placeholder="상품 검색">
+            <form method="get"  action="/api/product/search" class="search-box">
+                <input id="adminProductSearchInput" name="keyword" placeholder="상품 검색">
                 <button>⌕</button>
             </form>
         </div>
