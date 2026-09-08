@@ -5,6 +5,24 @@
 {% endblock %}
 
 {% block script %}
+<script>
+    document.querySelectorAll('#deliveryCompleteButton').forEach(btn => {
+        btn.addEventListener('click' , () => {
+            alert('배송완료 처리가 되었습니다')
+        })
+    })
+
+    document.querySelectorAll('#shippingNotificationButton').forEach(btn => {
+        btn.addEventListener('click' , () =>{
+            alert('배송 알림이 발송되었습니다.')
+        })
+    })
+    document.querySelectorAll('#completionNotificationButton').forEach(btn => {
+        btn.addEventListener('click' , () => {
+            alert('배송 완료 알림이 발송되었습니다.')
+        })
+    })
+</script>
 {% endblock %}
 
 {% block main %}
