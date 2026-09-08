@@ -598,6 +598,19 @@ def reservation_list (request: Request, session: Session = Depends(get_session))
         'reservation_wait' : results2[0]['count(*)']
     })
 
+@app.get('/api/delete/reservations/{reservation_id}')
+def delete_reservation(reservation_id : int, session:Session = Depends(get_session)):
+    print('예약 삭제 실행' , reservation_id)
+    sql = text('''
+        delete from reservation
+        where  reservation_id = :reservation_id
+    ''')
+    session.execute(sql, {'reservation_id' : reservation_id})
+    session.commit()
+
+    return RedirectResponse(url='/admin/reservations', status_code=303)
+
+
 #==============================================================================
 # 웹 서버 직접 실행 구문
 #==============================================================================
