@@ -11,8 +11,8 @@
 <main class="container admin-layout">
     <div class="admin-toolbar">
         <h1 class="page-title">회원관리</h1>
-        <form class="search-box">
-            <input id="adminUserSearchInput" placeholder="아이디 또는 이름">
+        <form method="get" action="/api/user/search" class="search-box">
+            <input id="adminUserSearchInput" name="keyword" placeholder="아이디 또는 이름">
             <button>⌕</button>
         </form>
     </div>
@@ -37,18 +37,18 @@
                     <td>{{users.user_phone}}</td>
                     <td>{{users.user_warning_count}}</td>
                     <td>
-                    {% if users.user_status == '정지' %}
+                        {% if users.user_status == '정지' %}
                         <span class="badge danger">정지</span>
-                    {% else %}
+                        {% else %}
                         <span class="badge success">정상</span>
-                    {% endif %}
+                        {% endif %}
                     </td>
                     <td>
                         <a href="/api/warning/{{users.user_id}}">
-                            <button class="button secondary small">경고</button> 
+                            <button class="button secondary small">경고</button>
                         </a>
                         <a href="/api/warning/delete/{{users.user_id}}">
-                            <button class="button secondary small">경고 제거</button> 
+                            <button class="button secondary small">경고 제거</button>
                         </a>
                         <a href="/api/suspension/{{users.user_id}}">
                             <button class="button danger small">계정 정지</button>
@@ -63,5 +63,55 @@
             </tbody>
         </table>
     </div>
+    <section class="admin-report-section">
+        <div class="admin-toolbar">
+            <h2 class="section-title">후기 신고 내역</h2>
+            <span class="badge danger">
+                총 {{ review_report_list | length }}건
+            </span>
+        </div>
+
+        <div class="table-wrap">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>신고 번호</th>
+                        <th>후기 작성자 ID</th>
+                        <th>후기 작성자</th>
+                        <th>후기 내용</th>
+                        <th>신고 사유</th>
+                        <th>관리</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% if review_report_list %}
+                    {% for report in review_report_list %}
+                    <tr>
+                        <td>{{ report['report_id'] }}</td>
+                        <td>{{ report['user_id'] }}</td>
+                        <td>{{ report['user_name'] }}</td>
+                        <td>{{ report['product_review'] }}</td>
+                        <td>{{ report['report_detail'] }}</td>
+                        <td>
+                            <form class="inline-form" method="post"
+                                action="/api/report/delete/{{report.product_review_id}}">
+                                <button class="button danger small" type="submit">삭제</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="empty-table">
+                            접수된 후기 신고가 없습니다.
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
 </main>
 {% endblock %}
