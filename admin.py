@@ -530,22 +530,22 @@ def answer_inquiry(inquiry_id : int, inquiry_answer : str = Form(), session:Sess
 def order_list (request: Request, session: Session = Depends(get_session)):
     print('주문/배송 조회')
     sql = text ('''
-        select 
-            o.order_sheet_id,
-            o.user_id,
-            o.order_name,
-            os.order_total_price,
-            st.order_status_name,
-            ds.delivery_status_name
-        from orders o 
-        left join order_sheet os 
-            on o.order_sheet_id = os.order_sheet_id
-        left join order_status st 
-            on o.order_status_id = st.order_status_id
-        left join delivery d 
-            on os.order_sheet_id = d.order_sheet_id
-        left join delivery_status ds 
-            on d.delivery_status_id = ds.delivery_status_id
+      select 
+	    o.order_sheet_id,
+	    o.user_id,
+	    o.order_name,
+	    os.order_total_price,
+	    ot.order_status_name,
+	    ds.delivery_status_name
+    from orders o
+    left join order_sheet os 
+	    on o.order_sheet_id = os.order_sheet_id
+    left join order_status ot
+	    on o.order_status_id = ot.order_status_id
+    left join delivery d 
+	    on os.order_sheet_id = d.order_sheet_id
+    left join delivery_status ds
+	    on d.delivery_status_id = ds.delivery_status_id;
     ''')
     results = session.execute(sql).mappings().fetchall()
 
