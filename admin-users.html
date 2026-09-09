@@ -42,10 +42,10 @@
                     <td>{{users.user_phone}}</td>
                     <td>{{users.user_warning_count}}</td>
                     <td>
-                        {% if users.user_warning_count >= 5 %}
-                        <span class="badge warning">경고</span>
-                        {% elif users.user_status == '정지' %}
+                        {% if users.user_warning_count >= 10 and users.user_status == '정지' %}
                         <span class="badge danger">정지</span>
+                        {% elif users.user_warning_count >= 5 %}
+                        <span class="badge warning">경고</span>
                         {% else %}
                         <span class="badge success">정상</span>
                         {% endif %}
