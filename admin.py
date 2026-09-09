@@ -586,13 +586,13 @@ def order_list(request: Request, session: Session = Depends(get_session)):
 	    o.user_id,
 	    o.order_name,
 	    os.order_total_price,
-	    ot.order_status_name,
+	    st.order_status_name,
 	    ds.delivery_status_name
     from orders o
     left join order_sheet os 
 	    on o.order_sheet_id = os.order_sheet_id
-    left join order_status ot
-	    on o.order_status_id = ot.order_status_id
+    left join order_status st
+	    on o.order_status_id = st.order_status_id
     left join delivery d 
 	    on os.order_sheet_id = d.order_sheet_id
     left join delivery_status ds
