@@ -7,27 +7,27 @@
 {% block script %}
 <script>
     document.querySelectorAll('#deliveryCompleteButton').forEach(btn => {
-        btn.addEventListener('click' , () => {
+        btn.addEventListener('click', () => {
             alert('배송완료 처리가 되었습니다')
         })
     })
 
     document.querySelectorAll('#shippingNotificationButton').forEach(btn => {
-        btn.addEventListener('click' , () =>{
+        btn.addEventListener('click', () => {
             alert('배송 알림이 발송되었습니다.')
         })
     })
     document.querySelectorAll('#completionNotificationButton').forEach(btn => {
-        btn.addEventListener('click' , () => {
+        btn.addEventListener('click', () => {
             alert('배송 완료 알림이 발송되었습니다.')
         })
     })
 
-    document.querySelectorAll('#refundButton').forEach(btn =>{
-        btn.addEventListener('click' , () =>{
+    document.querySelectorAll('#refundButton').forEach(btn => {
+        btn.addEventListener('click', () => {
             alert('환불 처리가 완료되었습니다.')
         })
-    } )
+    })
 </script>
 {% endblock %}
 
@@ -55,30 +55,30 @@
                     <th>처리</th>
                 </tr>
             </thead>
-                <tr>
+            <tr>
                 {% if order_list %}
-                    {% for orders in order_list %}
-                    <td>{{orders.order_sheet_id}}</td>
-                    <td>{{orders.user_id}}</td>
-                    <td>{{orders.order_name}}</td>
-                    <td>{{orders.order_total_price}}</td>
-                    <td>
-                        <span class="badge warning">{{orders.order_status_name}}</span>
-                    </td>
-                    <td>
-                        <span class="badge success">{{orders.delivery_status_name}}</span>
-                    </td>
-                    <td>
-                        <button class="button success small" id="deliveryCompleteButton">배송완료 처리</button>
-                        <button class="button secondary small" id="shippingNotificationButton" type="button">배송 알림
-                            발송</button>
-                            <button class="button secondary small" id="completionNotificationButton" type="button">완료 알림
-                                발송</button>
-                                <button class="button secondary small" id="refundButton">환불 처리</button>
-                    </td>
-                </tr>
-                {%endfor%}
-                {%endif%}
+                {% for orders in order_list %}
+                <td>{{orders.order_sheet_id}}</td>
+                <td>{{orders.user_id}}</td>
+                <td>{{orders.order_name}}</td>
+                <td>{{orders.order_total_price}}</td>
+                <td>
+                    <span class="badge warning">{{orders.order_status_name}}</span>
+                </td>
+                <td>
+                    <span class="badge success">{{orders.delivery_status_name}}</span>
+                </td>
+                <td>
+                    <button class="button success small" id="deliveryCompleteButton">배송완료 처리</button>
+                    <button class="button secondary small" id="shippingNotificationButton" type="button">배송 알림
+                        발송</button>
+                    <button class="button secondary small" id="completionNotificationButton" type="button">완료 알림
+                        발송</button>
+                    <button class="button secondary small" id="refundButton">환불 처리</button>
+                </td>
+            </tr>
+            {%endfor%}
+            {%endif%}
             </tbody>
         </table>
     </div>
