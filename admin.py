@@ -615,7 +615,7 @@ def order_list(request: Request, session: Session = Depends(get_session)):
 def reservation_list(request: Request, session: Session = Depends(get_session)):
     print('예약 목록 조회')
 
-    # 1) 손님이 신청한 예약 내역(예약자 이름, 상품 이름, 예약 수량, 처리 상태)을 가져옴
+    # 1) 손님이 신청한 예약 내역(예약자 이름, 상품 이름, 예약 수량, 처리 상태, 예약일, 예약만료일)을 가져옴
     sql = text('''
         select 
             r.reservation_id,
