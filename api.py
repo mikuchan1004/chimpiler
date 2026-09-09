@@ -46,35 +46,26 @@ def signup_loading(request: Request):
 
     return templates.TemplateResponse(request, 'signup.html')
 
+@app.get('/')
+def main_loading(request: Request, session: Session = Depends(get_session)):
 
-@app.get('/terms')
-def terms_loading(request: Request):
-    return templates.TemplateResponse(request, 'terms.html')
+    user_name = None
 
+    user_id = request.cookies.get('user_id')
 
-@app.get('/login')
-def login_loading(request: Request):
-    return templates.TemplateResponse(request, 'login.html')
-@app.get('/ai-health')
-def login_loading(request: Request):
-    return templates.TemplateResponse(request, 'ai-health.html')
-@app.get('/notice')
-def login_loading(request: Request):
-    return templates.TemplateResponse(request, 'notice.html')
-@app.get('/products')
-def login_loading(request: Request):
-    return templates.TemplateResponse(request, 'products.html')
-@app.get('/mypage-dashboard')
-def login_loading(request: Request):
-    return templates.TemplateResponse(request, 'products.html')
-@app.get('/cart')
-def login_loading(request: Request):
-    return templates.TemplateResponse(request, 'cart.html')
+    if user_id:
+        user = session.get(Users, user_id)
 
+        if user:
+            user_name = user.user_name
 
-@app.get('/main')
-def main_loading(request: Request):
-    return templates.TemplateResponse(request, 'main.html')
+    return templates.TemplateResponse(
+        request,
+        'main.html',
+        context={
+            'user_name': user_name
+        }
+    )
 
 
 @app.post("/signup")
@@ -146,20 +137,31 @@ def list(
         print('-------------------')
         # 프린트 3개는 확인용 없어도 그만
         if login_id == user_id and login_ps == user_password:
-            response=templates.TemplateResponse( 
-                        request=alist,
-                        name='main.html',
-                        context={
-                            'user_name':users['user_name']
-                        }
+            # response=templates.TemplateResponse( 
+            #             request=alist,
+            #             # name='main.html',
+            #             name='templates/layout.html',
+            #             context={
+            #                 'user_name':users['user_name']
+            #             }
 
-                        )
+            #             )
+            response = RedirectResponse("/", status_code=303)
+
             response.set_cookie(
-                        key='log_chk',
-                        value='chk',
-                        max_age=60 * 60,
-                        path='/'
-                    )
+                key='log_chk',
+                value='chk',
+                max_age=60 * 60,
+                path='/'
+            )
+
+            response.set_cookie(
+                key='user_id',
+                value=user_id,
+                max_age=60 * 60,
+                path='/'
+            )
+            
             # 로그인 성공하면 쿠키로 로그인 성공했다고 알림
             return response
         
@@ -170,6 +172,91 @@ def list(
 </script>
 """)
 
+# 레이아웃 페이지 이동용_관리자페이지
+@app.get('/admin')
+def admin(request: Request) :
+    return templates.TemplateResponse(request, 'admin-dashboard.html')
+
+@app.get('/admin/inquiries')
+def adminInquiries(request: Request) :
+    return templates.TemplateResponse(request, 'admin-inquiries.html')
+
+@app.get('/admin/orders')
+def adminOrders(request: Request) :
+    return templates.TemplateResponse(request, 'admin-orders.html')
+
+@app.get('/admin/products')
+def adminProducts(request: Request) :
+    return templates.TemplateResponse(request, 'admin-products.html')
+
+@app.get('/admin/reservations')
+def adminReservations(request: Request) :
+    return templates.TemplateResponse(request, 'admin-reservations.html')
+
+@app.get('/admin/users')
+def adminUsers(request: Request) :
+    return templates.TemplateResponse(request, 'admin-users.html')
+
+# 레이아웃 페이지 이동용_AI건강체크
+@app.get('/ai-health')
+def adminAihealth(request: Request) :
+    return templates.TemplateResponse(request, 'ai-health.html')
+
+# 레이아웃 페이지 이동용_주문서작성
+@app.get('/checkout')
+def checkout(request: Request) :
+    return templates.TemplateResponse(request, 'checkout.html')
+
+# 레이아웃 페이지 이동용_커뮤니티
+@app.get('/notice')
+def commNotice(request: Request) :
+    return templates.TemplateResponse(request, 'notice.html')
+
+@app.get('/faq')
+def commFaq(request: Request) :
+    return templates.TemplateResponse(request, 'faq.html')
+
+@app.get('/inquiry-write')
+def commInquirywrite(request: Request) :
+    return templates.TemplateResponse(request, 'inquiry-write.html')
+
+# 레이아웃 페이지 이동용_로그인/회원가입
+@app.get('/login')
+def login(request: Request) :
+    return templates.TemplateResponse(request, 'login.html')
+
+@app.get('/signup')
+def signup(request: Request) :
+    return templates.TemplateResponse(request, 'signup.html')
+
+@app.get('/terms')
+def terms(request: Request) :
+    return templates.TemplateResponse(request, 'terms.html')
+
+# 레이아웃 페이지 이동용_마이페이지
+@app.get('/mypage')
+def mypage(request: Request) :
+    return templates.TemplateResponse(request, 'mypage-dashboard.html')
+
+@app.get('/mypage/inquiries')
+def mypageInquiries(request: Request) :
+    return templates.TemplateResponse(request, 'mypage-inquiries.html')
+
+@app.get('/mypage/orders')
+def mypageOrders(request: Request) :
+    return templates.TemplateResponse(request, 'mypage-orders.html')
+
+@app.get('/mypage/profile')
+def mypageProfile(request: Request) :
+    return templates.TemplateResponse(request, 'mypage-profile.html')
+
+@app.get('/mypage/reservations')
+def mypageReservations(request: Request) :
+    return templates.TemplateResponse(request, 'mypage-reservations.html')
+
+@app.get('/products')
+def adminProducts(request: Request) :
+    return templates.TemplateResponse(request, 'products.html')
 
 
 

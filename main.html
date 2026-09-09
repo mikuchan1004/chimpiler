@@ -1,53 +1,23 @@
-<!DOCTYPE html>
-<html lang="ko">
+{% extends 'templates/layout.html' %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>메인 | CHIMPILER</title>
+{% block title %}
+<title>메인 | CHIMPILER</title>
+{% endblock %}
 
-    <link rel="stylesheet" href="/static/css/common.css">
-    <link rel="stylesheet" href="/static/css/components.css">
-    <link rel="stylesheet" href="/static/css/pages.css">
-    <link rel="stylesheet" href="/static/css/responsive.css">
-</head>
+{% block main %}
 
-
-<body id="top">
-
-    <header class="site-header">
+    <!-- <header class="site-header">
         <div class="container header-inner">
-
-            <button class="menu-button" id="menuOpenButton">
-                ☰ <span>메뉴</span>
-            </button>
-
-            <nav class="quick-nav" aria-label="주요 메뉴">
-                <a href="#bestProductList">베스트</a>
-                <a href="/ai-health">AI 건강 체크</a>
-                <a href="/notice">커뮤니티</a>
-                <a href="/products">이벤트</a>
-            </nav>
-
-            <a class="brand" href="/main">
-                <img
-                    class="brand-logo"
-                    src="static/images/chimpiler-logo.png"
-                    alt="침파일러 로고"
-                >
-                <strong class="brand-name">CHIMPILER HEALTHCARE</strong>
-            </a>
-
             <nav class="user-nav">
                 <span id="user_name5" class="hid" hidden>{{ user_name }}님 환영합니다</span>
                 <a href="/cart">장바구니</a>
                 <a class="signup-link" class="hid1" href="/signup">회원가입</a>
                 <a href="/login" class="로긴">로그인</a>
-                <a href="/main" id="main_logout5" class="hid" hidden>로그아웃</a>
+                <a href="/" id="main_logout5" class="hid" hidden>로그아웃</a>
             </nav>
 
         </div>
-    </header>
+    </header> -->
 
     <main>
 
@@ -389,104 +359,13 @@
         </section>
 
     </main>
+```
+{% endblock %}
 
+{% block script %}
+<script>
 
-    <footer class="site-footer" id="siteFooter">
-
-        <div class="container">
-
-            <div class="footer-grid">
-
-                <section class="footer-brand">
-
-                    <img
-                        class="footer-logo"
-                        src="static/images/chimpiler-logo.png"
-                        alt=""
-                    >
-
-                    <div>
-                        <h2 class="footer-title">
-                            CHIMPILER HEALTHCARE
-                        </h2>
-
-                        <p class="footer-copy">
-                            건강 기록 기반 AI 상품 추천 및 예약구매 헬스케어 쇼핑몰
-                        </p>
-                    </div>
-
-                </section>
-
-
-                <section>
-                    <h3 class="footer-heading">SERVICE</h3>
-
-                    <div class="footer-list">
-                        <a href="/terms">이용약관</a>
-                        <a href="/terms">개인정보처리방침</a>
-                        <a href="/faq">이용안내</a>
-                    </div>
-                </section>
-
-
-                <section>
-                    <h3 class="footer-heading">CS CENTER</h3>
-
-                    <div class="footer-list">
-                        <a href="/notice">공지사항</a>
-                        <a href="/faq">자주 묻는 질문</a>
-                        <a href="/inquiry-write">1:1 문의</a>
-                    </div>
-                </section>
-
-
-                <section>
-                    <h3 class="footer-heading">CHIMPILER TEAM</h3>
-
-                    <div class="footer-list">
-                        <span>휴먼교육센터 팀 프로젝트</span>
-                        <a href="#">GitHub 바로가기</a>
-                    </div>
-                </section>
-
-            </div>
-
-
-            <div class="health-notice">
-                <strong>건강정보 이용 안내</strong>
-                <br>
-                AI 건강 체크 결과는 참고 정보이며 의학적 진단이나 처방을 대신하지 않습니다.
-            </div>
-
-
-            <div class="copyright">
-                <span>© 2026 Chimpiler Healthcare.</span>
-                <span>All rights reserved.</span>
-            </div>
-
-        </div>
-
-    </footer>
-
-
-    <div class="floating-tools">
-
-        <button
-            class="floating-button chat"
-            id="chatOpenButton"
-        >
-            💬 챗봇 상담
-        </button>
-
-        <a class="floating-button" href="#top">
-            ↑
-        </a>
-
-        <a class="floating-button" href="#siteFooter">
-            ↓
-        </a>
-        
-    <script>
+// 규혁 작업중
 const cookies = document.cookie.split(';');
 
 // OOO님 환영합니다
@@ -529,11 +408,5 @@ if (plz) {
 } else {
     로그인.hidden = false;
 }
-    </script>
-
-    </div>
-
-</body>
-
-</html>
-```
+</script>
+{% endblock %}
