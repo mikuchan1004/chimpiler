@@ -56,6 +56,9 @@
                         <a href="/api/unsuspend/{{users.user_id}}">
                             <button class="button secondary small">정지 해제</button>
                         </a>
+                        <a href="/api/delete/user/{{users.user_id}}">
+                            <button class="button danger small">회원 삭제</button>
+                        </a>
                     </td>
                 </tr>
                 {% endfor %}
