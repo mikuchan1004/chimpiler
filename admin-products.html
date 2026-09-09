@@ -87,7 +87,7 @@
         <h1 class="page-title">상품/재고관리</h1>
         <div class="admin-actions">
             <button class="button" id="productCreateButton">상품 추가</button>
-            <form method="get"  action="/api/product/search" class="search-box">
+            <form method="get" action="/api/product/search" class="search-box">
                 <input id="adminProductSearchInput" name="keyword" placeholder="상품 검색">
                 <button>⌕</button>
             </form>
@@ -151,6 +151,9 @@
                                 처리</button>
                         </a>
                         {% endif %}
+                             <a href="/api/delete/{{product.product_id}}">
+                            <button class="button danger small" id="productDeleteButton" type="button">상품 삭제</button>
+                        </a>
                     </td>
                 </tr>
                 {% endfor %}
