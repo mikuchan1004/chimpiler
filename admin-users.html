@@ -5,6 +5,11 @@
 {% endblock %}
 
 {% block script %}
+<script>
+    document.querySelector('.admin').addEventListener('click', () => {
+        alert('관리자 계정은 삭제하실 수 없습니다.')
+    })
+</script>
 {% endblock %}
 
 {% block main %}
@@ -56,9 +61,13 @@
                         <a href="/api/unsuspend/{{users.user_id}}">
                             <button class="button secondary small">정지 해제</button>
                         </a>
+                        {% if users.user_id == 'admin' %}
+                            <button class="button danger small admin">회원 삭제</button>
+                        {% else %}
                         <a href="/api/delete/user/{{users.user_id}}">
                             <button class="button danger small">회원 삭제</button>
                         </a>
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
