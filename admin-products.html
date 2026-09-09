@@ -151,9 +151,6 @@
                                 처리</button>
                         </a>
                         {% endif %}
-                        <a href="/api/delete/{{product.product_id}}">
-                            <button class="button danger small" id="productDeleteButton" type="button">상품 삭제</button>
-                        </a>
                     </td>
                 </tr>
                 {% endfor %}
@@ -207,10 +204,10 @@
         </div>
         <form method="post" action="/api/modify" enctype="multipart/form-data">
             <div class="popup-body">
-                <input class="form-control" type="number" name="product_id" readonly><br><br>
-                <input class="form-control" type="text" name="product_brand" placeholder='상품 브랜드 입력'><br><br>
-                <input class="form-control" type="text" name="product_name" placeholder="상품명 입력"><br><br>
-                <textarea class="form-control" name="product_detail" placeholder="상품 설명 입력"></textarea><br>
+                상품 ID : <input class="form-control" type="number" name="product_id" readonly><br><br>
+                상품 브랜드 : <input class="form-control" type="text" name="product_brand" placeholder='상품 브랜드 입력'><br><br>
+                상품명 : <input class="form-control" type="text" name="product_name" placeholder="상품명 입력"><br><br>
+                상품 설명 : <textarea class="form-control" name="product_detail" placeholder="상품 설명 입력"></textarea><br>
                 <div class="file-upload-wrapper">
                     <span class="file-upload-label">상품 사진 첨부</span>
                     <div class="file-upload-box">
@@ -247,9 +244,9 @@
         </div>
         <form method="post" action="/api/restock">
             <div class="popup-body">
-                <input class="form-control" type="number" name="product_id" readonly><br><br>
-                <input class="form-control" type="number" name="product_sale_stock" placeholder="판매 재고 입력"><br><br>
-                <input class="form-control" type="number" name="product_reservation_stock" placeholder="예약 재고 입력"><br>
+                상품 ID : <input class="form-control" type="number" name="product_id" readonly><br><br>
+                판매 재고 : <input class="form-control" type="number" name="product_sale_stock" placeholder="판매 재고 입력"><br><br>
+                예약 재고 : <input class="form-control" type="number" name="product_reservation_stock" placeholder="예약 재고 입력"><br>
             </div>
             <div class="popup-footer">
                 <input class="btn btn-secondary close" type="button" value="닫기">
