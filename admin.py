@@ -484,6 +484,19 @@ def search_user (request:Request, keyword: str = "", session:Session = Depends(g
         'user_list' : search_list
     })
 
+# [회원 삭제 기능]
+@app.get('/api/delete/user/{user_id}') 
+def delete_user(user_id : str, session:Session = Depends(get_session)):
+    print('회원 삭제를 실행합니다' , '삭제 ID : ' , user_id )
+    sql = text('''
+        delete from users
+        where user_id = :user_id
+    ''')
+    session.execute(sql, {'user_id' : user_id})
+    session.commit()
+
+    return RedirectResponse(url='/admin/users', status_code=303)
+
 #==============================================================================
 # 6. 문의관리 기능
 #==============================================================================
