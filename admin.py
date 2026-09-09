@@ -622,7 +622,9 @@ def reservation_list(request: Request, session: Session = Depends(get_session)):
             u.user_name,
             p.product_name,
             r.reservation_quantity,
-            rs.reservation_status_name
+            rs.reservation_status_name,
+            r.reservation_date,
+            r.reservation_expiration
         from reservation as r
         left join product as p 
             on r.product_id = p.product_id
