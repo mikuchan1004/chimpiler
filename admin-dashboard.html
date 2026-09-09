@@ -65,20 +65,20 @@
                     </thead>
                     <tbody>
                         {% if recent_orders %}
-                            {% for orders in recent_orders%}
+                        {% for orders in recent_orders%}
                         <tr>
                             <td>{{orders.order_sheet_id}}</td>
                             <td>{{orders.order_name}}</td>
                             <td>{{orders.order_total_price}}</td>
                             <td>
-                            {% if orders.order_status_id == 1 %}
-                                <span class="badge warning">주문 접수</span>
-                            {% else %}
-                                <span class="badge success">주문 완료</span>
-                            {% endif %}
+                                {% if orders.order_status_name == '주문접수' %}
+                                <span class="badge warning">{{orders.order_status_name}}</span>
+                                {% else %}
+                                <span class="badge success">{{orders.order_status_name}}</span>
+                                {% endif %}
                             </td>
                         </tr>
-                            {% endfor %}
+                        {% endfor %}
                         {% endif %}
                     </tbody>
                 </table>
@@ -95,4 +95,3 @@
     </div>
 </main>
 {% endblock %}
-
