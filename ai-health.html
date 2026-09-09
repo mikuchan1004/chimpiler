@@ -4,6 +4,7 @@
     <title>AI 건강 체크 | CHIMPILER</title>
 {% endblock %}
 
+<<<<<<< HEAD
 {% block main %}
     <main class="page-section">
         <div class="container">
@@ -74,3 +75,79 @@
         </div>
     </main>
 {% endblock %}
+=======
+{% block script %}
+{% endblock %}
+
+{% block main %}
+<main class="page-section">
+    <div class="container">
+        <header class="page-heading">
+            <span class="eyebrow">AI HEALTH CHECK</span>
+            <h1 class="page-title">나를 위한 건강 루틴 찾기</h1>
+            <p class="page-description">간단한 생활 정보를 입력하면 참고용 건강 피드백과 상품을 추천합니다.</p>
+        </header>
+        <div class="ai-layout">
+            <form class="card ai-form" id="healthCheckForm">
+                <div class="summary-list">
+                    <label class="form-field">
+                        <span class="form-label">체중(kg)</span>
+                        <input class="form-control" id="healthWeight" name="health_weight" type="number">
+                    </label>
+                    <label class="form-field">
+                        <span class="form-label">나이</span>
+                        <input class="form-control" id="healthAge" name="health_age" type="number">
+                    </label>
+                    <label class="form-field">
+                        <span class="form-label">성별</span>
+                        <select class="form-control" id="healthGender" name="health_gender">
+                            <option>선택</option>
+                            <option>남성</option>
+                            <option>여성</option>
+                            <option>기타</option>
+                        </select>
+                    </label>
+                    <label class="form-field">
+                        <span class="form-label">평균 수면 시간</span>
+                        <input class="form-control" id="healthSleep" name="health_sleep" type="number">
+                    </label>
+                    <button class="button full" id="healthCheckButton">AI 건강 체크하기</button>
+                </div>
+            </form>
+            <section class="card ai-result" id="healthResultPanel">
+                <span class="badge success">AI 피드백</span>
+                <h2>균형 잡힌 영양과 숙면 루틴을 추천해요</h2>
+                <p class="muted">입력한 내용에 기반한 참고 정보입니다. 불편한 증상이 있으면 의료 전문가와 상담해 주세요.</p>
+                <h3>추천 상품</h3>
+                <div class="recommend-grid" id="recommendedProductList">
+                    <article class="card product-card">
+                        <img class="product-image" src="static/images/supplement-07-magne-calm.png" alt="">
+                        <div class="product-body">
+                            <strong>마그네 캄</strong>
+                        </div>
+                    </article>
+                    <article class="card product-card">
+                        <img class="product-image" src="static/images/sleep-03-white-noise.png" alt="">
+                        <div class="product-body">
+                            <strong>화이트 노이즈</strong>
+                        </div>
+                    </article>
+                    <article class="card product-card">
+                        <img class="product-image" src="static/images/food-04-daily-oats.png" alt="">
+                        <div class="product-body">
+                            <strong>데일리 오트</strong>
+                        </div>
+                    </article>
+                </div>
+                <button class="button secondary" id="healthResultSaveButton" style="margin-top:20px">결과 저장</button>
+                <div class="ai-result-actions"><a class="button" id="recommendedCheckoutButton"
+                        href="/checkout">주문서 작성하기</a><a class="button secondary" id="healthHomeButton"
+                        href="/">메인페이지 돌아가기</a><a class="button secondary" id="expertConsultButton"
+                        href="/inquiry-write">전문가 상담받기</a></div>
+            </section>
+        </div>
+    </div>
+</main>
+{% endblock %}
+   
+>>>>>>> d9c1eea7a34c16c02350c107aac4abd0fa7ec1f2

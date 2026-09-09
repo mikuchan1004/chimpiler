@@ -15,6 +15,7 @@
     <main class="auth-shell">
         <section class="card auth-card">
             <a href="/">
+<<<<<<< HEAD
                 <img class="auth-logo" src="static/images/chimpiler-logo.png" alt="침파일러"></a>
             <h1 class="auth-title">로그인</h1>
             <div class="social-buttons">
@@ -22,6 +23,17 @@
                 <button class="social-button kakao" id="kakaoLoginButton">카카오 아이디로 로그인</button></div>
             <div class="divider">또는</div>
             <form id="loginForm" class="summary-list" action="/login/check" method="post">
+=======
+                <img class="auth-logo" src="static/images/chimpiler-logo.png" alt="침파일러">
+            </a>
+            <h1 class="auth-title">로그인</h1>
+            <div class="social-buttons">
+                <button class="social-button naver" id="naverLoginButton">네이버 아이디로 로그인</button>
+                <button class="social-button kakao" id="kakaoLoginButton">카카오 아이디로 로그인</button>
+            </div>
+            <div class="divider">또는</div>
+            <form id="loginForm" class="summary-list" method="post" action="/login">
+>>>>>>> d9c1eea7a34c16c02350c107aac4abd0fa7ec1f2
                 <label class="form-field">
                     <span class="form-label">아이디</span>
                     <input class="form-control" id="loginUserId" name="user_id" autocomplete="username">
@@ -30,8 +42,15 @@
                     <span class="form-label">비밀번호</span>
                     <input class="form-control" id="loginPassword" name="user_password" type="password" autocomplete="current-password">
                 </label>
+<<<<<<< HEAD
                 <p class="danger-text hidden" id="loginErrorMessage">아이디 또는 비밀번호를 확인해 주세요.</p>
                 <button class="button full" type="submit" id="loginSubmitButton">로그인</button>
+=======
+                {% if login_error %}
+                <p class="danger-text" id="loginErrorMessage">아이디 또는 비밀번호를 확인해 주세요.</p>
+                {% endif %}
+                <button class="button full" id="loginSubmitButton" type="submit">로그인</button>
+>>>>>>> d9c1eea7a34c16c02350c107aac4abd0fa7ec1f2
             </form>
             <nav class="auth-links">
                 <a href="#">ID/PW 찾기</a>

@@ -133,7 +133,12 @@
                                 {% endif %}
                             </div>
                             <h2 class="product-name">{{ products['product_name'] }}</h2>
+<<<<<<< HEAD
                             <strong class="product-price">{{ products['product_price']}}원</strong>
+=======
+                            <strong class="product-price">{{ products['product_price'] | price }}원</strong>
+                            <div class="product-meta">
+>>>>>>> d9c1eea7a34c16c02350c107aac4abd0fa7ec1f2
                                 <span>재고 {{ products['product_sale_stock'] }}</span>
                                 <span>조회 {{ products['product_view_count'] }}</span>
                             </div>

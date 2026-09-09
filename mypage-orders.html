@@ -1,7 +1,11 @@
 {% extends 'templates/layout.html' %}
 
 {% block title %}
+<<<<<<< HEAD
 <title>회원정보 수정 | CHIMPILER</title>
+=======
+<title>주문·배송 조회 | CHIMPILER</title>
+>>>>>>> d9c1eea7a34c16c02350c107aac4abd0fa7ec1f2
 {% endblock %}
 
 {% block script %}
@@ -11,6 +15,7 @@
 <main class="page-section">
     <div class="container mypage-layout">
         <nav class="card side-nav">
+<<<<<<< HEAD
             <a href="/mypage-dashboard">마이페이지</a>
             <a class="active" href="/mypage-profile">회원정보 수정</a>
             <a href="/mypage-orders">주문·배송 조회</a>
@@ -73,4 +78,53 @@
         </footer>
     </div>
 </div>
+=======
+            <a href="/mypage">마이페이지</a>
+            <a href="/mypage/profile">회원정보 수정</a>
+            <a class="active" href="/mypage/orders">주문·배송 조회</a>
+            <a href="/mypage/reservations">예약 관리</a>
+            <a href="/mypage/inquiries">문의 내역</a>
+        </nav>
+        <section>
+            <header class="page-heading">
+                <span class="eyebrow">MY ORDERS</span>
+                <h1 class="page-title">주문·배송 조회</h1>
+            </header>
+            <div class="dashboard-cards">
+                <article class="card metric">
+                    <span>결제대기</span>
+                    <div class="metric-value">0</div>
+                </article>
+                <article class="card metric">
+                    <span>상품준비중</span>
+                    <div class="metric-value">1</div>
+                </article>
+                <article class="card metric">
+                    <span>배송중</span>
+                    <div class="metric-value">0</div>
+                </article>
+                <article class="card metric">
+                    <span>배송완료</span>
+                    <div class="metric-value">2</div>
+                </article>
+            </div>
+            <div class="card" style="margin-top:20px">
+                <article class="order-card">
+                    <img src="static/images/device-01-body-scale.png" alt="">
+                    <div>
+                        <span class="badge warning">상품준비중</span>
+                        <h2>스마트 바디 밸런스 체중계</h2>
+                        <p class="muted">주문번호 CH-20260001 · 49,000원</p>
+                    </div>
+                    <div class="order-actions">
+                        <button class="button secondary small">상세보기</button>
+                        <button class="button danger small">주문취소</button>
+                        <button class="button secondary small" id="refundRequestButton" type="button">환불 요청</button>
+                    </div>
+                </article>
+            </div>
+        </section>
+    </div>
+</main>
+>>>>>>> d9c1eea7a34c16c02350c107aac4abd0fa7ec1f2
 {% endblock %}
