@@ -1,187 +1,196 @@
-#==============================================================================
-# 1. 도구 상자 준비 (필요한 외부 부품 및 모듈 불러오기)
-#==============================================================================
-from sqlmodel import create_engine, Session  # DB 연결 및 작업 일꾼(Session) 생성 도구
-from fastapi import FastAPI, Depends, Request, Form, UploadFile, File  # 웹 서버 및 요청 처리 도구
-from fastapi.templating import Jinja2Templates   # HTML 화면(템플릿) 그려주는 도구
-from fastapi.responses import RedirectResponse  # 다른 페이지로 넘겨주는(리다이렉트) 도구
-from sqlalchemy import text, URL                 # 생(Raw) SQL 쿼리 작성 및 DB 주소 구성 도구
-from fastapi.staticfiles import StaticFiles      # 이미지/CSS 같은 정적 파일 제공 도구
-from pathlib import Path                         # 파일/폴더 경로 다루기 도구
-import shutil                                    # 파일 복사/저장 라이브러리
+# 이 파일에 적혀있는 주석들은 전부 Google Gemini가 남겨주었습니다 .
 
-from DTO.ProductDTO import Product               # 상품 데이터를 묶어서 검증할 데이터 틀(DTO)
+# ==============================================================================
+# 1. 도구 상자 준비 (필요한 외부 부품 불러오기)
+# ==============================================================================
+# 데이터베이스(DB) 연결 및 실제 심부름을 해줄 일꾼(Session) 생성 도구
+from sqlmodel import create_engine, Session
 
-# 이미지 파일을 저장할 폴더 위치 지정 ('static/images')
-dir = Path('static/images') 
+# 웹 사이트를 만들고 손님(사용자)의 요청을 처리하는 메인 프레임워크 도구들
+from fastapi import FastAPI, Depends, Request, Form, UploadFile, File
 
-app = FastAPI()  # FastAPI 웹 서버의 핵심 본체 생성
+# 사용자가 보게 될 HTML 웹 화면(템플릿)을 예쁘게 그려주는 도구
+from fastapi.templating import Jinja2Templates
 
-# '/static' 주소로 요청이 오면 실제 'static' 폴더 안의 파일(이미지 등)을 보여주도록 연결
+# 다른 웹 페이지 주소로 손님을 슝 이동(리다이렉트)시켜 주는 도구
+from fastapi.responses import RedirectResponse
+
+# 데이터베이스에 명령을 직접 내리는 'SQL 명령문' 및 DB 접속 주소 만드는 도구
+from sqlalchemy import text, URL
+
+# 이미지, CSS 같은 정적(고정) 파일을 웹 브라우저에 보여주기 위한 도구
+from fastapi.staticfiles import StaticFiles
+
+# 컴퓨터 안의 파일과 폴더 위치(경로)를 안전하게 다루는 도구
+from pathlib import Path
+
+# 파일 복사나 이동 등 컴퓨터 파일 작업을 도와주는 도구
+import shutil
+
+# 손님이 입력한 상품 정보를 규격에 맞게 묶어주는 데이터 서식(틀)
+from DTO.ProductDTO import Product
+
+# 손님이 올린 상품 사진들을 모아둘 서버 컴퓨터 안의 폴더 위치 ('static/images')
+dir = Path('static/images')
+
+# FastAPI를 이용해 우리 웹 사이트의 '본체(엔진)'를 생성
+app = FastAPI()
+
+# 웹 브라우저에서 '/static' 주소로 요청이 들어오면 실제 컴퓨터의 'static' 폴더 안의 파일들을 보여주도록 연결
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# HTML 템플릿 파일들이 위치한 기본 경로를 현재 폴더('.')로 지정
-templates = Jinja2Templates(directory='.')  
+# HTML 화면 파일들이 모여 있는 기본 폴더 위치를 현재 폴더('.')로 지정
+templates = Jinja2Templates(directory='.')
 
-#==============================================================================
-# 2. 데이터베이스(DB) 연결 설정
-#==============================================================================
-# DB 접속에 필요한 주소 정보 구성 (종류, 계정명, 비밀번호, IP, 포트, DB이름)
+
+# ==============================================================================
+# 2. 데이터베이스(DB: 정보 저장 창고) 연결 설정
+# ==============================================================================
+# 정보 저장 창고(DB)에 들어가기 위한 출입증(주소, 계정명, 비밀번호 등)을 준비
 DATABASE_URL = URL.create(
-    drivername="mysql+pymysql",
-    username="chimpiler_team",
-    password="chimpiler!@#",
-    host="192.168.0.65",
-    port=3306,
-    database="chimpiler",
+    drivername="mysql+pymysql",  # 사용할 DB 종류 및 통신 방식
+    username="chimpiler_team",   # 관리자 계정 이름
+    password="chimpiler!@#",    # 비밀번호
+    host="192.168.0.65",        # DB 창고가 있는 컴퓨터 주소(IP)
+    port=3306,                  # 접속할 통로 번호(포트)
+    database="chimpiler",       # 사용할 저장 창고 이름
 )
 
-# DB 서버와의 연결 통로(엔진) 생성 (echo=True는 실행되는 SQL 문을 콘솔에 출력해줌)
+# 실제로 DB 창고 문을 열고 닫을 수 있는 '연결 통로(엔진)'를 생성
+# (echo=True를 켜두면 창고에 내린 명령 내용이 터미널 화면에 그대로 찍혀요)
 engine = create_engine(DATABASE_URL, echo=True)
 
-# 의존성 주입(Depends)용 함수: 요청이 올 때마다 DB 일꾼(session)을 하나 만들어 빌려주고,
-# 작업이 끝나면 자동으로 저장(commit) 및 종료를 처리해 줌
-def get_session():
-    with Session(engine) as session: 
-        yield session     # 컨트롤러에 DB 세션 대여
-        session.commit()   # 요청 완료 시 DB 변경사항 최종 저장
 
-#==============================================================================
-# 3. 단순 페이지 이동 라우터 (화면 보여주기)
-#==============================================================================
-# [관리자 대시보드 페이지] http://주소/admin 접속 시
+# 손님이 요청을 보낼 때마다 DB 창고 심부름꾼(Session)을 1명 배정해 주고,
+# 작업이 끝나면 안전하게 변경사항을 저장(commit)한 뒤 돌려보내는 함수
+def get_session():
+    with Session(engine) as session:
+        yield session     # 일꾼 한 명을 기능 담당 함수에게 빌려줌
+        session.commit()  # 심부름이 무사히 끝나면 변경된 내용을 창고에 최종 확정 저장!
+
+
+# ==============================================================================
+# 3. 단순 페이지 이동 및 대시보드 화면 보여주기
+# ==============================================================================
+# [관리자 대시보드 메인 화면] 인터넷 주소: /admin 접속 시 실행
 @app.get('/admin')
 def dashboard(request: Request, session: Session = Depends(get_session)):
     print('/admin 실행')
 
-    #===========================
-    # 품절 상품의 수를 조회하는 SQL문
-    #===========================
+    # 1) 창고에서 '남은 판매 재고가 0개'인 품절 상품의 총개수를 세어옴
     sql1 = text('''
     select count(*)
     from product
     where product_sale_stock = 0;
     ''')
     results1 = session.execute(sql1).mappings().fetchall()
-
     print(results1)
     print(results1[0]['count(*)'])
 
-    #=========================
-    # 답변 대기중인 믄의의 수를 조회하는 SQL문
-    #=========================
-    sql2= text('''
+    # 2) 손님이 문의를 남겼는데 아직 답변하지 않은(상태 번호 1번) 문의 개수를 세어옴
+    sql2 = text('''
     select count(*)
     from inquiry
     where inquiry_status_id = 1;
     ''')
-
     results2 = session.execute(sql2).mappings().fetchall()
-
     print(results2)
     print(results2[0]['count(*)'])
 
-    #==========================
-    # 최근 주문 
-    #==========================
-    sql3 = text ('''
-            select 
-                o.order_sheet_id,
-                o.user_id,
-                o.order_name,
-                os.order_total_price,
-                st.order_status_name,
-                ds.delivery_status_name
-            from orders o 
-            left join order_sheet os 
-                on o.order_sheet_id = os.order_sheet_id
-            left join order_status st 
-                on o.order_status_id = st.order_status_id
-            left join delivery d 
-                on os.order_sheet_id = d.order_sheet_id
-            left join delivery_status ds 
-                on d.delivery_status_id = ds.delivery_status_id
-        ''')
+    # 3) 최근 주문 내역(주문서 번호, 주문자, 총 결제 금액, 주문 상태, 배송 상태 등)을 한눈에 모아서 가져옴
+    sql3 = text('''
+        select 
+            o.order_sheet_id,
+            o.user_id,
+            o.order_name,
+            os.order_total_price,
+            st.order_status_name,
+            ds.delivery_status_name
+        from orders o 
+        left join order_sheet os 
+            on o.order_sheet_id = os.order_sheet_id
+        left join order_status st 
+            on o.order_status_id = st.order_status_id
+        left join delivery d 
+            on os.order_sheet_id = d.order_sheet_id
+        left join delivery_status ds 
+            on d.delivery_status_id = ds.delivery_status_id
+    ''')
     results3 = session.execute(sql3).mappings().fetchall()
 
-    #=========================
-    # 주문 건수 조회
-    #=========================
+    # 4) 지금까지 들어온 전체 주문 건수를 세어옴
     sql4 = text('''
         select count(*)
         from orders
     ''')
-    results4  = session.execute(sql4).mappings().fetchall()
+    results4 = session.execute(sql4).mappings().fetchall()
 
-    #========================
-    # 예약 건수 조회
-    #========================
+    # 5) 고객들이 예약해 둔 전체 예약 건수를 세어옴
     sql5 = text('''
         select count(*)
         from reservation
     ''')
     results5 = session.execute(sql5).mappings().fetchall()
 
-    return templates.TemplateResponse(request, 'admin-dashboard.html' , {
-        'sold_count' : results1[0]['count(*)'], # 품절 상품의 수를 화면에 뿌려줍니다 
-        'inquiry_count' : results2[0]['count(*)'], # 답변 대기중인 문의의 수를 화면에 뿌려줍나다.
-        'recent_orders' : results3,
-        'order_count' : results4[0]['count(*)'],
-        'reservation_count' : results5[0]['count(*)']
+    # 대시보드 화면(admin-dashboard.html)에 위에서 조사한 숫자와 내역들을 전달해서 화면에 띄워줌
+    return templates.TemplateResponse(request, 'admin-dashboard.html', {
+        'sold_count': results1[0]['count(*)'],      # 품절 상품 개수
+        'inquiry_count': results2[0]['count(*)'],   # 답변 대기 문의 개수
+        'recent_orders': results3,                  # 최근 주문 목록 리스트
+        'order_count': results4[0]['count(*)'],     # 전체 주문 건수
+        'reservation_count': results5[0]['count(*)'] # 전체 예약 건수
     })
 
-# [메인 페이지] http://주소/ 접속 시
+
+# [일반 메인 홈 화면] 인터넷 주소: / 접속 시 실행
 @app.get('/')
-def main (request:Request, session:Session = Depends(get_session)):
+def main(request: Request, session: Session = Depends(get_session)):
     print('/ 실행')
-    # main.html 화면을 띄워줌
+    # main.html 첫 화면을 손님 웹 브라우저에 띄워줌
     return templates.TemplateResponse(request, 'main.html')
 
-#==============================================================================
-# 4. 상품 및 재고 관리 CRUD 기능 (Create, Read, Update, Delete)
-#==============================================================================
 
-# [상품 목록 조회]
+# ==============================================================================
+# 4. 상품 관리 기능 (목록 보기, 새 상품 등록, 수정, 삭제, 품절 처리)
+# ==============================================================================
+
+# [상품 목록 화면 조회]
 @app.get('/admin/products')
-def product_list (request: Request, session: Session = Depends(get_session)) :
+def product_list(request: Request, session: Session = Depends(get_session)):
     print('상품 목록 출력')
-    # DB에서 모든 상품 데이터를 가져오는 SQL 문 작성
-    sql = text ('''
+    # 창고(DB)에 저장된 모든 상품 정보를 몽땅 가져오는 명령
+    sql = text('''
         select * from product
     ''')
-    # SQL 실행 후 결과를 파이썬 딕셔너리 리스트 형태로 싹 긁어옴
     results = session.execute(sql).mappings().fetchall()
 
-    # admin-products.html 화면에 'product_list'라는 이름으로 조회 결과를 전달해 출력
+    # 상품 목록 화면(admin-products.html)에 방금 가져온 상품 데이터를 넘겨서 보여줌
     return templates.TemplateResponse(request, 'admin-products.html', {
-        'product_list' : results
+        'product_list': results
     })
 
-# [상품 신규 등록]
+
+# [새 상품 등록하기]
 @app.post('/api/add')
 def add_product(
-    # 💡 [핵심 해결 포인트] Form() 대신 Depends(Product.as_form)을 이용해 
-    # HTML에서 낱개로 들어오는 폼 데이터를 Product DTO 객체로 바인딩합니다.
-    product: Product = Depends(Product.as_form),             
-    product_image: UploadFile = File(),    # 파일 데이터로 전송된 첨부 이미지 파일
-    session: Session = Depends(get_session) # DB 일꾼
+    product: Product = Depends(Product.as_form),  # 화면 폼에 적힌 상품 정보(이름, 가격 등)를 서식에 맞춰 가져옴
+    product_image: UploadFile = File(),           # 함께 첨부한 이미지 파일
+    session: Session = Depends(get_session)        # DB 일꾼
 ):
     print('/api/add 실행')
-    try :
-        # 1. 첨부된 이미지를 서버의 static/images 폴더에 실제로 저장하는 과정
+    try:
+        # 1단계: 손님이 올린 이미지 파일을 서버 컴퓨터의 'static/images' 폴더에 실제로 복사해서 저장함
         filename = product_image.filename
-        image_path = dir / filename 
-        with image_path.open('wb') as buffer :
-            # UploadFile의 파일 객체(product_image.file)를 하드디스크 버퍼로 복사
+        image_path = dir / filename
+        with image_path.open('wb') as buffer:
             shutil.copyfileobj(product_image.file, buffer)
-        
-        # 2. 전달받은 상품 객체를 DB에 넣기 좋게 딕셔너리로 변환
-        params = product.model_dump() 
-        # 파일명이 아닌 'static/images/파일명' 으로 저장.
-        params['product_image'] = f'static/images/{filename}'  
 
-        # 3. DB에 상품 정보를 데이터로 추가하는 SQL 문
-        sql = text ('''
+        # 2단계: 상품 정보를 정리하고, 이미지 파일이 저장된 위치 글자('static/images/파일명')를 기록함
+        params = product.model_dump()
+        params['product_image'] = f'static/images/{filename}'
+
+        # 3단계: DB 창고의 product 칸에 새 상품 정보를 한 줄 추가하라고 명령
+        sql = text('''
             insert into product
             (
             product_brand, product_name, product_detail, 
@@ -196,33 +205,34 @@ def add_product(
         ''')
         session.execute(sql, params)
         session.commit()
-    except Exception as e :
+    except Exception as e:
+        # 혹시 저장하다 에러가 나면 콘솔창에 오류 내용을 출력
         print(e)
 
-    # 등록 후 상품 목록 페이지로 다시 이동
+    # 등록이 끝나면 다시 상품 목록 페이지(/admin/products)로 화면을 돌려보냄
     return RedirectResponse(url='/admin/products', status_code=303)
 
-# [상품 정보 수정]
+
+# [상품 정보 수정하기]
 @app.post('/api/modify')
 def update_product(
-    # 💡 [핵심 해결 포인트] 수정 요청도 폼 데이터이므로 Depends(Product.as_form)을 사용합니다.
-    product: Product = Depends(Product.as_form), 
-    product_image: UploadFile = File(),   # Form() -> File()로 수정하여 일관성 유지
+    product: Product = Depends(Product.as_form),  # 수정할 새 상품 정보들
+    product_image: UploadFile = File(),           # 새로 바꿀 이미지 파일
     session: Session = Depends(get_session)
 ):
-    print('/api/modify 실행' , product)
+    print('/api/modify 실행', product)
     try:
-        # 1. 새 이미지 파일이 들어왔다면 서버 폴더에 다시 저장
+        # 1단계: 새로 업로드한 이미지를 서버 폴더에 다시 저장
         filename = product_image.filename
-        image_path = dir / filename 
-        with image_path.open('wb') as buffer :
+        image_path = dir / filename
+        with image_path.open('wb') as buffer:
             shutil.copyfileobj(product_image.file, buffer)
 
-        # 2. 데이터를 딕셔너리로 묶고 이미지 이름 설정
+        # 2단계: 새 이미지 위치를 포함하여 수정할 데이터 정리
         params = product.model_dump()
-        params['product_image'] = f'static/images/{filename}'  
+        params['product_image'] = f'static/images/{filename}'
 
-        # 3. DB의 해당 상품 ID(product_id)에 맞는 정보들을 최신 데이터로 업데이트하는 SQL
+        # 3단계: 해당 상품 번호(product_id)를 찾아 적혀 있는 정보들을 새 내용으로 덮어쓰기(업데이트)
         sql = text('''
             update product
             set 
@@ -241,17 +251,19 @@ def update_product(
         session.execute(sql, params)
         session.commit()
 
-    except Exception as e :
+    except Exception as e:
         print(e)
 
+    # 수정이 끝나면 상품 목록 페이지로 복귀
     return RedirectResponse(url='/admin/products', status_code=303)
 
-# [상품 삭제]
+
+# [상품 삭제하기]
 @app.get('/api/delete/{product_id}')
 def delete_product(product_id: int, session: Session = Depends(get_session)):
     print('/api/delete 실행', product_id)
     try:
-        # URL 주소로 들어온 ID에 해당하는 상품을 DB에서 제거
+        # 주소로 전달받은 상품 고유번호(product_id)를 창고에서 아예 지워버림
         sql = text('''
             delete from product
             where product_id = :product_id
@@ -261,14 +273,16 @@ def delete_product(product_id: int, session: Session = Depends(get_session)):
     except Exception as e:
         print(e)
 
+    # 삭제 후 상품 목록 화면으로 이동
     return RedirectResponse(url='/admin/products', status_code=303)
 
-# [일시 품절 처리] (상태 값을 2로 변경)
+
+# [상품 일시 품절 처리]
 @app.get('/api/soldout/{product_id}')
 def soldout_product(product_id: int, session: Session = Depends(get_session)):
-    print('/api/soldout 실행' , product_id)
+    print('/api/soldout 실행', product_id)
     try:
-        # product_active 값을 2로 바꿔서 "품절" 상태로 변경
+        # 상품 상태(product_active) 값을 '2'(품절 상태를 의미)로 변경
         sql = text('''
             update product 
             set product_active = 2
@@ -276,40 +290,42 @@ def soldout_product(product_id: int, session: Session = Depends(get_session)):
         ''')
         session.execute(sql, {'product_id': product_id})
         session.commit()
-    except Exception as e :
+    except Exception as e:
         print(e)
 
     return RedirectResponse(url='/admin/products', status_code=303)
 
-# [일시 품절 해제] (상태 값을 다시 1로 변경)
+
+# [상품 판매 재개 처리 (품절 해제)]
 @app.get('/api/available/{product_id}')
 def available_product(product_id: int, session: Session = Depends(get_session)):
-    print('api/available 실행' , product_id)
+    print('api/available 실행', product_id)
     try:
-        # product_active 값을 1로 바꿔서 다시 "판매 중" 상태로 변경
+        # 상품 상태(product_active) 값을 다시 '1'(정상 판매 중)로 변경
         sql = text('''
-            update product
+            update product 
             set product_active = 1
             where product_id = :product_id
         ''')
         session.execute(sql, {'product_id': product_id})
         session.commit()
-    except Exception as e :
+    except Exception as e:
         print(e)
 
     return RedirectResponse(url='/admin/products', status_code=303)
 
-# [재고 보충]
+
+# [재고 수량 보충하기]
 @app.post('/api/restock')
 def restock_product(
-    product_id: int = Form(), 
-    product_sale_stock: int = Form(), 
-    product_reservation_stock: int = Form(), 
+    product_id: int = Form(),                 # 수량을 변경할 상품 고유번호
+    product_sale_stock: int = Form(),        # 새로 지정할 일반 판매 재고 수량
+    product_reservation_stock: int = Form(), # 새로 지정할 예약 재고 수량
     session: Session = Depends(get_session)
 ):
     print('api/restock 실행')
     try:
-        # 판매 재고와 예약 재고 수량을 전달받은 새 값으로 변경
+        # 지정한 상품의 일반 판매 재고와 예약 재고 개수를 입력한 새 숫자로 교체
         sql = text('''
             update product 
             set
@@ -325,77 +341,85 @@ def restock_product(
             'product_reservation_stock': product_reservation_stock
         })
         session.commit()
-    except Exception as e :
+    except Exception as e:
         print(e)
 
     return RedirectResponse(url='/admin/products', status_code=303)
 
-# [검색 기능]
+
+# [상품 이름으로 검색하기]
 @app.get('/api/product/search')
-def search_product (request:Request, keyword: str = "", session:Session = Depends(get_session)):
+def search_product(request: Request, keyword: str = "", session: Session = Depends(get_session)):
+    # 검색어가 비어있으면 전체를, 검색어가 있으면 상품 이름에 그 단어가 들어간 것만 쏙 골라오는 명령
     sql = text('''
         select * from product
         where (:keyword = '' or product_name like :search_keyword)
     ''')
 
     result = session.execute(sql, {
-    'keyword' : keyword,
-    'search_keyword' : '%' + keyword + '%'
+        'keyword': keyword,
+        'search_keyword': '%' + keyword + '%'
     })
 
     search_product_list = result.mappings().fetchall()
 
+    # 찾아낸 상품 검색 결과만 모아서 상품 관리 화면에 표시
     return templates.TemplateResponse(request, 'admin-products.html', {
-        'product_list' : search_product_list
+        'product_list': search_product_list
     })
 
-#==============================================================================
-# 5. 회원 관리 기능
-#==============================================================================
 
-# [회원 및 후기 신고 내역 조회]
+# ==============================================================================
+# 5. 회원 관리 기능 (회원 조회, 경고 부여/차감, 정지, 삭제)
+# ==============================================================================
+
+# [회원 목록 및 리뷰 신고 내역 조회]
 @app.get('/admin/users')
-def user_list (request: Request, session: Session = Depends(get_session)):
+def user_list(request: Request, session: Session = Depends(get_session)):
     print('회원 및 후기 신고 내역 조회')
-    sql1 = text ('''
+    # 1) 등록된 모든 회원 명단을 가져옴
+    sql1 = text('''
         select * from users
     ''')
-    
     results1 = session.execute(sql1).mappings().fetchall()
 
-    sql2 = text ('''
+    # 2) 다른 사람의 불량 후기(리뷰)로 신고 접수된 내역과 신고 사유를 엮어서 가져옴
+    sql2 = text('''
         select rr.report_id, pr.user_id, us.user_name, pr.product_review, pr.product_review_id, rr.report_detail from product_review as pr
         join review_report as rr
         on (pr.product_review_id = rr.product_review_id)
         join users as us
         on (pr.user_id = us.user_id)
     ''')
-
     results2 = session.execute(sql2).mappings().fetchall()
 
+    # 회원 관리 화면(admin-users.html)에 회원 목록과 신고 내역을 같이 띄워줌
     return templates.TemplateResponse(request, 'admin-users.html', {
-        'user_list' : results1,
-        'review_report_list' : results2
+        'user_list': results1,
+        'review_report_list': results2
     })
 
-# [후기 신고 삭제]
+
+# [접수된 리뷰 신고 내역 삭제]
 @app.post("/api/report/delete/{product_review_id}")
-def report_delete(product_review_id:int, session: Session = Depends(get_session)):
+def report_delete(product_review_id: int, session: Session = Depends(get_session)):
     print('후기 신고 삭제 기능 실행', product_review_id)
-    
+
+    # 관리자가 확인 후 이상이 없거나 처리가 끝나 신고 내역을 목록에서 지움
     sql = text('''
         delete from review_report
         where product_review_id = :product_review_id
     ''')
-    session.execute(sql,{'product_review_id' : product_review_id})
+    session.execute(sql, {'product_review_id': product_review_id})
     session.commit()
 
     return RedirectResponse(url='/admin/users', status_code=303)
 
 
-# [회원 경고 추가]
-@app.get('/api/warning/{user_id}') 
-def user_warning( user_id : str, session: Session = Depends(get_session)):
+# [회원에게 경고 1회 추가]
+@app.get('/api/warning/{user_id}')
+def user_warning(user_id: str, session: Session = Depends(get_session)):
+    # 문제 행동을 한 회원의 누적 경고 횟수를 1 올림 (+1)
     sql = text('''
         update users
         set 
@@ -403,123 +427,134 @@ def user_warning( user_id : str, session: Session = Depends(get_session)):
         where
             user_id = :user_id
     ''')
-    session.execute(sql, {'user_id' : user_id})
+    session.execute(sql, {'user_id': user_id})
     session.commit()
 
     return RedirectResponse(url='/admin/users', status_code=303)
 
-# [회원 경고 제거]
-@app.get('/api/warning/delete/{user_id}') 
-def user_warning( user_id : str , session: Session = Depends(get_session)):
+
+# [회원의 경고 1회 차감(취소)]
+@app.get('/api/warning/delete/{user_id}')
+def user_warning_delete(user_id: str, session: Session = Depends(get_session)):
     print('경고 제거 실행')
+    # 회원의 현재 경고 횟수를 먼저 확인
     sql_all = text('''
         select user_warning_count
         from users
         where user_id = :user_id
     ''')
-
-    result  =  session.execute(sql_all, {
-        'user_id' : user_id
-    })
-
+    result = session.execute(sql_all, {'user_id': user_id})
     warning_count = result.mappings().fetchone()
     print('경고 횟수 :', warning_count['user_warning_count'])
 
+    # 경고가 1회 이상 있는 경우에만 경고를 1개 줄여줌 (-1) (0개 미만으로 내려가지 않게 방지)
     sql = text('''
           update users 
-          set user_warning_count = user_warning_count  - 1
+          set user_warning_count = user_warning_count - 1
           where user_id = :user_id and user_warning_count >= 1
     ''')
-    session.execute(sql, {'user_id' : user_id})
+    session.execute(sql, {'user_id': user_id})
     session.commit()
 
     return RedirectResponse(url='/admin/users', status_code=303)
 
-# [회원 정지]
+
+# [회원 이용 정지]
 @app.get('/api/suspension/{user_id}')
-def user_suspension(user_id : str, session:Session = Depends(get_session)):
+def user_suspension(user_id: str, session: Session = Depends(get_session)):
     print('회원 정지 실행')
 
+    # 해당 회원의 상태를 '정지'로 변경하여 서비스 이용을 제한
     sql = text('''
         update users
         set user_status = '정지'
         where user_id = :user_id
     ''')
-    session.execute(sql, {'user_id' : user_id})
+    session.execute(sql, {'user_id': user_id})
     session.commit()
 
     return RedirectResponse(url='/admin/users', status_code=303)
 
-# [회원 정지  해제]
+
+# [회원 이용 정지 해제]
 @app.get('/api/unsuspend/{user_id}')
-def user_unsuspend(user_id : str, session:Session = Depends(get_session)):
+def user_unsuspend(user_id: str, session: Session = Depends(get_session)):
     print('회원 정지 해제 실행')
 
+    # 징계 기간이 끝난 회원의 상태를 다시 '정상'으로 원상 복구
     sql = text('''
         update users
         set user_status = '정상'
         where user_id = :user_id
     ''')
-    session.execute(sql, {'user_id' : user_id})
+    session.execute(sql, {'user_id': user_id})
     session.commit()
 
     return RedirectResponse(url='/admin/users', status_code=303)
 
-# [검색 기능]
+
+# [회원 이름/아이디로 검색]
 @app.get('/api/user/search')
-def search_user (request:Request, keyword: str = "", session:Session = Depends(get_session)):
+def search_user(request: Request, keyword: str = "", session: Session = Depends(get_session)):
+    # 이름이나 아이디에 검색어가 포함된 회원을 찾아냄
     sql = text('''
         select * from users
         where (:keyword = '' or user_name or user_id like :search_keyword)
     ''')
 
     result = session.execute(sql, {
-    'keyword' : keyword,
-    'search_keyword' : '%' + keyword + '%'
+        'keyword': keyword,
+        'search_keyword': '%' + keyword + '%'
     })
 
     search_list = result.mappings().fetchall()
 
     return templates.TemplateResponse(request, 'admin-users.html', {
-        'user_list' : search_list
+        'user_list': search_list
     })
 
-# [회원 삭제 기능]
-@app.get('/api/delete/user/{user_id}') 
-def delete_user(user_id : str, session:Session = Depends(get_session)):
-    print('회원 삭제를 실행합니다' , '삭제 ID : ' , user_id )
+
+# [회원 탈퇴/강제 삭제]
+@app.get('/api/delete/user/{user_id}')
+def delete_user(user_id: str, session: Session = Depends(get_session)):
+    print('회원 삭제를 실행합니다', '삭제 ID : ', user_id)
+    # 해당 회원의 정보를 창고(DB)에서 완전히 지워버림
     sql = text('''
         delete from users
         where user_id = :user_id
     ''')
-    session.execute(sql, {'user_id' : user_id})
+    session.execute(sql, {'user_id': user_id})
     session.commit()
 
     return RedirectResponse(url='/admin/users', status_code=303)
 
-#==============================================================================
-# 6. 문의관리 기능
-#==============================================================================
 
-# [문의 조회]
+# ==============================================================================
+# 6. 고객 1:1 문의 관리 기능
+# ==============================================================================
+
+# [손님들의 문의 목록 조회]
 @app.get('/admin/inquiries')
-def user_list (request: Request, session: Session = Depends(get_session)):
+def inquiry_list(request: Request, session: Session = Depends(get_session)):
     print('문의 조회')
-    sql = text ('''
+    # 고객들이 올린 모든 1:1 문의글을 창고에서 전부 가져옴
+    sql = text('''
         select * from inquiry
     ''')
-    
     results = session.execute(sql).mappings().fetchall()
-    
-    return templates.TemplateResponse(request, 'admin-inquiries.html', {
-            'inquiry_list' : results
-        })
 
-# [문의 답변 등록 및 수정 ]
+    # 문의 관리 화면(admin-inquiries.html)에 목록을 표시
+    return templates.TemplateResponse(request, 'admin-inquiries.html', {
+        'inquiry_list': results
+    })
+
+
+# [문의에 관리자 답변 등록하기]
 @app.post('/api/answer/{inquiry_id}')
-def answer_inquiry(inquiry_id : int, inquiry_answer : str = Form(), session:Session = Depends(get_session)):
+def answer_inquiry(inquiry_id: int, inquiry_answer: str = Form(), session: Session = Depends(get_session)):
     print('문의 답변 등록 실행')
-    sql = text ('''
+    # 관리자가 적은 답변 글을 저장하고, 문의 처리 상태를 '2'(답변 완료를 의미)로 변경
+    sql = text('''
         update inquiry
         set 
             inquiry_answer = :inquiry_answer,
@@ -527,22 +562,25 @@ def answer_inquiry(inquiry_id : int, inquiry_answer : str = Form(), session:Sess
         where inquiry_id = :inquiry_id
     ''')
     session.execute(sql, {
-        'inquiry_id' : inquiry_id,
-        'inquiry_answer' : inquiry_answer
+        'inquiry_id': inquiry_id,
+        'inquiry_answer': inquiry_answer
     })
     session.commit()
 
+    # 답변 완료 후 다시 문의 목록 화면으로 복귀
     return RedirectResponse(url='/admin/inquiries', status_code=303)
 
-#==============================================================================
-# 7. 주문/배송 관리
-#==============================================================================
 
-#[주문/배송 조회]
+# ==============================================================================
+# 7. 주문 및 배송 현황 관리
+# ==============================================================================
+
+# [손님들의 주문 및 배송 목록 전체 조회]
 @app.get('/admin/orders')
-def order_list (request: Request, session: Session = Depends(get_session)):
+def order_list(request: Request, session: Session = Depends(get_session)):
     print('주문/배송 조회')
-    sql = text ('''
+    # 주문 정보, 주문서, 결제 상태, 배송 상태 등 여러 테이블에 흩어진 정보를 한 번에 엮어서 모아옴
+    sql = text('''
       select 
 	    o.order_sheet_id,
 	    o.user_id,
@@ -562,20 +600,22 @@ def order_list (request: Request, session: Session = Depends(get_session)):
     ''')
     results = session.execute(sql).mappings().fetchall()
 
+    # 주문 관리 화면(admin-orders.html)에 목록을 전달해 출력
     return templates.TemplateResponse(request, 'admin-orders.html', {
-        'order_list' : results
+        'order_list': results
     })
 
-#==============================================================================
-# 8. 예약 관리
-#==============================================================================
 
-#[예약 목록 조회]
+# ==============================================================================
+# 8. 상품 사전 예약 관리
+# ==============================================================================
+
+# [예약 목록 조회 및 대기 건수 확인]
 @app.get('/admin/reservations')
-def reservation_list (request: Request, session: Session = Depends(get_session)):
-    print ('예약 목록 조회')
+def reservation_list(request: Request, session: Session = Depends(get_session)):
+    print('예약 목록 조회')
 
-    # 예약 목록 조회 SQL문 
+    # 1) 손님이 신청한 예약 내역(예약자 이름, 상품 이름, 예약 수량, 처리 상태)을 가져옴
     sql = text('''
         select 
             r.reservation_id,
@@ -591,7 +631,8 @@ def reservation_list (request: Request, session: Session = Depends(get_session))
         left join users as u
             on r.user_id = u.user_id
     ''')
-    # 대기 중인 예약 목록 조회 SQL문 
+
+    # 2) 아직 처리되지 않고 '예약대기' 중인 상태의 총건수를 계산함
     sql2 = text('''
         select 
             count(*)
@@ -603,31 +644,34 @@ def reservation_list (request: Request, session: Session = Depends(get_session))
     ''')
 
     results = session.execute(sql).mappings().fetchall()
-
     results2 = session.execute(sql2).mappings().fetchall()
 
+    # 예약 관리 화면(admin-reservations.html)에 예약 명단과 대기 건수를 함께 표시
     return templates.TemplateResponse(request, 'admin-reservations.html', {
-        'reservation_list' : results,
-        'reservation_wait' : results2[0]['count(*)']
+        'reservation_list': results,
+        'reservation_wait': results2[0]['count(*)']
     })
 
+
+# [예약 건 삭제/취소]
 @app.get('/api/delete/reservations/{reservation_id}')
-def delete_reservation(reservation_id : int, session:Session = Depends(get_session)):
-    print('예약 삭제 실행' , reservation_id)
+def delete_reservation(reservation_id: int, session: Session = Depends(get_session)):
+    print('예약 삭제 실행', reservation_id)
+    # 선택한 예약 번호를 창고에서 지워버림
     sql = text('''
         delete from reservation
         where  reservation_id = :reservation_id
     ''')
-    session.execute(sql, {'reservation_id' : reservation_id})
+    session.execute(sql, {'reservation_id': reservation_id})
     session.commit()
 
     return RedirectResponse(url='/admin/reservations', status_code=303)
 
-
-#==============================================================================
-# 웹 서버 직접 실행 구문
-#==============================================================================
+# ==============================================================================
+# 웹 서버 프로그램 실행 시작점
+# ==============================================================================
 if __name__ == "__main__":
     import uvicorn
-    # 0.0.0.0 주소와 8085 포트에서 서버를 실행하며, 코드 변경 시 자동 재시작(reload=True) 설정
+    # 외부 접속이 가능하도록 '0.0.0.0' 주소와 '8085' 통로(포트)를 열고 서버를 실행
+    # (reload=True는 파이썬 코드를 수정하고 저장하면 알아서 서버가 재시작되는 옵션)
     uvicorn.run("admin:app", port=8085, reload=True, host="0.0.0.0")
