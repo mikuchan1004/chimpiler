@@ -87,7 +87,13 @@
                     <td>{{reservation.product_name}}</td>
                     <td>{{reservation.product_reservation_stock}}</td>
                     <td>{{reservation.reservation_quantity}}</td>
-                    <td>{{reservation.reservation_turn}}</td>
+                    <td>
+                        {% if reservation.reservation_status_name == '구매가능' %}
+                            -
+                        {% else%}
+                            {{reservation.reservation_turn}}
+                        {% endif %}
+                    </td>
                         
                     <td>
                         {% if reservation.reservation_status_name == '구매가능' %}
