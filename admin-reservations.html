@@ -85,7 +85,7 @@
                     <td>{{reservation.user_name}}</td>
                     <td>{{reservation.product_name}}</td>
                     <td>{{reservation.reservation_quantity}}</td>
-                    <td>1</td>
+                    <td>{{reservation.reservation_turn}}</td>
                     <td>
                         {% if reservation.reservation_status_name == '예약완료' %}
                         <span class="badge success">{{reservation.reservation_status_name}}</span>
