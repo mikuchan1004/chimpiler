@@ -628,7 +628,7 @@ def reservation_list( request: Request,session: Session = Depends(get_session)):
             r.reservation_expiration,
             (
                 select count(*) from reservation 
-                where product_id = p.product_id
+                where product_id = r.product_id
                 and reservation_status_id = 3
                 and reservation_id <= r.reservation_id
             ) as reservation_turn 
