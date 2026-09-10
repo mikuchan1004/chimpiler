@@ -81,7 +81,6 @@ def get_session():
 # 3. 단순 페이지 이동 및 대시보드 화면 보여주기
 # ==============================================================================
 
-# [관리자 대시보드 메인 화면] 인터넷 주소: /admin 접속 시 실행
 def admin_session_check(request:Request):
         print  ('관리자 세션인지 아닌지 검사합니다.')
         if request.session.get('user_id') == 'admin':
@@ -91,6 +90,7 @@ def admin_session_check(request:Request):
                 url='/error-404',
                 status_code = 303 
             )
+# [관리자 대시보드 메인 화면] 인터넷 주소: /admin 접속 시 실행
 @app.get('/admin')
 def dashboard(request: Request, session: Session = Depends(get_session)):
     # 1) 창고에서 '남은 판매 재고가 0개'인 품절 상품의 총개수를 세어옴
@@ -162,10 +162,10 @@ def dashboard(request: Request, session: Session = Depends(get_session)):
         'reservation_count': results5[0]['count(*)'] # 전체 예약 건수
     })
 
-# [일반 메인 홈 화면] 인터넷 주소: / 접속 시 실행
 def price(value) :
     return f'{int(value):,}'
 templates.env.filters['price'] = price
+# [일반 메인 홈 화면] 인터넷 주소: / 접속 시 실행
 @app.get('/')
 def mainPage(request: Request, session: Session = Depends(get_session)) :
     print('''
