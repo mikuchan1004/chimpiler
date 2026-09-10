@@ -26,30 +26,96 @@
             <a class="tab" href="/faq">자주 묻는 질문</a>
             <a class="tab" href="/inquiry-write">1:1 문의</a>
         </nav>
+        <div class="community-admin-toolbar">
+            <span>공지사항 관리</span>
+
+            <a class="button small" href="#">
+                ＋ 공지 작성
+            </a>
+        </div>
         <section class="post-list notice-accordion" id="noticeList">
-            <details class="notice-item">
-                <summary class="post-row"><span class="badge">공지</span><strong class="post-title">예약구매 서비스 이용
-                        안내</strong><span>관리자</span><time class="post-date">2026.09.04</time></summary>
-                <div class="notice-detail">
-                    <p>품절 상품은 예약구매를 신청할 수 있으며, 재고가 입고되면 예약 순서대로 구매 가능 상태로 전환됩니다.</p>
-                    <p>구매 가능 기한과 현재 순위는 마이페이지의 예약 관리에서 확인해 주세요.</p>
+            <!-- 공지사항 예제 1 -->
+            <div class="community-admin-item">
+                <details class="notice-item" open>
+                    <summary class="post-row">
+                        <span class="badge">공지</span>
+
+                        <strong class="post-title">
+                            예약구매 서비스 이용 안내
+                        </strong>
+
+                        <span>관리자</span>
+
+                        <time class="post-date">
+                            2026.09.04
+                        </time>
+                    </summary>
+
+                    <div class="notice-detail">
+                        <p>
+                            품절 상품은 예약구매를 신청할 수 있으며,
+                            재고가 입고되면 예약 순서대로 구매 가능 상태로 전환됩니다.
+                        </p>
+
+                        <p>
+                            구매 가능 기한과 현재 순위는
+                            마이페이지의 예약 관리에서 확인해 주세요.
+                        </p>
+                    </div>
+                </details>
+
+                <div class="community-item-actions">
+                    <a class="community-edit-button" href="#">
+                        수정
+                    </a>
+
+                    <form action="#" method="post">
+                        <button class="community-delete-button" type="submit">
+                            삭제
+                        </button>
+                    </form>
                 </div>
-            </details>
-            <details class="notice-item">
-                <summary class="post-row"><span>2</span><strong class="post-title">배송 정책
-                        안내</strong><span>관리자</span><time class="post-date">2026.09.02</time></summary>
-                <div class="notice-detail">
-                    <p>결제 완료 후 상품 준비가 시작되며, 배송이 시작되면 주문·배송 조회 화면에서 상태를 확인할 수 있습니다.</p>
+            </div>
+
+            <!-- 공지사항 예제 2 -->
+            <div class="community-admin-item">
+                <details class="notice-item">
+                    <summary class="post-row">
+                        <span>2</span>
+
+                        <strong class="post-title">
+                            배송 정책 안내
+                        </strong>
+
+                        <span>관리자</span>
+
+                        <time class="post-date">
+                            2026.09.02
+                        </time>
+                    </summary>
+
+                    <div class="notice-detail">
+                        <p>
+                            결제 완료 후 상품 준비가 시작되며,
+                            배송이 시작되면 주문·배송 조회 화면에서
+                            상태를 확인할 수 있습니다.
+                        </p>
+                    </div>
+                </details>
+
+                <div class="community-item-actions">
+                    <a class="community-edit-button" href="#">
+                        수정
+                    </a>
+
+                    <form action="#" method="post">
+                        <button class="community-delete-button" type="submit">
+                            삭제
+                        </button>
+                    </form>
                 </div>
-            </details>
-            <details class="notice-item">
-                <summary class="post-row"><span>1</span><strong class="post-title">CHIMPILER HEALTHCARE 오픈
-                        안내</strong><span>관리자</span><time class="post-date">2026.09.01</time></summary>
-                <div class="notice-detail">
-                    <p>건강 상품 추천과 예약구매 서비스를 제공하는 CHIMPILER HEALTHCARE가 문을 열었습니다.</p>
-                </div>
-            </details>
-        </section>
+            </div>
+</section>
         <nav class="pagination">
             <button class="page-button">이전</button>
             <button class="page-button active">1</button>

@@ -522,13 +522,22 @@
 
 .purchase-bar {
     display: flex;
-    gap: 10px;
+    gap: 12px;
 }
 
-.purchase-bar .button {
+.purchase-bar > form {
+    display: flex;
+    flex: 1;
+    margin: 0;
+}
+
+.purchase-bar > form .button {
+    width: 100%;
+}
+
+.purchase-bar > .button {
     flex: 1;
 }
-
 .detail-content {
     grid-area: content;
     min-width: 0;
@@ -797,6 +806,112 @@
     border-radius: 12px;
 }
 
+.cart-quantity-form {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.cart-row-buttons {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.cart-row-buttons form {
+    margin: 0;
+}
+
+.cart-item {
+    display: grid;
+    grid-template-columns: auto 100px minmax(220px, 1fr) auto;
+    align-items: center;
+    gap: 20px;
+    padding: 24px;
+}
+
+.cart-checkbox {
+    width: 18px;
+    height: 18px;
+}
+
+.cart-thumb {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 14px;
+}
+
+.cart-item-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+}
+
+.cart-item-name {
+    font-size: 17px;
+    color: var(--navy);
+}
+
+.cart-item-price-text {
+    margin: 4px 0 8px;
+}
+
+.cart-quantity-form {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+}
+
+.cart-quantity-form .quantity {
+    height: 40px;
+}
+
+.cart-quantity-form > .button {
+    min-height: 40px;
+}
+
+.cart-item-actions {
+    display: flex;
+    min-width: 210px;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 14px;
+}
+
+.cart-item-total-price {
+    font-size: 18px;
+    color: var(--navy);
+}
+
+.cart-row-buttons {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.cart-row-buttons form {
+    margin: 0;
+}
+
+.cart-delete-button {
+    color: #d45151;
+    border-color: #efcaca;
+    background-color: #fff;
+}
+
+.cart-delete-button:hover {
+    color: #fff;
+    border-color: #dc5a5a;
+    background-color: #dc5a5a;
+}
+
 .quantity {
     display: inline-grid;
     grid-template-columns: 34px 42px 34px;
@@ -928,6 +1043,31 @@
     font-weight: 900;
 }
 
+.side-nav h2 {
+    margin: 8px 14px 18px;
+    color: var(--navy);
+    font-size: 24px;
+    font-weight: 900;
+}
+
+.side-nav a {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 14px;
+    border-radius: 9px;
+    color: var(--muted);
+}
+
+.side-nav-icon {
+    display: inline-flex;
+    width: 18px;
+    flex: 0 0 18px;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}
+
 .dashboard-cards {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -957,6 +1097,23 @@
     aspect-ratio: 1;
     object-fit: cover;
     border-radius: 12px;
+}
+
+.order-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    flex-wrap: nowrap;
+}
+
+.reservation-cancel-form {
+    display: flex;
+    margin: 0;
+}
+
+.order-actions .button {
+    white-space: nowrap;
 }
 
 .community-shell {
@@ -1311,4 +1468,197 @@
 
 .review-report-submit:hover {
     background-color: #bd4545;
+}
+
+.priority-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(23, 32, 51, 0.48);
+}
+
+.priority-modal.is-open {
+    display: flex;
+}
+
+.priority-modal-box {
+    width: min(420px, 100%);
+    overflow: hidden;
+    border-radius: 20px;
+    background: #ffffff;
+    box-shadow: 0 24px 60px rgba(23, 32, 51, 0.22);
+}
+
+.priority-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    border-bottom: 1px solid #e1e7e4;
+}
+
+.priority-modal-header h2 {
+    margin: 0;
+    font-size: 20px;
+}
+
+.priority-modal-close {
+    border: 0;
+    background: transparent;
+    color: #667085;
+    font-size: 28px;
+    cursor: pointer;
+}
+
+.priority-modal-body {
+    padding: 32px 24px;
+    text-align: center;
+}
+
+.priority-modal-body p {
+    margin: 16px 0 0;
+    color: #344054;
+    line-height: 1.7;
+}
+
+.priority-modal-body strong {
+    color: #2d9d73;
+    font-size: 20px;
+}
+
+.priority-icon {
+    display: inline-flex;
+    width: 58px;
+    height: 58px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #e2f7ed;
+    color: #2d9d73;
+    font-size: 28px;
+    font-weight: 800;
+}
+
+.priority-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding: 16px 24px 20px;
+    border-top: 1px solid #e1e7e4;
+}
+
+.priority-confirm-button {
+    min-width: 92px;
+}
+
+.community-admin-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin: 18px 0;
+    padding: 14px 18px;
+    border: 1px solid #cce9dc;
+    border-radius: 14px;
+    background: #effaf5;
+    color: var(--purple-dark);
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.community-admin-item {
+    position: relative;
+    overflow: hidden;
+    border-radius: 16px;
+}
+
+.community-item-actions {
+    position: absolute;
+    top: 13px;
+    right: 16px;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.community-item-actions form {
+    margin: 0;
+}
+
+.community-edit-button,
+.community-delete-button {
+    display: inline-flex;
+    min-height: 32px;
+    align-items: center;
+    justify-content: center;
+    padding: 0 11px;
+    border-radius: 8px;
+    background: #ffffff;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.community-edit-button {
+    border: 1px solid #b8dccc;
+    color: var(--purple-dark);
+}
+
+.community-delete-button {
+    border: 1px solid #efb7bb;
+    color: #d94850;
+}
+
+.community-edit-button:hover {
+    background: #e8f7f0;
+}
+
+.community-delete-button:hover {
+    background: #fff0f1;
+}
+
+.community-admin-item .post-row {
+    padding-right: 150px;
+}
+
+.faq-admin-item .faq-card summary {
+    padding-right: 150px;
+}
+
+.community-editor {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 30px;
+}
+
+.community-editor-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 28px;
+}
+
+.community-editor-form {
+    display: grid;
+    gap: 22px;
+}
+
+.community-editor-content {
+    min-height: 280px;
+    padding: 16px;
+    resize: vertical;
+    line-height: 1.7;
+}
+
+.community-editor-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding-top: 4px;
 }

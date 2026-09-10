@@ -358,7 +358,16 @@
     .order-actions {
         grid-column: 1 / -1;
         display: flex;
+        align-items: center;
+        justify-content: flex-end;
         gap: 8px;
+        flex-wrap: nowrap;
+    }
+
+    .order-actions .button {
+        min-height: 38px;
+        padding: 0 10px;
+        font-size: 12px;
     }
 
     .post-row {
@@ -463,6 +472,41 @@
         margin-left: 0;
         justify-content: space-between;
     }
+
+    .community-admin-toolbar {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .community-admin-toolbar .button {
+        width: 100%;
+    }
+
+    .community-item-actions {
+        position: static;
+        justify-content: flex-end;
+        padding: 10px 12px;
+        border-top: 1px solid var(--line);
+        background: #ffffff;
+    }
+
+    .community-admin-item .post-row,
+    .faq-admin-item .faq-card summary {
+        padding-right: 16px;
+    }
+
+    .community-editor {
+        padding: 22px 18px;
+    }
+
+    .community-editor-header {
+        flex-direction: column;
+    }
+
+    .community-editor-actions .button {
+        flex: 1;
+    }
+
 }
 
 @media (max-width: 980px) {
@@ -478,5 +522,40 @@
 
     .admin-welcome {
         margin-left: 12px;
+    }
+    
+    .side-nav h2 {
+        display: none;
+    }
+    
+    .side-nav a {
+        flex: 0 0 auto;
+    }
+}
+
+
+@media (max-width: 760px) {
+    .cart-item {
+        grid-template-columns: auto 80px 1fr;
+        gap: 14px;
+    }
+
+    .cart-thumb {
+        width: 80px;
+        height: 80px;
+    }
+
+    .cart-item-actions {
+        grid-column: 2 / 4;
+        width: 100%;
+        align-items: stretch;
+    }
+
+    .cart-item-total-price {
+        text-align: right;
+    }
+
+    .cart-row-buttons {
+        justify-content: flex-end;
     }
 }

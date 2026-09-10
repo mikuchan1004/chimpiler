@@ -22,24 +22,66 @@
             <a class="tab active" href="/faq">자주 묻는 질문</a>
             <a class="tab" href="/inquiry-write">1:1 문의</a>
         </nav>
+        <div class="community-admin-toolbar">
+            <span>FAQ 관리</span>
+
+            <a class="button small" href="#">
+                ＋ FAQ 작성
+            </a>
+        </div>
         <section class="summary-list" id="faqList">
-            <details class="faq-card" open>
-                <summary>예약구매는 어떻게 이용하나요?</summary>
-                <p>품절 상품에서 예약구매를 신청하면 입고 순서에 따라 구매 기회를 제공합니다.</p>
-            </details>
-            <details class="faq-card">
-                <summary>AI 건강 체크는 의료 진단인가요?</summary>
-                <p>생활습관 관리를 위한 참고 기능으로 의료 진단이나 처방을 대신하지 않습니다.</p>
-            </details>
-            <details class="faq-card">
-                <summary>주문 취소는 어디서 하나요?</summary>
-                <p>마이페이지의 주문·배송 조회에서 주문 상태에 따라 취소할 수 있습니다.</p>
-            </details>
-            <details class="faq-card">
-                <summary>배송 상태는 어디에서 확인하나요?</summary>
-                <p>마이페이지의 주문·배송 조회에서 결제와 배송 상태를 함께 확인할 수 있습니다.</p>
-            </details>
-        </section>
+            <!-- FAQ 예제 1 -->
+            <div class="community-admin-item faq-admin-item">
+                <details class="faq-card" open>
+                    <summary>
+                        예약구매는 어떻게 이용하나요?
+                    </summary>
+
+                    <p>
+                        품절 상품에서 예약구매를 신청하면
+                        입고 순서에 따라 구매 기회를 제공합니다.
+                    </p>
+                </details>
+
+                <div class="community-item-actions">
+                    <a class="community-edit-button" href="#">
+                        수정
+                    </a>
+
+                    <form action="#" method="post">
+                        <button class="community-delete-button" type="submit">
+                            삭제
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- FAQ 예제 2 -->
+            <div class="community-admin-item faq-admin-item">
+                <details class="faq-card">
+                    <summary>
+                        AI 건강 체크는 의료 진단인가요?
+                    </summary>
+
+                    <p>
+                        생활습관 관리를 위한 참고 기능으로
+                        의료 진단이나 처방을 대신하지 않습니다.
+                    </p>
+                </details>
+
+                <div class="community-item-actions">
+                    <a class="community-edit-button" href="#">
+                        수정
+                    </a>
+
+                    <form action="#" method="post">
+                        <button class="community-delete-button" type="submit">
+                            삭제
+                        </button>
+                    </form>
+                </div>
+            </div>
+</section>
     </div>
 </main>
 {% endblock %}
