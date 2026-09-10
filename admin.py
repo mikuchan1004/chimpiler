@@ -695,7 +695,7 @@ def process_purchace(reservation_id: int, session: Session = Depends(get_session
         and (
             /*MariaDB 에러를 피하기 위해 테이블을 한번 감싸줌 (by Google Gemini) */
             /* 
-            이렇게 해두면 DB가 알아서 "이 녀석이 정말 1순위가 맞나?" 꼼꼼하게 검사하고,  진짜 1번 대기자일 때만
+            이렇게 해두면 DB가 알아서 "이 녀석이 정말 1순위가 맞나?" 꼼꼼하게 검사하고, 진짜 1번 대기자일 때만
             '구매 가능(2)' 상태로 허락을 해준다고 합니다. 조건이 안맞으면 아예 업데이트를 안하기 떄문에 
             새치기는 절대로 불가능하다고 합니다. (by Google Gemini)
             */
