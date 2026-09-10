@@ -82,9 +82,7 @@ def get_session():
 # ==============================================================================
 
 # [관리자 대시보드 메인 화면] 인터넷 주소: /admin 접속 시 실행
-@app.get('/admin')
-def dashboard(request: Request, session: Session = Depends(get_session)):
-    def admin_session_check(request:Request):
+def admin_session_check(request:Request):
         print  ('관리자 세션인지 아닌지 검사합니다.')
         if request.session.get('user_id') == 'admin':
             return templates.TemplateResponse(request, 'admin-dashboard.html')
@@ -93,6 +91,8 @@ def dashboard(request: Request, session: Session = Depends(get_session)):
                 url='/error-404',
                 status_code = 303 
             )
+@app.get('/admin')
+def dashboard(request: Request, session: Session = Depends(get_session)):
     # 1) 창고에서 '남은 판매 재고가 0개'인 품절 상품의 총개수를 세어옴
     sql1 = text('''
     select count(*)
@@ -163,6 +163,9 @@ def dashboard(request: Request, session: Session = Depends(get_session)):
     })
 
 # [일반 메인 홈 화면] 인터넷 주소: / 접속 시 실행
+def price(value) :
+    return f'{int(value):,}'
+templates.env.filters['price'] = price
 @app.get('/')
 def mainPage(request: Request, session: Session = Depends(get_session)) :
     print('''
