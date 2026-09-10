@@ -71,6 +71,7 @@
                     <th>예약ID</th>
                     <th>회원</th>
                     <th>상품</th>
+                    <th>예약 재고</th>
                     <th>수량</th>
                     <th>순번</th>
                     <th>상태</th>
@@ -84,10 +85,12 @@
                     <td>{{reservation.reservation_id}}</td>
                     <td>{{reservation.user_name}}</td>
                     <td>{{reservation.product_name}}</td>
+                    <td>{{reservation.product_reservation_stock}}</td>
                     <td>{{reservation.reservation_quantity}}</td>
                     <td>{{reservation.reservation_turn}}</td>
+                        
                     <td>
-                        {% if reservation.reservation_status_name == '예약완료' %}
+                        {% if reservation.reservation_status_name == '구매가능' %}
                         <span class="badge success">{{reservation.reservation_status_name}}</span>
                         {% else %}
                         <span class="badge warning">{{reservation.reservation_status_name}}</span>
@@ -107,6 +110,11 @@
                         <a href="/api/delete/reservations/{{reservation.reservation_id}}">
                             <button class="button danger small" id="removereservationButton" type="button">예약
                                 삭제</button>
+                        </a>
+                        <a href="/api/process_purchase/{{reservation.reservation_id}}">
+                            <button class="button  success small" id="processpurchaseButton" type="button">
+                                구매 가능 처리
+                            </button>
                         </a>
                     </td>
                 </tr>
