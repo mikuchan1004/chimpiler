@@ -30,6 +30,9 @@ import shutil
 # 손님이 입력한 상품 정보를 규격에 맞게 묶어주는 데이터 서식(틀)
 from DTO.ProductDTO import Product
 
+# 랜덤 
+import random
+
 # 손님이 올린 상품 사진들을 모아둘 서버 컴퓨터 안의 폴더 위치 ('static/images')
 dir = Path('static/images')
 
@@ -42,6 +45,11 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 # HTML 화면 파일들이 모여 있는 기본 폴더 위치를 현재 폴더('.')로 지정
 templates = Jinja2Templates(directory='.')
 
+# 세션 미들웨어 설정 
+from starlette.middleware.sessions import SessionMiddleware
+
+# secret_key 설정 
+app.add_middleware(SessionMiddleware, secret_key= 'chimpiler-session-key') 
 
 # ==============================================================================
 # 2. 데이터베이스(DB: 정보 저장 창고) 연결 설정
@@ -72,11 +80,19 @@ def get_session():
 # ==============================================================================
 # 3. 단순 페이지 이동 및 대시보드 화면 보여주기
 # ==============================================================================
+
 # [관리자 대시보드 메인 화면] 인터넷 주소: /admin 접속 시 실행
 @app.get('/admin')
 def dashboard(request: Request, session: Session = Depends(get_session)):
-    print('/admin 실행')
-
+    def admin_session_check(request:Request):
+        print  ('관리자 세션인지 아닌지 검사합니다.')
+        if request.session.get('user_id') == 'admin':
+            return templates.TemplateResponse(request, 'admin-dashboard.html')
+        else:
+            return RedirectResponse(
+                url='/error-404',
+                status_code = 303 
+            )
     # 1) 창고에서 '남은 판매 재고가 0개'인 품절 상품의 총개수를 세어옴
     sql1 = text('''
     select count(*)
@@ -146,14 +162,130 @@ def dashboard(request: Request, session: Session = Depends(get_session)):
         'reservation_count': results5[0]['count(*)'] # 전체 예약 건수
     })
 
-
 # [일반 메인 홈 화면] 인터넷 주소: / 접속 시 실행
 @app.get('/')
-def main(request: Request, session: Session = Depends(get_session)):
-    print('/ 실행')
-    # main.html 첫 화면을 손님 웹 브라우저에 띄워줌
-    return templates.TemplateResponse(request, 'main.html')
+def mainPage(request: Request, session: Session = Depends(get_session)) :
+    print('''
+    ========================================
+    / : 메인 페이지 실행
+    ========================================
+    ''')
 
+    # print(request.session.get('isLogin'))
+    # print(request.session.get('id'))
+
+    # 전체 상품 로드구간
+    sql = text('''
+        select * from product
+    ''')
+
+    result = session.execute(sql) 
+    product_list_main = result.mappings().fetchall()
+    # print(product_list_main)
+
+    product_random_main = []
+
+    while len(product_random_main) < 4 :
+        check = product_list_main[random.randint(0,len(product_list_main)-1)].get('product_id', 0)
+        
+        if check not in product_random_main:
+            product_random_main.append(check)
+
+    # 조회순 상품 로드구간
+    sql_view = text('''
+        select * from product
+        order by product_view_count desc
+        limit 10
+    ''')
+
+    result_view = session.execute(sql_view)
+    product_view_main = result_view.mappings().fetchall()
+    # print('product_view_main', product_view_main)
+
+    # print(product_view_main[0])
+
+    # print(product_view_main[0]['product_price'])
+    # print(len(product_view_main))
+
+    return templates.TemplateResponse(request, 'main.html', {
+        'product_list_main' : product_list_main,
+        'product_view_main' : product_view_main,
+        'product_view_main_len' : len(product_view_main),
+        'product_random_1' : product_random_main[0],
+        'product_random_2' : product_random_main[1],
+        'product_random_3' : product_random_main[2],
+        'product_random_4' : product_random_main[3],
+    })
+
+# [404 페이지 이동]
+@app.get('/error-404')
+def error_page(request:Request):
+    print('404 페이지 이동')
+    return templates.TemplateResponse(request, 'error-404.html')
+
+# [로그인 페이지 이동]
+@app.get('/login')
+def loginloading(request: Request):
+    print('''
+    ========================================
+    /login : 로그인 페이지 로딩
+    ========================================
+    ''')
+    return templates.TemplateResponse(request, 'login.html')
+
+# [로그인 / 로그아웃]
+@app.post('/login')
+def login(request: Request, user_id:str = Form(), user_password:str = Form(), session: Session = Depends(get_session)) :
+    print('''
+    ========================================
+    /login : 로그인 페이지 실행
+    ========================================
+    ''')
+
+    sql = text('''
+        select * from users
+        where user_id = :user_id
+    ''')
+
+    result = session.execute(sql, {
+        'user_id' : user_id
+    })
+    login_check = result.mappings().fetchone()
+
+    print(login_check)
+
+    if login_check :
+        if user_password == login_check['user_password'] :
+            # print('ID PW 같아요!!!')
+
+            request.session['isLogin'] = True
+            request.session['user_id'] = user_id
+            request.session['user_name'] = login_check['user_name']
+
+            print('/login : 로그인 성공')
+            return RedirectResponse(
+                url='/',
+                status_code=303
+            )
+
+    print('/login : 로그인 실패')
+    return templates.TemplateResponse(request, 'login.html', {
+        'login_error': '아이디 또는 비밀번호가 일치하지 않습니다.'
+    })
+
+@app.get('/logout')
+def logout(request:Request):
+    print('''
+    ========================================
+    /logout : 로그아웃 페이지 실행
+    ========================================
+    ''')
+    request.session.clear()
+
+    return RedirectResponse(
+        url='/',
+        status_code=303
+    )
 
 # ==============================================================================
 # 4. 상품 관리 기능 (목록 보기, 새 상품 등록, 수정, 삭제, 품절 처리)
