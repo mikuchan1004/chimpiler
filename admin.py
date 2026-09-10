@@ -612,19 +612,26 @@ def order_list(request: Request, session: Session = Depends(get_session)):
 
 # [예약 목록 조회 및 대기 건수 확인]
 @app.get('/admin/reservations')
-def reservation_list(request: Request, session: Session = Depends(get_session)):
+def reservation_list( request: Request,session: Session = Depends(get_session)):
     print('예약 목록 조회')
 
-    # 1) 손님이 신청한 예약 내역(예약자 이름, 상품 이름, 예약 수량, 처리 상태, 예약일, 예약만료일)을 가져옴
+    # 1) 손님이 신청한 예약 내역(예약자 이름, 상품 이름, 예약 수량, 처리 상태, 예약일, 예약만료일 , 예약순번)을 가져옴
     sql = text('''
         select 
             r.reservation_id,
             u.user_name,
             p.product_name,
+            p.product_id,
             r.reservation_quantity,
             rs.reservation_status_name,
             r.reservation_date,
-            r.reservation_expiration
+            r.reservation_expiration,
+            (
+                select count(*) from reservation 
+                where product_id = p.product_id
+                and reservation_status_id = 3
+                and reservation_id <= r.reservation_id
+            ) as reservation_turn 
         from reservation as r
         left join product as p 
             on r.product_id = p.product_id
@@ -644,6 +651,7 @@ def reservation_list(request: Request, session: Session = Depends(get_session)):
         where 
             rs.reservation_status_name = '예약대기'
     ''')
+
 
     results = session.execute(sql).mappings().fetchall()
     results2 = session.execute(sql2).mappings().fetchall()
