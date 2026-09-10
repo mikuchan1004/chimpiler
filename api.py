@@ -319,20 +319,40 @@ def productsDetail(request: Request, product_id:int, reservation: str = None, se
 
 @app.post('/product/review')
 def productReview (
+    request:Request,
     product_id:int = Form(), 
     review_score:int = Form(), 
     review_content:str = Form(),
-    user_id:str = Form(),
     session: Session = Depends(get_session)):
     print('''
     ========================================
     /product/review : 리뷰 작성 실행
     ========================================
     ''')
+    user_id = request.session.get('user_id')
+
     print(product_id)
     print(review_score)
     print(review_content)
     print(user_id)
+
+    if user_id == None:
+        return RedirectResponse(
+            url='/login',
+            status_code=303
+        )
+
+    if review_score < 1 or review_score > 5:
+        return RedirectResponse(
+            url=f'/product/detail/{product_id}',
+            status_code=303
+        )
+
+    if review_content.strip() == '':
+        return RedirectResponse(
+            url=f'/product/detail/{product_id}',
+            status_code=303
+        )
 
     sql = text('''
         insert into product_review (product_review, product_rating, product_id, user_id)
@@ -431,7 +451,6 @@ def productReservation (
 @app.get('/cart')
 def cart(
     request: Request,
-    user_id: str,
     session: Session = Depends(get_session)) :
     print('''
     ========================================
@@ -439,17 +458,31 @@ def cart(
     ========================================
     ''')
 
+    user_id = request.session.get('user_id')
+
+    if user_id == None:
+        return RedirectResponse(
+            url='/login',
+            status_code=303
+        )
+
     print('장바구니에 담긴 ID : ',user_id)
 
     sql_cart = text('''
-        select *, 
-        ca.product_quantity as cart_quantity, 
-        sum(ca.product_quantity) * pr.product_price as cart_price 
+        select
+            ca.cart_id,
+            ca.product_quantity,
+            pr.product_id,
+            pr.product_name,
+            pr.product_image,
+            pr.product_price,
+            pr.product_sale_stock,
+            pr.product_active
         from cart as ca
-        join users as us on (ca.user_id = us.user_id)
-        join product as pr on (ca.product_id = pr.product_id)
+        join product as pr
+            on ca.product_id = pr.product_id
         where ca.user_id = :user_id
-        group by pr.product_name
+        order by ca.cart_id desc
     ''')
 
     result_cart = session.execute(sql_cart, {
@@ -457,8 +490,30 @@ def cart(
     })
     cart_list = result_cart.mappings().fetchall()
 
+    sql_cart_total_price = text('''
+        select sum(ca.product_quantity * pr.product_price) as total_price
+        from cart as ca
+        join product as pr 
+        on ca.product_id = pr.product_id
+        where ca.user_id = :user_id
+        order by ca.cart_id desc;
+    ''')
+
+    result_cart_total_price = session.execute(sql_cart_total_price, {
+        'user_id' : user_id
+    })
+
+    cart_total_price_result = result_cart_total_price.mappings().fetchone()
+    # print(cart_total_price)
+
+    cart_total_price = cart_total_price_result['total_price']
+
+    if cart_total_price == None:
+        cart_total_price = 0
+
     return templates.TemplateResponse(request, 'cart.html', {
-        'cart_list' : cart_list
+        'cart_list' : cart_list,
+        'cart_total_price' : cart_total_price
     })
 
 @app.post('/cart')
@@ -474,6 +529,18 @@ def cartAdd(
     ''')
 
     user_id = request.session.get('user_id')
+
+    if user_id == None:
+        return RedirectResponse(
+            url='/login',
+            status_code=303
+        )
+
+    if cart_quantity < 1 :
+        return RedirectResponse(
+            url=f'/product/detail/{product_id}',
+            status_code=303
+        )
 
     print('cart_quantity : ', cart_quantity)
     print('user_id : ', user_id)
@@ -519,9 +586,147 @@ def cartAdd(
         session.commit()
 
     return RedirectResponse(
-        url=f'/cart?user_id={user_id}',
+        url='/cart',
         status_code=303
     )
+
+@app.post('/cart/delete')
+def cartDelete(
+    request:Request, 
+    cart_id: int = Form(), 
+    session: Session = Depends(get_session)):
+    print('''
+    ========================================
+    /cart/delete : 장바구니 상품 삭제 실행
+    ========================================
+    ''')
+    print('cart_id : ', cart_id)
+
+    user_id = request.session.get('user_id')
+    print('user_id : ', user_id)
+
+    if user_id == None:
+        return RedirectResponse(
+            url='/login',
+            status_code=303
+        )
+
+    sql_delete = text('''
+        delete from cart
+        where cart_id = :cart_id and user_id = :user_id
+    ''')
+
+    session.execute(sql_delete, {
+        'cart_id' : cart_id,
+        'user_id' : user_id
+    })
+    session.commit()
+
+    return RedirectResponse(
+        url='/cart',
+        status_code=303
+    )
+
+@app.post('/cart/update')
+def cartUpdate(
+    request:Request, 
+    cart_id:int = Form(), 
+    product_quantity: int = Form(),
+    session: Session = Depends(get_session)):
+    print('''
+    ========================================
+    /cart/update : 장바구니 수량 변경 실행
+    ========================================
+    ''')
+
+    user_id = request.session.get('user_id')
+
+    if user_id == None:
+        return RedirectResponse(
+            url='/login',
+            status_code=303
+        )
+
+    if product_quantity < 1 or product_quantity > 10:
+        return RedirectResponse(
+            url='/cart',
+            status_code=303
+        )
+
+    sql_update = text('''
+        update cart
+        set product_quantity = :product_quantity
+        where cart_id = :cart_id and user_id = :user_id 
+    ''')
+
+    session.execute(sql_update, {
+        'cart_id' : cart_id,
+        'user_id' : user_id,
+        'product_quantity' : product_quantity
+    })
+    session.commit()
+
+    return RedirectResponse(
+        url='/cart',
+        status_code=303
+    )
+
+@app.post('/cart/deleteSelect')
+def cartDeleteSelect(
+    request: Request,
+    deleteSelectList: list[int],
+    session: Session = Depends(get_session)):
+
+    if len(deleteSelectList) == 0:
+        return {
+            'result': '삭제할 상품을 선택해 주세요.'
+        }
+
+    user_id = request.session.get('user_id')
+
+    if user_id == None:
+        return RedirectResponse(
+            url='/login',
+            status_code=303
+        )
+
+    deleteList = ''
+
+    for deleteIndex in deleteSelectList :
+        deleteList += str(deleteIndex) + ','
+
+    deleteList = deleteList[:-1]
+    print(deleteList)
+
+    sql_deleteSelect = text(f'''
+        select count(*) as deleteCount from cart
+        where user_id = :user_id
+        and cart_id in ({deleteList})
+    ''')
+
+    result_deleteSelect= session.execute(sql_deleteSelect, {
+        'user_id' : user_id
+    })
+
+    deleteSelect = result_deleteSelect.mappings().fetchone()
+    print('deleteSelect 결과물 : ', deleteSelect)
+
+    deleteCount = deleteSelect['deleteCount']
+
+    sql_delete = text(f'''
+        delete from cart
+        where user_id = :user_id
+        and cart_id in ({deleteList})
+    ''')
+
+    session.execute(sql_delete, {
+        'user_id' : user_id
+    })
+    session.commit()
+
+    return {
+        'result' : f'총 {deleteCount}건이 삭제되었습니다.'
+    }
 
 # 레이아웃 페이지 이동용_관리자페이지
 @app.get('/admin')
@@ -581,7 +786,6 @@ def adminOrders(request: Request) :
         )
 
 @app.get('/admin/products')
-
 def adminProducts(request: Request) :
     print('''
     ========================================
@@ -644,7 +848,18 @@ def checkout(request: Request) :
     /checkout : 주문서 작성 실행
     ========================================
     ''')
+
     return templates.TemplateResponse(request, 'checkout.html')
+
+@app.post('/checkout')
+def checkoutBuy (buy_quantity: int = Form(), product_id:int = Form()) :
+    print(buy_quantity)
+    print(product_id)
+
+    return RedirectResponse(
+        url='/checkout',
+        status_code=303
+    )    
 
 # 레이아웃 페이지 이동용_커뮤니티
 @app.get('/notice')
@@ -793,13 +1008,130 @@ def mypageProfile(request: Request) :
     return templates.TemplateResponse(request, 'mypage-profile.html')
 
 @app.get('/mypage/reservations')
-def mypageReservations(request: Request) :
+def mypageReservations(request: Request, session: Session = Depends(get_session)) :
     print('''
     ========================================
     /mypage/reservations : 마이페이지 예약 관리 실행
     ========================================
     ''')
-    return templates.TemplateResponse(request, 'mypage-reservations.html')
+
+    user_id = request.session.get('user_id')
+
+    sql_mypage_reservation = text('''
+        select * 
+        from reservation as res
+        join product as pr
+            on res.product_id = pr.product_id
+        join users as us
+            on res.user_id = us.user_id
+        join reservation_status as stat 
+            on res.reservation_status_id  = stat.reservation_status_id
+        where res.user_id = :user_id
+        order by res.product_id, res.reservation_date, res.reservation_id;        
+    ''')
+
+    result_mypage_reservation = session.execute(sql_mypage_reservation, {
+        'user_id' : user_id
+    })
+
+    reservationList = result_mypage_reservation.mappings().fetchall()
+
+    # print(' reservationList : ' , reservationList)
+
+    return templates.TemplateResponse(request, 'mypage-reservations.html', {
+        'reservationList' : reservationList
+    })
+
+@app.post('/mypage/reservation/cancel')
+def mypageReservationCancle(
+    request: Request,
+    reservation_id: int = Form(), 
+    session: Session = Depends(get_session)) :
+    print('''
+    ========================================
+    /mypage/reservation/cancel : 마이페이지 예약 취소 실행
+    ========================================
+    ''')
+
+    user_id = request.session.get('user_id')
+
+    print('reservation_id 확인용 : ', reservation_id)
+    print('user_id 확인용 : ', user_id)
+
+    if user_id == None:
+        return RedirectResponse(
+            url='/login',
+            status_code=303
+        )
+
+    sql_reservation_delete = text('''
+        delete from reservation
+        where user_id = :user_id and reservation_id = :reservation_id
+    ''')
+
+    session.execute(sql_reservation_delete, {
+        'user_id' : user_id,
+        'reservation_id' : reservation_id
+    })
+    session.commit()
+
+    return RedirectResponse(
+        url='/mypage/reservations',
+        status_code=303
+    )  
+
+@app.post('/mypage/reservation/turn')
+def mypageReservationTurn(
+    request: Request,
+    reservation_id:int,
+    session: Session = Depends(get_session)):
+    print('''
+    ========================================
+    /mypage/reservation/turn : 마이페이지 우선순위 확인 실행
+    ========================================
+    ''')
+    user_id = request.session.get('user_id')
+    print(reservation_id)
+    print(user_id)
+
+    sql_reservation = text('''
+        select reservation_id, product_id
+        from reservation
+        where reservation_id = :reservation_id
+          and user_id = :user_id
+    ''')
+
+    reservation_result = session.execute(sql_reservation, {
+        'reservation_id': reservation_id,
+        'user_id': user_id
+    })
+
+    reservation = reservation_result.mappings().fetchone()
+
+    if reservation == None:
+        return {
+            'result': '예약정보를 찾을 수 없습니다.'
+        }
+
+    sql_reservation_turn = text('''
+        select count(*) as reservation_turn from reservation 
+        where product_id = :product_id 
+        and reservation_status_id = 3
+        and reservation_id <= :reservation_id
+    ''')
+
+    result_reservation_turn = session.execute(sql_reservation_turn, {
+        'user_id' : user_id,
+        'product_id': reservation['product_id'],
+        'reservation_id': reservation['reservation_id']
+    })
+
+    reservation_turn = result_reservation_turn.mappings().fetchone()
+
+    return {
+        'result' : '성공',
+        'reservation_count' : reservation_turn['reservation_turn']
+    }
 
 
 # 사용없음 정리
@@ -993,6 +1325,87 @@ def mypageReservations(request: Request) :
     #     'product_id' : product_id
     # })
     # session.commit()
+
+# @app.post('/cart/deleteSelect')
+# def cartDeleteSelect(
+#     request: Request,
+#     deleteSelectList: list[str],
+#     session: Session = Depends(get_session)):
+
+#     user_id = request.session.get('user_id')
+
+#     print(deleteSelectList)
+#     print(tuple(deleteSelectList))
+#     test = "''".join(deleteSelectList)
+#     test2 = str(tuple(deleteSelectList))
+#     print('tuplelen' ,len(tuple(deleteSelectList)))
+#     print(test)
+#     print(test2.replace(',', ''))
+
+    # test3 = ''
+    # test3_front = ''
+
+    # # for deleteSelect in deleteSelectList :
+    # #     print(deleteSelect)
+    # #     print(len(deleteSelectList))
+    # #     print(deleteSelectList.index(deleteSelect))
+
+    # #     if deleteSelectList.index(deleteSelect) == len(deleteSelectList) -1 :
+    # #         test3_front += f'({deleteSelect})'
+    # #     else :
+    # #         test3 = f'{test3_front} {deleteSelect}' 
+
+    # #     # if len(deleteSelectList) == 1 :
+    # #     #     test3 += f'{deleteSelect}'
+    # #     # else :
+    # #     #     test3 += f'{deleteSelect},'
+            
+    # print('test3_front : ', test3_front)
+    # print('test3 : ', test3)
+
+    # sql_test = text('''
+    #     select * from cart
+    #     where user_id = :user_id
+    #     in 
+    # '''+test2)
+
+    # test_result = session.execute(sql_test, {
+    #     'user_id' : user_id
+    # })
+
+    # result = test_result.mappings().fetchall()
+
+    # print(result)
+
+    # print(deleteSelectList)
+    # print(tuple(deleteSelectList))
+    # test = "''".join(deleteSelectList)
+    # test2 = str(tuple(deleteSelectList))
+    # print('tuplelen' ,len(tuple(deleteSelectList)))
+    # print(test)
+    # print(test2.replace(',', ''))
+    # delete_list = ''
+    # if len(tuple(deleteSelectList)) == 1 :
+    #     delete_list = str(tuple(deleteSelectList)).replace(',', '')
+    # else :
+    #     delete_list = str(tuple(deleteSelectList))
+
+    # print(delete_list)
+
+    # sql_test = text('''
+    #     select * from cart
+    #     where user_id = :user_id
+    #     in 
+    # '''+delete_list)
+
+    # test_result = session.execute(sql_test, {
+    #     'user_id' : user_id
+    # })
+
+    # result = test_result.mappings().fetchall()
+
+    # print('내가결과에요 : ', result)
+
 
 if __name__ == '__main__' :
     import uvicorn
