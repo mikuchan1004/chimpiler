@@ -716,6 +716,6 @@ def process_purchace(reservation_id: int, session: Session = Depends(get_session
 # ==============================================================================
 if __name__ == "__main__":
     import uvicorn
-    # 외부 접속이 가능하도록 '0.0.0.0' 주소와 '8085' 통로(포트)를 열고 서버를 실행
+    # 외부 접속이 가능하도록 '0.0.0.0' 주소와 '8000' 통로(포트)를 열고 서버를 실행
     # (reload=True는 파이썬 코드를 수정하고 저장하면 알아서 서버가 재시작되는 옵션)
-    uvicorn.run("admin:app", port=8085, reload=True, host="0.0.0.0")
+    uvicorn.run("admin:app", port=8000, reload=True, host="0.0.0.0")
