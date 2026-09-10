@@ -70,13 +70,7 @@
                             <td>{{orders.order_sheet_id}}</td>
                             <td>{{orders.order_name}}</td>
                             <td>{{orders.order_total_price}}</td>
-                            <td>
-                                {% if orders.order_status_name == '주문접수' %}
-                                <span class="badge warning">{{orders.order_status_name}}</span>
-                                {% else %}
-                                <span class="badge success">{{orders.order_status_name}}</span>
-                                {% endif %}
-                            </td>
+                            <td><span class="badge success">{{orders.payment_status_name}}</span></td>
                         </tr>
                         {% endfor %}
                         {% endif %}
