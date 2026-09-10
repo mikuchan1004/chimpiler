@@ -630,8 +630,7 @@ def reservation_list( request: Request,session: Session = Depends(get_session)):
             (
                 select count(*) from reservation 
                 where product_id = p.product_id
-                /*  기존의 = 3 대신 in(2,3)을 써서 두 상태  모두 순번에 포함. (by Google Gemini) */
-                and reservation_status_id in (2, 3)
+                and reservation_status_id = 3
                 and reservation_id <= r.reservation_id
             ) as reservation_turn  /* 서브 쿼리의 별칭은 괄호 밖에다가 지정을 해야 함.*/
         from reservation as r
@@ -703,7 +702,7 @@ def process_purchace(reservation_id: int, session: Session = Depends(get_session
             select count(*)
             from (select * from reservation) as r2
             where r2.product_id = r.product_id
-            and r2.reservation_status_id in (2,3)
+            and r2.reservation_status_id = 3
             and r2.reservation_id <= r.reservation_id
         ) = 1 
     ''')
