@@ -622,16 +622,18 @@ def reservation_list( request: Request,session: Session = Depends(get_session)):
             u.user_name,
             p.product_name,
             p.product_id,
+            p.product_reservation_stock,
             r.reservation_quantity,
             rs.reservation_status_name,
             r.reservation_date,
             r.reservation_expiration,
             (
                 select count(*) from reservation 
-                where product_id = r.product_id
-                and reservation_status_id = 3
+                where product_id = p.product_id
+                /*  기존의 = 3 대신 in(2,3)을 써서 두 상태  모두 순번에 포함. (by Google Gemini) */
+                and reservation_status_id in (2, 3)
                 and reservation_id <= r.reservation_id
-            ) as reservation_turn 
+            ) as reservation_turn  /* 서브 쿼리의 별칭은 괄호 밖에다가 지정을 해야 함.*/
         from reservation as r
         left join product as p 
             on r.product_id = p.product_id
@@ -675,6 +677,39 @@ def delete_reservation(reservation_id: int, session: Session = Depends(get_sessi
     session.execute(sql, {'reservation_id': reservation_id})
     session.commit()
 
+    return RedirectResponse(url='/admin/reservations', status_code=303)
+
+# [예약 구매 가능 처리]
+@app.get('/api/process_purchase/{reservation_id}')
+def process_purchace(reservation_id: int, session: Session = Depends(get_session)):
+    print('예약 구매 가능 처리를 진행합니다' , '구매 가능 처리 대상 예약 아이디 : ' , reservation_id)
+    sql = text('''
+        /*
+          SELECT로 조회한 내용과 UPDATE를 한 번에 처리하고 싶다면, MariaDB의 
+          update ... join 구문을 올바르게 사용해야 하며. select 단어를 제거하고 update로 시작해야 한다고 합니다.
+        */
+        update reservation as r 
+        left join product as p on r.product_id = p.product_id
+        set reservation_status_id = 2 
+        where 
+            p.product_reservation_stock >= r.reservation_quantity and r.reservation_id = :reservation_id
+        and (
+            /*MariaDB 에러를 피하기 위해 테이블을 한번 감싸줌 (by Google Gemini) */
+            /* 
+            이렇게 해두면 DB가 알아서 "이 녀석이 정말 1순위가 맞나?" 꼼꼼하게 검사하고,  진짜 1번 대기자일 때만
+            '구매 가능(2)' 상태로 허락을 해준다고 합니다. 조건이 안맞으면 아예 업데이트를 안하기 떄문에 
+            새치기는 절대로 불가능하다고 합니다. (by Google Gemini)
+            */
+            select count(*)
+            from (select * from reservation) as r2
+            where r2.product_id = r.product_id
+            and r2.reservation_status_id in (2,3)
+            and r2.reservation_id <= r.reservation_id
+        ) = 1 
+    ''')
+    session.execute(sql, {'reservation_id': reservation_id})
+    session.commit()
+    
     return RedirectResponse(url='/admin/reservations', status_code=303)
 
 # ==============================================================================
