@@ -1,0 +1,83 @@
+{% extends 'templates/layout.html' %}
+
+{% block title %}
+<title>
+    {% if editor_mode == 'write' %}
+    공지사항 작성
+    {% else %}
+    공지사항 수정
+    {% endif %}
+    | CHIMPILER
+</title>
+{% endblock %}
+
+{% block script %}
+{% endblock %}
+
+{% block main %}
+<main class="community-shell">
+    <div class="container community-layout">
+        <section class="card community-editor">
+            <header class="community-editor-header">
+                <div>
+                    <span class="eyebrow">COMMUNITY ADMIN</span>
+
+                    {% if editor_mode == 'write' %}
+                    <h1 class="page-title">공지사항 작성</h1>
+                    {% else %}
+                    <h1 class="page-title">공지사항 수정</h1>
+                    {% endif %}
+                </div>
+
+                <a class="button secondary"
+                   href="/notice">
+                    목록으로
+                </a>
+            </header>
+
+            <form class="community-editor-form"
+                  method="post"
+                  {% if editor_mode == 'write' %}
+                  action="/notice/write"
+                  {% else %}
+                  action="/notice/edit/{{ notice['notice_id'] }}"
+                  {% endif %}>
+
+                <label class="form-field">
+                    <span class="form-label">제목</span>
+
+                    <input class="form-control"
+                           name="notice_title"
+                           maxlength="200"
+                           value="{% if notice %}{{ notice['notice_title'] }}{% endif %}"
+                           required>
+                </label>
+
+                <label class="form-field">
+                    <span class="form-label">내용</span>
+
+                    <textarea class="form-control community-editor-content"
+                              name="notice_detail"
+                              maxlength="3000"
+                              required>{% if notice %}{{ notice['notice_detail'] }}{% endif %}</textarea>
+                </label>
+
+                <div class="community-editor-actions">
+                    <a class="button secondary"
+                       href="/notice">
+                        취소
+                    </a>
+
+                    <button class="button" type="submit">
+                        {% if editor_mode == 'write' %}
+                        공지 등록
+                        {% else %}
+                        수정 완료
+                        {% endif %}
+                    </button>
+                </div>
+            </form>
+        </section>
+    </div>
+</main>
+{% endblock %}

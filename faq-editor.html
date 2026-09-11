@@ -1,0 +1,87 @@
+{% extends 'templates/layout.html' %}
+
+{% block title %}
+<title>
+    {% if editor_mode == 'write' %}
+    FAQ 작성
+    {% else %}
+    FAQ 수정
+    {% endif %}
+    | CHIMPILER
+</title>
+{% endblock %}
+
+{% block script %}
+{% endblock %}
+
+{% block main %}
+<main class="community-shell">
+    <div class="container community-layout">
+        <section class="card community-editor">
+            <header class="community-editor-header">
+                <div>
+                    <span class="eyebrow">
+                        COMMUNITY ADMIN
+                    </span>
+
+                    {% if editor_mode == 'write' %}
+                    <h1 class="page-title">FAQ 작성</h1>
+                    {% else %}
+                    <h1 class="page-title">FAQ 수정</h1>
+                    {% endif %}
+                </div>
+
+                <a class="button secondary"
+                   href="/faq">
+                    목록으로
+                </a>
+            </header>
+
+            <form class="community-editor-form"
+                  method="post"
+                  {% if editor_mode == 'write' %}
+                  action="/faq/write"
+                  {% else %}
+                  action="/faq/edit/{{ faq['faq_id'] }}"
+                  {% endif %}>
+
+                <label class="form-field">
+                    <span class="form-label">질문</span>
+
+                    <input class="form-control"
+                           name="faq_title"
+                           maxlength="200"
+                           value="{% if faq %}{{ faq['faq_title'] }}{% endif %}"
+                           placeholder="자주 묻는 질문을 입력해 주세요."
+                           required>
+                </label>
+
+                <label class="form-field">
+                    <span class="form-label">답변</span>
+
+                    <textarea class="form-control community-editor-content"
+                              name="faq_detail"
+                              maxlength="3000"
+                              placeholder="질문에 대한 답변을 입력해 주세요."
+                              required>{% if faq %}{{ faq['faq_detail'] }}{% endif %}</textarea>
+                </label>
+
+                <div class="community-editor-actions">
+                    <a class="button secondary"
+                       href="/faq">
+                        취소
+                    </a>
+
+                    <button class="button" type="submit">
+                        {% if editor_mode == 'write' %}
+                        FAQ 등록
+                        {% else %}
+                        수정 완료
+                        {% endif %}
+                    </button>
+                </div>
+            </form>
+        </section>
+    </div>
+</main>
+{% endblock %}
