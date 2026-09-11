@@ -689,7 +689,7 @@ def mypage(request:Request, session:Session=Depends(get_session)):
     ''')
     result6 = session.execute(sql6).mappings().fetchall()
 
-    # 최근 문의 끌어오기 (대상 문의 ID : 6, 대상 회원 ID : admin)
+    # 최근 문의 끌어오기 (대상 회원 ID : admin)
     sql7 = text('''
         select 
             inq.inquiry_type,
@@ -699,7 +699,7 @@ def mypage(request:Request, session:Session=Depends(get_session)):
         from inquiry as inq 
         left join inquiry_status as inqstat
             on inq.inquiry_status_id = inqstat.inquiry_status_id
-        where inq.inquiry_id = 6 and inq.user_id = 'admin'
+        where inq.user_id = 'admin'
     ''')
 
     result7 = session.execute(sql7).mappings().fetchall()
