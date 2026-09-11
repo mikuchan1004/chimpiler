@@ -19,7 +19,7 @@
                 <span>메뉴</span>
             </button>
             <nav class="quick-nav" aria-label="주요 메뉴">
-                <a href="#bestProductMenu">베스트</a>
+                <a href="/#bestProductMenu">베스트</a>
                 <a href="/ai-health">AI 건강 체크</a>
                 <a href="/notice">커뮤니티</a>
                 <a href="/products">이벤트</a>
@@ -29,10 +29,17 @@
                 <strong class="brand-name">CHIMPILER HEALTHCARE</strong>
             </a>
             <nav class="user-nav" aria-label="사용자 메뉴">
-                <span class="welcome" id="welcomeMessage">OOO님 환영합니다</span>
+                {% if request.session.get('isLogin') == True %}
+                <span class="welcome" id="welcomeMessage">
+                    {{ request.session.get('user_name') }} 님 환영합니다
+                </span>
                 <a href="/cart">장바구니</a>
+                <a href="/mypage">마이페이지</a>
+                <a href="/logout">로그아웃</a>
+                {% else %}
                 <a class="signup-link" href="/signup">회원가입</a>
                 <a href="/login">로그인</a>
+                {% endif %}
             </nav>
         </div>
     </header>
@@ -51,13 +58,13 @@
         <section class="drawer-group">
             <strong>상품</strong>
             <div class="drawer-links">
-                <a href="/products">전체상품</a>
-                <a href="/products">건강기능식품</a>
-                <a href="/products">운동용품</a>
-                <a href="/products">건강기기</a>
-                <a href="/products">수면·휴식</a>
-                <a href="/products">건강식품</a>
-                <a href="/products">생활건강</a>
+                <a href="/products?align={{ align }}">전체상품</a>
+                <a href="/products?category_id=1&align={{ align }}">건강기능식품</a>
+                <a href="/products?category_id=2&align={{ align }}">운동용품</a>
+                <a href="/products?category_id=3&align={{ align }}">건강기기</a>
+                <a href="/products?category_id=4&align={{ align }}">수면·휴식</a>
+                <a href="/products?category_id=5&align={{ align }}">건강식품</a>
+                <a href="/products?category_id=6&align={{ align }}">생활건강</a>
             </div>
         </section>
         <section class="drawer-group">
@@ -82,7 +89,13 @@
                 <a href="/mypage/orders">주문·배송 조회</a>
                 <a href="/mypage/reservations">예약 관리</a>
                 <a href="/mypage/inquiries">문의 내역</a>
+            </div><br>
+            {% if request.session.get('user_id') == 'admin' %}
+            <strong>관리자페이지</strong>
+            <div class="drawer-links">
+                <a href="/admin">관리자페이지</a>
             </div>
+            {% endif %}
         </section>
     </nav>
     </aside>
@@ -141,6 +154,21 @@
 
     <div class="floating-tools" aria-label="고정 도구">
         <button class="floating-button chat" id="chatOpenButton" type="button">💬 챗봇 상담</button>
+        <div class="chat-panel" id="chatPanel">
+            <header class="chat-header">
+                <strong>챗봇 상담</strong>
+                <button type="button" id="chatCloseButton" class="chat-close" aria-label="챗봇 닫기">×</button>
+            </header>
+
+            <div class="chat-messages" id="chatMessages">
+                <div class="chat-message bot">안녕하세요. 무엇을 도와드릴까요?</div>
+            </div>
+
+            <form class="chat-form" id="chatForm">
+                <input type="text" id="chatInput" placeholder="질문을 입력하세요.">
+                <button type="submit">전송</button>
+            </form>
+        </div>
         <a class="floating-button" href="#top" aria-label="상단 이동">↑</a>
         <a class="floating-button" href="#siteFooter" aria-label="하단 이동">↓</a>
     </div>
@@ -177,6 +205,135 @@
             siteDrawer.setAttribute('aria-hidden', 'true')
             menuOpenButton.setAttribute('aria-expanded', 'false')
         })
+
+        const chatOpenButton = document.querySelector('#chatOpenButton')
+        const chatCloseButton = document.querySelector('#chatCloseButton')
+        const chatPanel = document.querySelector('#chatPanel')
+
+        chatOpenButton.addEventListener('click', function() {
+            if (chatPanel.classList.contains('is-open')) {
+                chatPanel.classList.remove('is-open')
+            } else {
+                chatPanel.classList.add('is-open')
+            }
+        })
+
+        chatCloseButton.addEventListener('click', function() {
+            chatPanel.classList.remove('is-open')
+        })
+
+        const chatForm = document.querySelector('#chatForm')
+        const chatInput = document.querySelector('#chatInput')
+
+        const list = {
+            contents: []
+        }
+
+        const keywords = [
+            '배송',
+            '환불',
+            '재고',
+            '예약'
+        ]
+        
+        function gemini() {
+            chatForm.addEventListener('submit', async function(event) {
+                event.preventDefault()
+
+                const key = ''
+                const question = chatInput.value
+                const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent'
+            
+                if(question == '') {
+                    alert('질문을 입력해 주세요.')
+                    return
+                }
+
+                list.contents.push({
+                    role: 'user',
+                    parts: [{
+                        text: question + '\n이 질문을 아래 키워드 중 하나로 분류해줘.'
+                                        + '\n배송기간, 배송조회, 배송비, 주문, 결제, 장바구니, 주문취소, 환불, 교환, 재고, 품절, 예약, 예약조회, 상품검색, 카테고리, 회원가입, 로그인, 비밀번호, 마이페이지, AI건강체크, 문의, 공지사항, 운영시간, 기타'
+                                        + '\n배송관련이나 건강 상담은 건강체크처럼 있는 키워드중에서 관련된 것으로 변환해주고 다른 설명 없이 키워드 하나만 답변해줘.'
+                    }]
+                })
+                console.log(question)
+
+                const chatMessages = document.querySelector('#chatMessages')
+                
+                const questionDiv = document.createElement('div')
+                questionDiv.innerText = question
+                questionDiv.classList.add('chat-message', 'user')
+                chatMessages.append(questionDiv)
+
+                const loadingDiv = document.createElement('div')
+                loadingDiv.innerText = '답변을 작성하고 있습니다...'
+                loadingDiv.classList.add('chat-message', 'bot')
+                chatMessages.append(loadingDiv)
+                
+                chatMessages.scrollTop = chatMessages.scrollHeight
+                chatInput.value = ''
+
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'x-goog-api-key': key,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(list)
+                }).then( function(response){
+                    return response.json()
+                }).then( async function(result){
+                    console.log(result)
+
+                    if (result['error']) {
+                        loadingDiv.innerText =
+                            '💡 요청이 많습니다. 잠시 후 다시 질문해 주세요.'
+                        return
+                    }
+
+                    const answer = result['candidates'][0]['content']['parts'][0]['text'].trim()
+                    
+                    list.contents.push({
+                        role: 'model',
+                        parts: [{
+                            text: answer
+                        }]
+                    })
+                    console.log(answer)
+
+                    let response = await fetch('/chat?answer='+answer, {
+                        method: 'GET'
+                    })
+
+                    let chatResult = await response.json()
+                    console.log(chatResult)
+
+                    loadingDiv.innerHTML = chatResult['chat_result']['chat_answer']
+        
+                    chatMessages.scrollTop = chatMessages.scrollHeight
+                }).catch( function(error){
+                    console.error('요청 중 에러', error)
+                    loadingDiv.innerText = '💡 해당 질문에 대한 답변을 찾지 못했습니다.'
+                })
+
+                // // 챗봇 테스트구간 (무료버전 다 썼을 때)
+                // const answer = '비밀번호'
+
+                // let response = await fetch('/chat?answer='+answer, {
+                //         method: 'GET'
+                // })
+
+                // let chatResult = await response.json()
+                // console.log(chatResult)
+
+                // loadingDiv.innerHTML = chatResult['chat_result']['chat_answer']
+    
+                // chatMessages.scrollTop = chatMessages.scrollHeight
+            })
+        }
+        gemini()
+
     </script>
 
     {% block script %}
