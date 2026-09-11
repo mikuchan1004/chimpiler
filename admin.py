@@ -230,9 +230,8 @@ def error_page(request:Request):
     print('404 페이지 이동')
     return templates.TemplateResponse(request, 'error-404.html')
 
-# [로그인 페이지 이동]
 @app.get('/login')
-def loginloading(request: Request):
+def login_loading(request: Request):
     print('''
     ========================================
     /login : 로그인 페이지 로딩
@@ -240,7 +239,6 @@ def loginloading(request: Request):
     ''')
     return templates.TemplateResponse(request, 'login.html')
 
-# [로그인 / 로그아웃]
 @app.post('/login')
 def login(request: Request, user_id:str = Form(), user_password:str = Form(), session: Session = Depends(get_session)) :
     print('''
@@ -296,10 +294,145 @@ def logout(request:Request):
 
 #[마이페이지 영역]
 @app.get('/mypage')
-def mypage(request:Request):
+def mypage(request:Request, session:Session=Depends(get_session)):
     print('마이페이지로 이동합니다.')
-    return templates.TemplateResponse(request, 'mypage-dashboard.html')
 
+    # 관리자의 주소와 연락처를 가져오는 SQL문
+    sql1 = text('''
+        select 
+            user_addr,
+            user_phone
+        from users 
+        where user_id = 'admin'
+    ''')
+    result  = session.execute(sql1).mappings().fetchall()
+
+    # 관리자의 주문 중에서 결제완료 항목을 가져오는 SQL문 
+    sql2 = text('''
+        select count(*) as payment_completed
+        from orders as o 
+        left join users as u 
+            on o.user_id = u.user_id
+        left join payment as p 
+            on o.order_sheet_id = p.order_sheet_id
+        left join payment_status as ps
+            on p.payment_status_id = ps.payment_status_id
+        where o.user_id = 'admin' and ps.payment_status_name = '결제완료'
+    ''')
+    result2 = session.execute(sql2).mappings().fetchall()
+
+    # 관리자의 주문 중에서 배송 완료 항목을 가져오는 SQL문
+    sql3 = text('''
+        select count(*) as delivery_completed
+        from orders as o 
+        left join users as u 
+            on o.user_id = u.user_id
+        left join delivery as d
+            on o.order_sheet_id = d.order_sheet_id
+        left join delivery_status as ds 
+            on d.delivery_status_id = ds.delivery_status_id 
+        where o.user_id = 'admin' and delivery_status_name = '배송완료'        
+    ''')
+
+    result3 = session.execute(sql3).mappings().fetchall()
+
+    # 관리자의 예약 구매 현황을 가져오는 SQL문
+    sql4 = text('''
+        select 
+            u.user_id,
+            p.product_name,
+            p.product_image,
+            r.reservation_id,
+            rs.reservation_status_name,
+            (
+                select count(*) from reservation 
+                where product_id = p.product_id
+                 and reservation_status_id = 3
+                and reservation_id <= r.reservation_id
+            ) as reservation_turn,
+            r.reservation_expiration
+        from reservation as r 
+        left join users as u
+            on r.user_id = u.user_id 
+        left join product as p 
+            on r.product_id = p.product_id
+        left join reservation_status as rs 
+            on r.reservation_status_id = rs.reservation_status_id
+        where r.user_id = 'admin'
+    ''')
+
+    result4 = session.execute(sql4).mappings().fetchall()
+
+    # 관리자의 예약 주문 중에서 예약 주문 상태가 '예약 완료' 인게 몇 개인지 세는 SQL문 
+    sql5 = text('''
+        select count(*) as reservation_completed
+        from reservation as r 
+        left join users as u 
+            on r.user_id = u.user_id
+        left join reservation_status as rs 
+            on r.reservation_status_id = rs.reservation_status_id
+    ''')
+    result5 = session.execute(sql5).mappings().fetchall()
+
+    # 최근 주문 내역을 끌어오는 SQL문 (대상 회원 : admin) 
+    sql6 = text('''
+        select 
+            os.order_sheet_date,
+	        p.product_name,
+	        os.order_total_price,
+	        ds.delivery_status_name
+        from orders as o 
+        left join order_sheet as os 
+            on o.order_sheet_id = os.order_sheet_id
+        left join order_status as ot
+            on o.order_status_id = ot.order_status_id
+        left join delivery as d 
+            on o.order_sheet_id = d.order_sheet_id
+        left join delivery_status as ds 
+            on d.delivery_status_id = ds.delivery_status_id
+        left join product as p 
+            on o.product_id = p.product_id
+        where o.user_id = 'admin'
+    ''')
+    result6 = session.execute(sql6).mappings().fetchall()
+
+    # 최근 문의 끌어오기 (대상 문의 ID : 6, 대상 회원 ID : admin)
+    sql7 = text('''
+        select 
+            inq.inquiry_type,
+            inq.inquiry_title,
+            inqstat.inquiry_status_name,
+            inq.inquiry_answer_date
+        from inquiry as inq 
+        left join inquiry_status as inqstat
+            on inq.inquiry_status_id = inqstat.inquiry_status_id
+        where inq.inquiry_id = 6 and inq.user_id = 'admin'
+    ''')
+
+    result7 = session.execute(sql7).mappings().fetchall()
+
+    # 문의 중에서 '답변 완료' 인것만 세는 SQL문  (대상 사용자 : admin)
+    sql8 = text('''
+        select count(*) as 'inquiry_repiled_count' 
+        from inquiry as inq 
+        left join inquiry_status as inqstat
+            on inq.inquiry_status_id = inqstat.inquiry_status_id
+        where inq.user_id = 'admin'
+    ''')
+
+    result8 = session.execute(sql8).mappings().fetchall()
+
+
+    return templates.TemplateResponse(request, 'mypage-dashboard.html' , {
+        'contact_details' : result,
+        'payment_completed_count' : result2[0]['payment_completed'],
+        'delivery_completed_count' : result3[0]['delivery_completed'],
+        'reservation_purchase_status' : result4,
+        'reservation_completed_count' : result5[0]['reservation_completed'],
+        'recent_order_history' : result6,
+        'recent_inquiry_history' : result7,
+        'inquiry_repiled_count' : result8[0]['inquiry_repiled_count']
+    })
 
 # ==============================================================================
 # 4. 상품 관리 기능 (목록 보기, 새 상품 등록, 수정, 삭제, 품절 처리)
@@ -361,7 +494,6 @@ def add_product(
 
     # 등록이 끝나면 다시 상품 목록 페이지(/admin/products)로 화면을 돌려보냄
     return RedirectResponse(url='/admin/products', status_code=303)
-
 
 # [상품 정보 수정하기]
 @app.post('/api/modify')
@@ -725,7 +857,8 @@ def answer_inquiry(inquiry_id: int, inquiry_answer: str = Form(), session: Sessi
         update inquiry
         set 
             inquiry_answer = :inquiry_answer,
-            inquiry_status_id = 2 
+            inquiry_status_id = 2,
+            inquiry_answer_date = NOW()
         where inquiry_id = :inquiry_id
     ''')
     session.execute(sql, {
