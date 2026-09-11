@@ -33,7 +33,7 @@
                 <span class="welcome" id="welcomeMessage">
                     {{ request.session.get('user_name') }} 님 환영합니다
                 </span>
-                <a href="/cart?user_id={{ request.session.get('user_id') }}">장바구니</a>
+                <a href="/cart">장바구니</a>
                 <a href="/mypage">마이페이지</a>
                 <a href="/logout">로그아웃</a>
                 {% else %}
@@ -78,7 +78,7 @@
             <div class="drawer-links">
                 <a href="/notice">공지사항</a>
                 <a href="/faq">자주 묻는 질문</a>
-                <a href="/inquiry-write">1:1 문의하기</a>
+                <a href="/inquiry/write">1:1 문의하기</a>
             </div>
         </section>
         <section class="drawer-group">
@@ -128,7 +128,7 @@
             <div class="footer-list">
                 <a href="/notice">공지사항</a>
                 <a href="/faq">자주 묻는 질문</a>
-                <a href="/inquiry-write">1:1 문의</a>
+                <a href="/inquiry/write">1:1 문의</a>
                 <span>운영시간 09:00 - 17:00</span>
                 <span>주말 및 공휴일 휴무</span>
             </div>

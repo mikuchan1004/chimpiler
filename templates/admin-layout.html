@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     {% block title %}
-        <title>관리자 페이지 | CHIMPILER</title>
+    <title>관리자 페이지 | CHIMPILER</title>
     {% endblock %}
 
     <link rel="stylesheet" href="/static/css/common.css">
@@ -23,27 +24,68 @@
             <a class="brand-name" href="/admin">관리자 페이지</a>
 
             <a class="{% if request.url.path == '/admin' or request.url.path == '/admin/' %}active{% endif %}"
-               href="/admin">대시보드</a>
+                href="/admin">대시보드</a>
 
             <a class="{% if request.url.path.startswith('/admin/inquiries') %}active{% endif %}"
-               href="/admin/inquiries">문의관리</a>
+                href="/admin/inquiries">문의관리</a>
 
             <a class="{% if request.url.path.startswith('/admin/users') %}active{% endif %}"
-               href="/admin/users">회원관리</a>
+                href="/admin/users">회원관리</a>
 
             <a class="{% if request.url.path.startswith('/admin/products') %}active{% endif %}"
-               href="/admin/products">상품/재고관리</a>
+                href="/admin/products">상품/재고관리</a>
 
             <a class="{% if request.url.path.startswith('/admin/orders') %}active{% endif %}"
-               href="/admin/orders">주문/배송관리</a>
+                href="/admin/orders">주문/배송관리</a>
 
             <a class="{% if request.url.path.startswith('/admin/reservations') %}active{% endif %}"
-               href="/admin/reservations">예약관리</a>
+                href="/admin/reservations">예약관리</a>
 
-            <span class="admin-welcome" style="margin-left: auto;">관리자님</span>
+            <span class="admin-welcome">관리자님</span>
             <a href="/">홈으로</a>
         </nav>
+        <details class="admin-mobile-menu">
+            <summary>
+                <span>☰</span>
+                관리자 메뉴
+            </summary>
+    
+            <nav class="admin-mobile-nav">
+                <a class="{% if request.url.path == '/admin' or request.url.path == '/admin/' %}active{% endif %}"
+                    href="/admin">
+                    대시보드
+                </a>
+    
+                <a class="{% if request.url.path.startswith('/admin/inquiries') %}active{% endif %}"
+                    href="/admin/inquiries">
+                    문의관리
+                </a>
+    
+                <a class="{% if request.url.path.startswith('/admin/users') %}active{% endif %}" href="/admin/users">
+                    회원관리
+                </a>
+    
+                <a class="{% if request.url.path.startswith('/admin/products') %}active{% endif %}" href="/admin/products">
+                    상품/재고관리
+                </a>
+    
+                <a class="{% if request.url.path.startswith('/admin/orders') %}active{% endif %}" href="/admin/orders">
+                    주문/배송관리
+                </a>
+    
+                <a class="{% if request.url.path.startswith('/admin/reservations') %}active{% endif %}"
+                    href="/admin/reservations">
+                    예약관리
+                </a>
+    
+                <div class="admin-mobile-user">
+                    <span>관리자님</span>
+                    <a href="/">홈으로</a>
+                </div>
+            </nav>
+        </details>
     </header>
+
 
     {% block main %}
     {% endblock %}
@@ -51,4 +93,5 @@
     {% block script %}
     {% endblock %}
 </body>
+
 </html>
