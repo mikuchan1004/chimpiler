@@ -5,63 +5,271 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>회원가입 | CHIMPILER</title>
-    <link rel="stylesheet" href="static/css/common.css">
-    <link rel="stylesheet" href="static/css/components.css">
-    <link rel="stylesheet" href="static/css/pages.css">
-    <link rel="stylesheet" href="static/css/responsive.css">
+    <link rel="stylesheet" href="/static/css/common.css">
+    <link rel="stylesheet" href="/static/css/components.css">
+    <link rel="stylesheet" href="/static/css/pages.css">
+    <link rel="stylesheet" href="/static/css/responsive.css">
 </head>
 
+<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+<script>
+    window.onload = () => {
+        const signupAddressButton = document.querySelector('#signupAddressButton')
+        
+        signupAddressButton.addEventListener('click',function(){
+            new kakao.Postcode({
+                oncomplete: function(data) {
+                    console.log(data)
+                    console.log(data.address)
+                    console.log(data.zonecode)
+
+                    const signupAddress = document.querySelector('#signupAddress')
+                    const signupAddressDetail = document.querySelector('#signupAddressDetail')
+
+                    signupAddress.value = `${data.address} (${data.zonecode})`
+                    signupAddressDetail.value = ''
+                }
+            }).open();
+        })
+
+
+        const idCheckButton = document.querySelector('#idCheckButton')
+        const signupUserId = document.querySelector('#signupUserId')
+
+        let checkedUserId = ''
+
+        signupUserId.addEventListener('input',function(){
+            checkedUserId = ''
+
+            sessionStorage.removeItem('signupData')
+
+            this.value = this.value.replace(/[^0-9a-z]/g, '');
+            if(this.value.length > 12) {
+                alert('영문과 숫자는 12자리까지만 입력해주세요.')
+                this.value = this.value.slice(0,12)
+                signupUserId.focus()
+                return
+            }
+        })
+
+        idCheckButton.addEventListener('click', async function(){
+            const signupValue = signupUserId.value.trim()
+
+            if(signupValue == '') {
+                alert('아이디를 입력해 주세요.')
+                signupUserId.focus()
+                return
+            } 
+        
+            const list = {
+                'signupUserId' : signupValue
+            }
+
+            const response = await fetch('/signup/idcheck', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(list)
+            })
+
+            const result = await response.json()
+
+            console.log('중복확인 응답:', result)
+
+            if (!response.ok) {
+                alert('중복확인 요청 중 오류가 발생했습니다.')
+                return
+            }
+
+            alert(result['result'] || '중복확인 응답을 확인할 수 없습니다.')
+            
+            if(result['check'] == 'failed') {
+                checkedUserId = ''
+                signupUserId.value = ''
+                signupUserId.focus()
+            } else {
+                checkedUserId = signupValue
+            }
+        })
+
+        const signupSubmitButton = document.querySelector('#signupSubmitButton')
+        const termsAgreement = document.querySelector('#termsAgreement')
+
+        const signupForm =
+            document.querySelector('#signupForm')
+
+        const signupPassword =
+            document.querySelector('#signupPassword')
+
+        const signupPasswordConfirm =
+            document.querySelector('#signupPasswordConfirm')
+
+        signupForm.addEventListener('submit', function (event) {
+            const currentUserId = signupUserId.value.trim()
+
+            if (
+                checkedUserId === ''
+                || checkedUserId !== currentUserId
+            ) {
+                event.preventDefault()
+                alert('아이디 중복 확인을 해주세요.')
+                signupUserId.focus()
+                return
+            }
+
+            if (
+                signupPassword.value !==
+                signupPasswordConfirm.value
+            ) {
+                event.preventDefault()
+                alert('비밀번호가 일치하지 않습니다.')
+                signupPasswordConfirm.focus()
+                return
+            }
+
+            if (!termsAgreement.checked) {
+                event.preventDefault()
+                alert('이용약관에 동의해 주세요.')
+            }
+
+            sessionStorage.removeItem('signupData')
+            sessionStorage.removeItem('termsAgreed')
+        })        
+
+        const signupUserName =
+            document.querySelector('#signupUserName')
+
+        const signupAddress =
+            document.querySelector('#signupAddress')
+
+        const signupAddressDetail =
+            document.querySelector('#signupAddressDetail')
+
+        const signupEmail =
+            document.querySelector('#signupEmail')
+
+        const signupPhone =
+            document.querySelector('#signupPhone')
+
+        const termsLink =
+            document.querySelector('#termsLink')
+
+        termsLink.addEventListener('click', function () {
+            const signupData = {
+                userId: signupUserId.value,
+                userName: signupUserName.value,
+                address: signupAddress.value,
+                addressDetail: signupAddressDetail.value,
+                email: signupEmail.value,
+                phone: signupPhone.value,
+                checkedUserId: checkedUserId
+            }
+
+            sessionStorage.setItem(
+                'signupData',
+                JSON.stringify(signupData)
+            )
+        })
+
+        const savedSignupData =
+            sessionStorage.getItem('signupData')
+
+        if (savedSignupData !== null) {
+            const signupData = JSON.parse(savedSignupData)
+
+            signupUserId.value = signupData.userId || ''
+            signupUserName.value = signupData.userName || ''
+            signupAddress.value = signupData.address || ''
+            signupAddressDetail.value =
+                signupData.addressDetail || ''
+            signupEmail.value = signupData.email || ''
+            signupPhone.value = signupData.phone || ''
+
+            checkedUserId = signupData.checkedUserId || ''
+        }
+
+        if (
+            sessionStorage.getItem('termsAgreed') === 'true'
+        ) {
+            termsAgreement.checked = true
+        }
+
+        if (
+            sessionStorage.getItem('termsAgreed') === 'true'
+        ) {
+            termsAgreement.checked = true
+        }
+
+        signupSubmitButton.disabled =
+            !termsAgreement.checked
+
+        termsAgreement.addEventListener('change',function(){
+            signupSubmitButton.disabled = !this.checked
+        })
+
+
+    }
+</script>
 <body>
     <main class="auth-shell">
         <section class="card auth-card">
             <span class="eyebrow">WELCOME</span>
             <h1 class="auth-title">회원가입</h1>
-            <form id="signupForm" class="form-grid">
+            <form id="signupForm" class="form-grid" action="/signup" method="post">
                 <label class="form-field full"><span class="form-label">아이디</span>
                     <span class="input-row">
-                        <input class="form-control" id="signupUserId" name="user_id">
+                        <input class="form-control" id="signupUserId" name="user_id" placeholder="영문과 숫자를 조합해 주세요." required>
                         <button class="button secondary" id="idCheckButton" type="button">중복 확인</button>
                     </span>
-                    <small class="help-text" id="idCheckMessage">영문과 숫자를 조합해 주세요.</small>
+                    <!-- <small class="help-text" id="idCheckMessage">영문과 숫자를 조합해 주세요.</small> -->
                 </label>
                 <label class="form-field full">
                     <span class="form-label">비밀번호</span>
-                    <input class="form-control" id="signupPassword" name="user_password" type="password">
+                    <input class="form-control" id="signupPassword" name="user_password" type="password" placeholder="영문과 숫자를 조합해 주세요." required>
                 </label>
                 <label class="form-field full">
                     <span class="form-label">비밀번호 확인</span>
-                    <input class="form-control" id="signupPasswordConfirm" type="password">
+                    <input class="form-control" id="signupPasswordConfirm" name="user_password_confirm" type="password" placeholder="입력하신 비밀번호와 동일하게 입력해주세요." required>
+                    <!-- <small class="help-text" id="idCheckMessage">같은 비밀번호를 입력해주세요.</small> -->
                 </label>
                 <label class="form-field full">
                     <span class="form-label">이름</span>
-                    <input class="form-control" id="signupUserName" name="user_name">
+                    <input class="form-control" id="signupUserName" name="user_name" placeholder="이름은 한글로 입력해주세요." required>
+                    <!-- <small class="help-text" id="idCheckMessage">이름은 한글로 입력해주세요.</small> -->
                 </label>
                 <label class="form-field full">
                     <span class="form-label">주소</span>
                     <span class="input-row">
-                        <input class="form-control" id="signupAddress" name="user_addr">
+                        <input class="form-control" id="signupAddress" name="user_addr" placeholder="주소를 입력해주세요." required>
                         <button class="button secondary" id="signupAddressButton" type="button">검색</button>
                     </span>
                 </label>
                 <label class="form-field full">
                     <span class="form-label">상세 주소</span>
-                    <input class="form-control" id="signupAddressDetail">
+                    <input class="form-control" id="signupAddressDetail" name="user_addr_detail" placeholder="상세 주소를 입력해주세요." required>
                 </label>
                 <label class="form-field full">
                     <span class="form-label">이메일</span>
-                    <input class="form-control" id="signupEmail" name="user_email" type="email">
+                    <input class="form-control" id="signupEmail" name="user_email" type="email" placeholder="이메일을 입력해주세요." required>
                 </label>
                 <label class="form-field full">
                     <span class="form-label">휴대폰 번호</span>
                     <span class="input-row">
-                        <input class="form-control" id="signupPhone" name="user_phone">
-                        <button class="button secondary" id="phoneVerifyButton" type="button">인증</button>
+                        <input class="form-control"
+                            id="signupPhone"
+                            name="user_phone"
+                            type="tel"
+                            maxlength="13"
+                            placeholder="010-1234-5678"
+                            required>
+                        <!-- <button class="button secondary" id="phoneVerifyButton" type="button">인증</button> -->
                     </span>
                 </label>
                 <label class="form-field full check-field">
-                    <input id="termsAgreement" type="checkbox">
+                    <input id="termsAgreement" type="checkbox" required>
                     <span>
-                        <a href="/terms">이용약관</a>에 동의합니다.</span>
+                        <a href="/terms" id="termsLink">이용약관</a>에 동의합니다.</span>
                     </label>
                 <button class="button full form-field" id="signupSubmitButton">회원가입</button>
                 <a class="button secondary full form-field" href="/login">취소</a>

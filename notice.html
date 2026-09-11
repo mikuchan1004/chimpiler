@@ -5,6 +5,26 @@
 {% endblock %}
 
 {% block script %}
+<script>
+    window.onload = () => {
+        const deleteForms =
+            document.querySelectorAll('.notice-delete-form')
+
+        deleteForms.forEach(function (deleteForm) {
+            deleteForm.addEventListener(
+                'submit',
+                function (event) {
+                    const deleteCheck =
+                        confirm('공지사항을 삭제하시겠습니까?')
+
+                    if (!deleteCheck) {
+                        event.preventDefault()
+                    }
+                }
+            )
+        })
+    }
+</script>
 {% endblock %}
 
 {% block main %}
@@ -14,113 +34,132 @@
             <header class="page-heading">
                 <span class="eyebrow">COMMUNITY</span>
                 <h1 class="page-title">고객 커뮤니티</h1>
-                <p class="page-description">서비스 안내와 궁금한 내용을 빠르게 확인하세요.</p>
+                <p class="page-description">
+                    서비스 안내와 궁금한 내용을 빠르게 확인하세요.
+                </p>
             </header>
-            <form class="search-box" id="noticeSearchForm">
-                <input id="noticeSearchInput" placeholder="공지사항 검색">
-                <button>⌕</button>
+
+            <form class="search-box"
+                  action="/notice"
+                  method="get">
+                <input name="keyword"
+                       value="{{ keyword }}"
+                       placeholder="공지사항 검색">
+
+                <button type="submit">⌕</button>
             </form>
         </div>
+
         <nav class="tabs">
-            <a class="tab active" href="/notice">공지사항</a>
-            <a class="tab" href="/faq">자주 묻는 질문</a>
-            <a class="tab" href="/inquiry-write">1:1 문의</a>
+            <a class="tab active" href="/notice">
+                공지사항
+            </a>
+
+            <a class="tab" href="/faq">
+                자주 묻는 질문
+            </a>
+
+            <a class="tab" href="/inquiry/write">
+                1:1 문의
+            </a>
         </nav>
+
+        {% if request.session.get('user_id') == 'admin' %}
         <div class="community-admin-toolbar">
             <span>공지사항 관리</span>
 
-            <a class="button small" href="#">
+            <a class="button small"
+               href="/notice/write">
                 ＋ 공지 작성
             </a>
         </div>
-        <section class="post-list notice-accordion" id="noticeList">
-            <!-- 공지사항 예제 1 -->
+        {% endif %}
+
+        <section class="post-list notice-accordion"
+                 id="noticeList">
+
+                       {% for notice in notice_list %}
             <div class="community-admin-item">
-                <details class="notice-item" open>
-                    <summary class="post-row">
+                <details class="notice-item"
+                                                                                                                         {% if loop.first and page == 1 %}open{% endif %}>
+
+                                                          <summary class="post-row">
+                                                                                                                    {% if loop.first and page == 1 %}
                         <span class="badge">공지</span>
+                        {% else %}
+                        <span>{{ notice['notice_id'] }}</span>
+                        {% endif %}
 
                         <strong class="post-title">
-                            예약구매 서비스 이용 안내
+                            {{ notice['notice_title'] }}
                         </strong>
 
-                        <span>관리자</span>
+                        <span>{{ notice['user_id'] }}</span>
 
                         <time class="post-date">
-                            2026.09.04
+                            {{ notice['notice_date'] }}
                         </time>
                     </summary>
 
                     <div class="notice-detail">
-                        <p>
-                            품절 상품은 예약구매를 신청할 수 있으며,
-                            재고가 입고되면 예약 순서대로 구매 가능 상태로 전환됩니다.
-                        </p>
-
-                        <p>
-                            구매 가능 기한과 현재 순위는
-                            마이페이지의 예약 관리에서 확인해 주세요.
-                        </p>
+                        <p>{{ notice['notice_detail'] }}</p>
                     </div>
                 </details>
 
+                {% if request.session.get('user_id') == 'admin' %}
                 <div class="community-item-actions">
-                    <a class="community-edit-button" href="#">
+                    <a class="community-edit-button"
+                       href="/notice/edit/{{ notice['notice_id'] }}">
                         수정
                     </a>
 
-                    <form action="#" method="post">
-                        <button class="community-delete-button" type="submit">
+                    <form class="notice-delete-form"
+                          action="/notice/delete"
+                          method="post">
+
+                        <input type="hidden"
+                               name="notice_id"
+                               value="{{ notice['notice_id'] }}">
+
+                        <button class="community-delete-button"
+                                type="submit">
                             삭제
                         </button>
                     </form>
                 </div>
+                {% endif %}
             </div>
-
-            <!-- 공지사항 예제 2 -->
-            <div class="community-admin-item">
-                <details class="notice-item">
-                    <summary class="post-row">
-                        <span>2</span>
-
-                        <strong class="post-title">
-                            배송 정책 안내
-                        </strong>
-
-                        <span>관리자</span>
-
-                        <time class="post-date">
-                            2026.09.02
-                        </time>
-                    </summary>
-
-                    <div class="notice-detail">
-                        <p>
-                            결제 완료 후 상품 준비가 시작되며,
-                            배송이 시작되면 주문·배송 조회 화면에서
-                            상태를 확인할 수 있습니다.
-                        </p>
-                    </div>
-                </details>
-
-                <div class="community-item-actions">
-                    <a class="community-edit-button" href="#">
-                        수정
-                    </a>
-
-                    <form action="#" method="post">
-                        <button class="community-delete-button" type="submit">
-                            삭제
-                        </button>
-                    </form>
-                </div>
+            {% else %}
+            <div class="empty-state">
+                검색된 공지사항이 없습니다.
             </div>
-</section>
+            {% endfor %}
+        </section>
+
+        {% if total_page > 0 %}
         <nav class="pagination">
-            <button class="page-button">이전</button>
-            <button class="page-button active">1</button>
-            <button class="page-button">다음</button>
+            {% if page > 1 %}
+            <a class="page-button"
+               href="/notice?page={{ page - 1 }}&keyword={{ keyword }}">
+                이전
+            </a>
+            {% endif %}
+
+            {% for page_number in range(1, total_page + 1) %}
+            <a class="page-button {% if page_number == page %}active{% endif %}"
+               href="/notice?page={{ page_number }}&keyword={{ keyword }}">
+                {{ page_number }}
+            </a>
+            {% endfor %}
+
+            {% if page < total_page %}
+            <a class="page-button"
+               href="/notice?page={{ page + 1 }}&keyword={{ keyword }}">
+                다음
+            </a>
+            {% endif %}
         </nav>
+        {% endif %}
     </div>
 </main>
 {% endblock %}

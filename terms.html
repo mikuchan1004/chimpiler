@@ -5,11 +5,58 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>이용약관 | CHIMPILER</title>
-    <link rel="stylesheet" href="static/css/common.css">
-    <link rel="stylesheet" href="static/css/components.css">
-    <link rel="stylesheet" href="static/css/pages.css">
-    <link rel="stylesheet" href="static/css/responsive.css">
+    <link rel="stylesheet" href="/static/css/common.css">
+    <link rel="stylesheet" href="/static/css/components.css">
+    <link rel="stylesheet" href="/static/css/pages.css">
+    <link rel="stylesheet" href="/static/css/responsive.css">
 </head>
+
+<script>
+    window.onload = () => {
+        const termsPageAgreement =
+            document.querySelector('#termsPageAgreement')
+
+        const termsAcceptButton =
+            document.querySelector('#termsAcceptButton')
+
+        // 이전에 동의한 상태가 있다면 복원
+        if (
+            sessionStorage.getItem('termsAgreed') === 'true'
+        ) {
+            termsPageAgreement.checked = true
+        }
+
+        // 체크 여부에 따라 확인 버튼 활성화
+        termsAcceptButton.disabled =
+            !termsPageAgreement.checked
+
+        termsPageAgreement.addEventListener(
+            'change',
+            function () {
+                termsAcceptButton.disabled =
+                    !this.checked
+            }
+        )
+
+        // 동의 상태를 저장하고 회원가입 페이지로 이동
+        termsAcceptButton.addEventListener(
+            'click',
+            function () {
+                if (!termsPageAgreement.checked) {
+                    alert('이용약관에 동의해 주세요.')
+                    return
+                }
+
+                sessionStorage.setItem(
+                    'termsAgreed',
+                    'true'
+                )
+
+                location.href = '/signup'
+            }
+        )
+    }
+</script>
 
 <body>
     <main class="auth-shell">
@@ -30,8 +77,16 @@
                 <span>약관을 확인하고 동의합니다.</span>
             </label>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-                <a class="button secondary" href="/signup">취소</a>
-                <a class="button" href="/signup">확인</a>
+                <a class="button secondary" href="/signup">
+                    취소
+                </a>
+
+                <button class="button"
+                        id="termsAcceptButton"
+                        type="button"
+                        disabled>
+                    동의하고 돌아가기
+                </button>
             </div>
         </section>
     </main>

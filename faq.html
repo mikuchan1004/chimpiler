@@ -5,6 +5,26 @@
 {% endblock %}
 
 {% block script %}
+<script>
+    window.onload = () => {
+        const deleteForms =
+            document.querySelectorAll('.faq-delete-form')
+
+        deleteForms.forEach(function (deleteForm) {
+            deleteForm.addEventListener(
+                'submit',
+                function (event) {
+                    const deleteCheck =
+                        confirm('FAQ를 삭제하시겠습니까?')
+
+                    if (!deleteCheck) {
+                        event.preventDefault()
+                    }
+                }
+            )
+        })
+    }
+</script>
 {% endblock %}
 
 {% block main %}
@@ -14,76 +34,116 @@
             <header class="page-heading">
                 <span class="eyebrow">COMMUNITY</span>
                 <h1 class="page-title">자주 묻는 질문</h1>
-                <p class="page-description">많이 궁금해하는 내용을 모았습니다.</p>
+                <p class="page-description">
+                    많이 궁금해하는 내용을 모았습니다.
+                </p>
             </header>
+
+            <form class="search-box"
+                  action="/faq"
+                  method="get">
+                <input name="keyword"
+                       value="{{ keyword }}"
+                       placeholder="FAQ 검색">
+
+                <button type="submit">⌕</button>
+            </form>
         </div>
+
         <nav class="tabs">
-            <a class="tab" href="/notice">공지사항</a>
-            <a class="tab active" href="/faq">자주 묻는 질문</a>
-            <a class="tab" href="/inquiry-write">1:1 문의</a>
+            <a class="tab" href="/notice">
+                공지사항
+            </a>
+
+            <a class="tab active" href="/faq">
+                자주 묻는 질문
+            </a>
+
+            <a class="tab" href="/inquiry/write">
+                1:1 문의
+            </a>
         </nav>
+
+        {% if request.session.get('user_id') == 'admin' %}
         <div class="community-admin-toolbar">
             <span>FAQ 관리</span>
 
-            <a class="button small" href="#">
+            <a class="button small"
+               href="/faq/write">
                 ＋ FAQ 작성
             </a>
         </div>
-        <section class="summary-list" id="faqList">
-            <!-- FAQ 예제 1 -->
+        {% endif %}
+
+        <section class="summary-list"
+                 id="faqList">
+
+            {% for faq in faq_list %}
             <div class="community-admin-item faq-admin-item">
-                <details class="faq-card" open>
+                <details class="faq-card"
+                         {% if loop.first and page == 1 %}open{% endif %}>
+
                     <summary>
-                        예약구매는 어떻게 이용하나요?
+                        {{ faq['faq_title'] }}
                     </summary>
 
-                    <p>
-                        품절 상품에서 예약구매를 신청하면
-                        입고 순서에 따라 구매 기회를 제공합니다.
-                    </p>
+                    <p>{{ faq['faq_detail'] }}</p>
                 </details>
 
+                {% if request.session.get('user_id') == 'admin' %}
                 <div class="community-item-actions">
-                    <a class="community-edit-button" href="#">
+                    <a class="community-edit-button"
+                       href="/faq/edit/{{ faq['faq_id'] }}">
                         수정
                     </a>
 
-                    <form action="#" method="post">
-                        <button class="community-delete-button" type="submit">
+                    <form class="faq-delete-form"
+                          action="/faq/delete"
+                          method="post">
+
+                        <input type="hidden"
+                               name="faq_id"
+                               value="{{ faq['faq_id'] }}">
+
+                        <button class="community-delete-button"
+                                type="submit">
                             삭제
                         </button>
                     </form>
                 </div>
+                {% endif %}
             </div>
-
-            <!-- FAQ 예제 2 -->
-            <div class="community-admin-item faq-admin-item">
-                <details class="faq-card">
-                    <summary>
-                        AI 건강 체크는 의료 진단인가요?
-                    </summary>
-
-                    <p>
-                        생활습관 관리를 위한 참고 기능으로
-                        의료 진단이나 처방을 대신하지 않습니다.
-                    </p>
-                </details>
-
-                <div class="community-item-actions">
-                    <a class="community-edit-button" href="#">
-                        수정
-                    </a>
-
-                    <form action="#" method="post">
-                        <button class="community-delete-button" type="submit">
-                            삭제
-                        </button>
-                    </form>
-                </div>
+            {% else %}
+            <div class="empty-state">
+                검색된 FAQ가 없습니다.
             </div>
-</section>
+            {% endfor %}
+        </section>
+
+        {% if total_page > 0 %}
+        <nav class="pagination">
+            {% if page > 1 %}
+            <a class="page-button"
+               href="/faq?page={{ page - 1 }}&keyword={{ keyword }}">
+                이전
+            </a>
+            {% endif %}
+
+            {% for page_number in range(1, total_page + 1) %}
+            <a class="page-button {% if page_number == page %}active{% endif %}"
+               href="/faq?page={{ page_number }}&keyword={{ keyword }}">
+                {{ page_number }}
+            </a>
+            {% endfor %}
+
+            {% if page < total_page %}
+            <a class="page-button"
+               href="/faq?page={{ page + 1 }}&keyword={{ keyword }}">
+                다음
+            </a>
+            {% endif %}
+        </nav>
+        {% endif %}
     </div>
 </main>
 {% endblock %}
-
-

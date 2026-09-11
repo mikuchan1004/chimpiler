@@ -5,49 +5,159 @@
 {% endblock %}
 
 {% block script %}
+<script>
+    window.onload = () => {
+        const inquiryForm =
+            document.querySelector('#inquiryForm')
+
+        const inquiryTitle =
+            document.querySelector('#inquiryTitle')
+
+        const inquiryDetail =
+            document.querySelector('#inquiryDetail')
+
+        inquiryForm.addEventListener(
+            'submit',
+            function (event) {
+                const title =
+                    inquiryTitle.value.trim()
+
+                const detail =
+                    inquiryDetail.value.trim()
+
+                if (title === '') {
+                    event.preventDefault()
+                    alert('문의 제목을 입력해 주세요.')
+                    inquiryTitle.focus()
+                    return
+                }
+
+                if (detail === '') {
+                    event.preventDefault()
+                    alert('문의 내용을 입력해 주세요.')
+                    inquiryDetail.focus()
+                    return
+                }
+
+                const submitCheck =
+                    confirm('문의를 등록하시겠습니까?')
+
+                if (!submitCheck) {
+                    event.preventDefault()
+                }
+            }
+        )
+    }
+</script>
 {% endblock %}
 
 {% block main %}
 <main class="community-shell">
-    <div class="container community-layout" style="max-width:900px">
+    <div class="container community-layout"
+         style="max-width:900px">
+
         <div class="community-head">
             <header class="page-heading">
                 <span class="eyebrow">1:1 INQUIRY</span>
-                <h1 class="page-title">1:1 문의하기</h1>
-                <p class="page-description">답변은 마이페이지의 문의 내역에서 확인할 수 있습니다.</p>
+
+                <h1 class="page-title">
+                    1:1 문의하기
+                </h1>
+
+                <p class="page-description">
+                    답변은 마이페이지의 문의 내역에서
+                    확인할 수 있습니다.
+                </p>
             </header>
         </div>
+
         <nav class="tabs">
-            <a class="tab" href="/notice">공지사항</a>
-            <a class="tab" href="/faq">자주 묻는 질문</a>
-            <a class="tab active" href="/inquiry-write">1:1 문의</a>
+            <a class="tab" href="/notice">
+                공지사항
+            </a>
+
+            <a class="tab" href="/faq">
+                자주 묻는 질문
+            </a>
+
+            <a class="tab active"
+               href="/inquiry/write">
+                1:1 문의
+            </a>
         </nav>
-        <form class="form-grid" id="inquiryForm">
+
+        <form class="form-grid"
+              id="inquiryForm"
+              action="/inquiry/write"
+              method="post">
+
             <label class="form-field">
                 <span class="form-label">문의 유형</span>
-                <select class="form-control" id="inquiryType" name="inquiry_type">
-                    <option>상품문의</option>
-                    <option>배송문의</option>
-                    <option>예약문의</option>
-                    <option>기타문의</option>
+
+                <select class="form-control"
+                        id="inquiryType"
+                        name="inquiry_type"
+                        required>
+                    <option value="상품문의">
+                        상품문의
+                    </option>
+
+                    <option value="배송문의">
+                        배송문의
+                    </option>
+
+                    <option value="예약문의">
+                        예약문의
+                    </option>
+
+                    <option value="기타문의">
+                        기타문의
+                    </option>
                 </select>
             </label>
+
             <label class="form-field">
                 <span class="form-label">제목</span>
-                <input class="form-control" id="inquiryTitle" name="inquiry_title">
+
+                <input class="form-control"
+                       id="inquiryTitle"
+                       name="inquiry_title"
+                       maxlength="200"
+                       placeholder="문의 제목을 입력해 주세요."
+                       required>
             </label>
+
             <label class="form-field full">
                 <span class="form-label">문의 내용</span>
-                <textarea class="form-control" id="inquiryDetail" name="inquiry_detail">
-</textarea>
+
+                <textarea class="form-control inquiry-content"
+                          id="inquiryDetail"
+                          name="inquiry_detail"
+                          maxlength="3000"
+                          placeholder="문의 내용을 자세히 입력해 주세요."
+                          required></textarea>
             </label>
-            <label class="form-field full">
-                <span class="form-label">첨부파일</span>
-                <input class="form-control" id="inquiryAttachment" name="inquiry_attachment" type="file">
-            </label>
-            <div class="form-field full" style="display:flex;justify-content:flex-end;gap:10px">
-                <a class="button secondary" href="/notice">취소</a>
-                <button class="button" id="inquirySubmitButton">문의 등록</button>
+
+            <div class="form-field full inquiry-notice">
+                <strong>문의 전 확인해 주세요.</strong>
+
+                <p>
+                    답변이 등록되면 마이페이지의
+                    1:1 문의 내역에서 확인할 수 있습니다.
+                </p>
+            </div>
+
+            <div class="form-field full community-editor-actions">
+                <a class="button secondary"
+                   href="/mypage/inquiries">
+                    취소
+                </a>
+
+                <button class="button"
+                        id="inquirySubmitButton"
+                        type="submit">
+                    문의 등록
+                </button>
             </div>
         </form>
     </div>

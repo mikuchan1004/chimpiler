@@ -5,6 +5,62 @@
 {% endblock %}
 
 {% block script %}
+<script>
+    window.onload = () => {
+        {% if request.query_params.get('write_result') == 'success' %}
+        alert('문의가 등록되었습니다.')
+        {% endif %}
+
+        {% if request.query_params.get('delete_result') == 'success' %}
+        alert('문의가 삭제되었습니다.')
+        {% endif %}
+
+        const inquiryOpenButtons =
+            document.querySelectorAll('.inquiry-open-button')
+
+        inquiryOpenButtons.forEach(function (button) {
+            button.addEventListener(
+                'click',
+                function () {
+                    const inquiryId =
+                        this.dataset.inquiryId
+
+                    const detailRow =
+                        document.querySelector(
+                            '#inquiryDetail' + inquiryId
+                        )
+
+                    detailRow.classList.toggle('is-open')
+
+                    if (
+                        detailRow.classList.contains('is-open')
+                    ) {
+                        this.textContent = '닫기'
+                    } else {
+                        this.textContent = '보기'
+                    }
+                }
+            )
+        })
+
+        const deleteForms =
+            document.querySelectorAll('.inquiry-delete-form')
+
+        deleteForms.forEach(function (deleteForm) {
+            deleteForm.addEventListener(
+                'submit',
+                function (event) {
+                    const deleteCheck =
+                        confirm('문의를 삭제하시겠습니까?')
+
+                    if (!deleteCheck) {
+                        event.preventDefault()
+                    }
+                }
+            )
+        })
+    }
+</script>
 {% endblock %}
 
 {% block main %}
@@ -38,13 +94,22 @@
                 <span>회원정보 수정</span>
             </a>
         </nav>
+
         <section>
-            <header class="page-heading">
-                <span class="eyebrow">INQUIRIES</span>
-                <h1 class="page-title">내 문의 내역</h1>
+            <header class="page-heading mypage-inquiry-heading">
+                <div>
+                    <span class="eyebrow">INQUIRIES</span>
+                    <h1 class="page-title">내 문의 내역</h1>
+                </div>
+
+                <a class="button"
+                   href="/inquiry/write">
+                    1:1 문의하기
+                </a>
             </header>
+
             <div class="table-wrap">
-                <table class="data-table">
+                <table class="data-table inquiry-table">
                     <thead>
                         <tr>
                             <th>번호</th>
@@ -55,26 +120,129 @@
                             <th>관리</th>
                         </tr>
                     </thead>
+
                     <tbody>
+                        {% for inquiry in inquiry_list %}
                         <tr>
-                            <td>1</td>
-                            <td>배송문의</td>
-                            <td>배송 시작일을 알고 싶어요</td>
-                            <td>2026.09.04</td>
-                            <td>
-                                <span class="badge success">답변완료</span>
+                            <td>{{ inquiry['inquiry_id'] }}</td>
+
+                            <td>{{ inquiry['inquiry_type'] }}</td>
+
+                            <td class="inquiry-table-title">
+                                {{ inquiry['inquiry_title'] }}
                             </td>
-                            <td><button class="button danger small" id="inquiryDeleteButton"
-                                    type="button">삭제</button></td>
+
+                            <td>{{ inquiry['inquiry_date'] }}</td>
+
+                            <td>
+                                {% if inquiry['inquiry_status_id'] == 2 %}
+                                <span class="badge success">
+                                    답변완료
+                                </span>
+                                {% else %}
+                                <span class="badge">
+                                    답변대기
+                                </span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                <div class="inquiry-table-actions">
+                                    <button class="button secondary small inquiry-open-button"
+                                            type="button"
+                                            data-inquiry-id="{{ inquiry['inquiry_id'] }}">
+                                        보기
+                                    </button>
+
+                                    <form class="inquiry-delete-form"
+                                          action="/mypage/inquiry/delete"
+                                          method="post">
+
+                                        <input type="hidden"
+                                               name="inquiry_id"
+                                               value="{{ inquiry['inquiry_id'] }}">
+
+                                        <button class="button danger small"
+                                                type="submit">
+                                            삭제
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
                         </tr>
+
+                        <tr class="inquiry-detail-row"
+                            id="inquiryDetail{{ inquiry['inquiry_id'] }}">
+                            <td colspan="6">
+                                <div class="inquiry-detail-panel">
+                                    <section>
+                                        <span class="inquiry-detail-label">
+                                            문의 내용
+                                        </span>
+
+                                        <h3>{{ inquiry['inquiry_title'] }}</h3>
+
+                                        <p>{{ inquiry['inquiry_detail'] }}</p>
+                                    </section>
+
+                                    <section class="inquiry-answer-panel">
+                                        <span class="inquiry-detail-label">
+                                            관리자 답변
+                                        </span>
+
+                                        {% if inquiry['inquiry_answer'] %}
+                                        <p>{{ inquiry['inquiry_answer'] }}</p>
+
+                                        <time>
+                                            답변일:
+                                            {{ inquiry['inquiry_answer_date'] }}
+                                        </time>
+                                        {% else %}
+                                        <p class="muted">
+                                            아직 답변이 등록되지 않았습니다.
+                                        </p>
+                                        {% endif %}
+                                    </section>
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6"
+                                class="empty-state">
+                                등록된 문의가 없습니다.
+                            </td>
+                        </tr>
+                        {% endfor %}
                     </tbody>
                 </table>
             </div>
-            <div style="margin-top:18px;text-align:right">
-                <a class="button" href="/inquiry/write">1:1 문의하기</a>
-            </div>
+
+            {% if total_page > 0 %}
+            <nav class="pagination">
+                {% if page > 1 %}
+                <a class="page-button"
+                   href="/mypage/inquiries?page={{ page - 1 }}">
+                    이전
+                </a>
+                {% endif %}
+
+                {% for page_number in range(1, total_page + 1) %}
+                <a class="page-button {% if page_number == page %}active{% endif %}"
+                   href="/mypage/inquiries?page={{ page_number }}">
+                    {{ page_number }}
+                </a>
+                {% endfor %}
+
+                {% if page < total_page %}
+                <a class="page-button"
+                   href="/mypage/inquiries?page={{ page + 1 }}">
+                    다음
+                </a>
+                {% endif %}
+            </nav>
+            {% endif %}
         </section>
     </div>
 </main>
 {% endblock %}
-    

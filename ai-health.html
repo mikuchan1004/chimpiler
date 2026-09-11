@@ -1,10 +1,258 @@
 {% extends 'templates/layout.html' %}
 
 {% block title %}
-    <title>AI 건강 체크 | CHIMPILER</title>
+<title>AI 건강 체크 | CHIMPILER</title>
 {% endblock %}
 
 {% block script %}
+
+<script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=ae845b1f8594119d923d146acc5175e4&libraries=services"></script>
+
+<script>
+    window.onload = () => {
+        const clinicMap = document.querySelector('#clinicMap')
+        const clinicList = document.querySelector('#clinicList')
+        const clinicKeyword = document.querySelector('#clinicKeyword')
+        const clinicSearchButton =
+            document.querySelector('#clinicSearchButton')
+        const currentLocationButton =
+            document.querySelector('#currentLocationButton')
+
+        // 건강 체크 전에는 지도 영역이 없으므로 실행 중단
+        if (clinicMap == null) {
+            return
+        }
+
+        // 기본 위치: 천안시 중심 부근
+        const defaultPosition =
+            new kakao.maps.LatLng(36.8151, 127.1139)
+
+        const map = new kakao.maps.Map(clinicMap, {
+            center: defaultPosition,
+            level: 5
+        })
+
+        const places = new kakao.maps.services.Places()
+        const infowindow = new kakao.maps.InfoWindow({
+            zIndex: 10
+        })
+
+        let markers = []
+
+        // 기존 마커 제거
+        function removeMarkers() {
+            markers.forEach(function(marker) {
+                marker.setMap(null)
+            })
+
+            markers = []
+        }
+
+        // 지도와 의원 목록 출력
+        function displayPlaces(placeList) {
+            removeMarkers()
+            clinicList.innerHTML = ''
+
+            const bounds = new kakao.maps.LatLngBounds()
+
+            placeList.slice(0, 5).forEach(function(place, index) {
+                const placePosition = new kakao.maps.LatLng(
+                    Number(place.y),
+                    Number(place.x)
+                )
+
+                const virtualClinicNames = [
+                    '침파일러 건강의원',
+                    '푸른생활 내과의원',
+                    '마음편한 가정의학과',
+                    '건강한오늘 의원',
+                    '늘봄 종합의원'
+                ]
+
+                const virtualName = virtualClinicNames[index]
+                const virtualPhone = '가상 의료기관 정보'
+
+                const marker = new kakao.maps.Marker({
+                    map: map,
+                    position: placePosition
+                })
+
+                markers.push(marker)
+                bounds.extend(placePosition)
+
+                const address =
+                    place.road_address_name || place.address_name
+
+                const phone =
+                    place.phone || '전화번호 정보 없음'
+
+                const infoContent = `
+                    <div class="clinic-info-window">
+                        <strong>${virtualName}</strong>
+                        <p>${address}</p>
+                        <p>${virtualPhone}</p>
+                        <span class="clinic-virtual-label">
+                            포트폴리오용 가상 정보
+                        </span>
+                    </div>
+                `
+
+                kakao.maps.event.addListener(
+                    marker,
+                    'click',
+                    function() {
+                        infowindow.setContent(infoContent)
+                        infowindow.open(map, marker)
+                    }
+                )
+
+                const clinicItem =
+                    document.createElement('button')
+
+                clinicItem.type = 'button'
+                clinicItem.className = 'clinic-item'
+
+                clinicItem.innerHTML = `
+                    <strong>${virtualName}</strong>
+                    <span>${address}</span>
+                    <span>${virtualPhone}</span>
+                `
+
+                clinicItem.addEventListener('click', function() {
+                    map.setCenter(placePosition)
+
+                    infowindow.setContent(infoContent)
+                    infowindow.open(map, marker)
+                })
+
+                clinicList.appendChild(clinicItem)
+            })
+
+            map.setBounds(bounds)
+        }
+
+        // 장소검색 완료 함수
+        function placesSearchResult(
+            result,
+            status,
+            pagination
+        ) {
+            if (status === kakao.maps.services.Status.OK) {
+                displayPlaces(result)
+                return
+            }
+
+            if (status === kakao.maps.services.Status.ZERO_RESULT) {
+                clinicList.innerHTML = `
+                    <div class="clinic-list-empty">
+                        <strong>검색 결과가 없습니다.</strong>
+                        <p class="muted">
+                            다른 지역이나 의원명으로 검색해 주세요.
+                        </p>
+                    </div>
+                `
+                return
+            }
+
+            clinicList.innerHTML = `
+                <div class="clinic-list-empty">
+                    <strong>검색 중 오류가 발생했습니다.</strong>
+                </div>
+            `
+        }
+
+        // 입력한 키워드로 검색
+        clinicSearchButton.addEventListener(
+            'click',
+            function() {
+                const keyword = clinicKeyword.value.trim()
+
+                if (keyword === '') {
+                    alert('지역 또는 의원명을 입력해 주세요.')
+                    clinicKeyword.focus()
+                    return
+                }
+
+                places.keywordSearch(
+                    keyword,
+                    placesSearchResult
+                )
+            }
+        )
+
+        // 검색창에서 Enter 입력
+        clinicKeyword.addEventListener(
+            'keydown',
+            function(event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault()
+                    clinicSearchButton.click()
+                }
+            }
+        )
+
+        // 현재 위치 주변 검색
+        currentLocationButton.addEventListener(
+            'click',
+            function() {
+                if (navigator.geolocation == null) {
+                    alert('현재 위치 기능을 사용할 수 없습니다.')
+                    return
+                }
+
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        const currentPosition =
+                            new kakao.maps.LatLng(
+                                position.coords.latitude,
+                                position.coords.longitude
+                            )
+
+                        map.setCenter(currentPosition)
+
+                        const keyword =
+                            clinicKeyword.value.trim()
+
+                        places.keywordSearch(
+                            keyword,
+                            placesSearchResult,
+                            {
+                                location: currentPosition,
+                                radius: 10000,
+                                sort:
+                                    kakao.maps.services
+                                        .SortBy.DISTANCE
+                            }
+                        )
+                    },
+
+                    function() {
+                        alert(
+                            '현재 위치를 확인할 수 없습니다. ' +
+                            '지역명을 직접 입력해 주세요.'
+                        )
+                    }
+                )
+            }
+        )
+
+        // 결과 화면이 나오면 DB에서 받은 진료과로 기본 검색
+        const firstKeyword =
+            clinicKeyword.value.trim()
+
+        if (firstKeyword !== '') {
+            places.keywordSearch(
+                firstKeyword,
+                placesSearchResult,
+                {
+                    location: defaultPosition,
+                    radius: 10000
+                }
+            )
+        }
+    }
+</script>
+
 {% endblock %}
 
 {% block main %}
@@ -13,68 +261,164 @@
         <header class="page-heading">
             <span class="eyebrow">AI HEALTH CHECK</span>
             <h1 class="page-title">나를 위한 건강 루틴 찾기</h1>
-            <p class="page-description">간단한 생활 정보를 입력하면 참고용 건강 피드백과 상품을 추천합니다.</p>
+            <p class="page-description">생활 정보를 저장하고 참고용 건강 피드백과 상품 추천을 확인해 보세요.</p>
         </header>
+
         <div class="ai-layout">
-            <form class="card ai-form" id="healthCheckForm">
+            <form class="card ai-form" id="healthCheckForm" method="post" action="/ai-health">
+                <div class="ai-form-heading">
+                    <span class="ai-step">STEP 1</span>
+                    <h2>건강정보 입력</h2>
+                    <p>입력한 정보는 건강 체크 기록으로 저장됩니다.</p>
+                </div>
+
                 <div class="summary-list">
                     <label class="form-field">
                         <span class="form-label">체중(kg)</span>
-                        <input class="form-control" id="healthWeight" name="health_weight" type="number">
+                        <input class="form-control" id="healthWeight" name="health_weight"
+                               type="number" min="20" max="300" step="0.1" placeholder="예: 65.5" required>
                     </label>
+
                     <label class="form-field">
                         <span class="form-label">나이</span>
-                        <input class="form-control" id="healthAge" name="health_age" type="number">
+                        <input class="form-control" id="healthAge" name="health_age"
+                               type="number" min="1" max="120" placeholder="예: 30" required>
                     </label>
+
                     <label class="form-field">
                         <span class="form-label">성별</span>
-                        <select class="form-control" id="healthGender" name="health_gender">
-                            <option>선택</option>
-                            <option>남성</option>
-                            <option>여성</option>
-                            <option>기타</option>
+                        <select class="form-control" id="healthGender" name="health_gender" required>
+                            <option value="" selected disabled>선택</option>
+                            <option value="남성">남성</option>
+                            <option value="여성">여성</option>
+                            <option value="기타">기타</option>
                         </select>
                     </label>
+
                     <label class="form-field">
                         <span class="form-label">평균 수면 시간</span>
-                        <input class="form-control" id="healthSleep" name="health_sleep" type="number">
+                        <input class="form-control" id="healthSleep" name="health_sleep"
+                               type="number" min="0" max="24" step="0.5" placeholder="예: 7.5" required>
                     </label>
-                    <button class="button full" id="healthCheckButton">AI 건강 체크하기</button>
+                    <span class="form-label">주간 운동 횟수</span>
+                    <input class="form-control"
+                        id="healthActivity"
+                        name="health_activity"
+                        type="number"
+                        min="0"
+                        max="14"
+                        placeholder="예: 일주일에 2회라면 2"
+                        required>
+
+                    <p class="ai-form-notice">
+                        이 서비스는 생활습관 관리를 위한 참고 기능이며 의료 진단이나 처방을 대신하지 않습니다.
+                    </p>
+
+                    <button class="button full" id="healthCheckButton" type="submit">
+                        건강정보 저장 및 AI 건강 체크
+                    </button>
                 </div>
             </form>
+
+            {% if health_result %}
             <section class="card ai-result" id="healthResultPanel">
-                <span class="badge success">AI 피드백</span>
-                <h2>균형 잡힌 영양과 숙면 루틴을 추천해요</h2>
-                <p class="muted">입력한 내용에 기반한 참고 정보입니다. 불편한 증상이 있으면 의료 전문가와 상담해 주세요.</p>
-                <h3>추천 상품</h3>
-                <div class="recommend-grid" id="recommendedProductList">
-                    <article class="card product-card">
-                        <img class="product-image" src="static/images/supplement-07-magne-calm.png" alt="">
-                        <div class="product-body">
-                            <strong>마그네 캄</strong>
-                        </div>
-                    </article>
-                    <article class="card product-card">
-                        <img class="product-image" src="static/images/sleep-03-white-noise.png" alt="">
-                        <div class="product-body">
-                            <strong>화이트 노이즈</strong>
-                        </div>
-                    </article>
-                    <article class="card product-card">
-                        <img class="product-image" src="static/images/food-04-daily-oats.png" alt="">
-                        <div class="product-body">
-                            <strong>데일리 오트</strong>
-                        </div>
-                    </article>
+                <div class="ai-result-heading">
+                    <span class="badge success">STEP 2 · AI 피드백</span>
+                    <h2>{{ health_result }}</h2>
+                    <p class="muted">
+                        입력한 생활 정보를 바탕으로 제공하는 참고 정보입니다.
+                        불편한 증상이 있으면 의료 전문가와 상담해 주세요.
+                    </p>
                 </div>
-                <button class="button secondary" id="healthResultSaveButton" style="margin-top:20px">결과 저장</button>
-                <div class="ai-result-actions"><a class="button" id="recommendedCheckoutButton"
-                        href="/checkout">주문서 작성하기</a><a class="button secondary" id="healthHomeButton"
-                        href="/">메인페이지 돌아가기</a><a class="button secondary" id="expertConsultButton"
-                        href="/inquiry-write">전문가 상담받기</a></div>
+
+                <div class="ai-recommend-heading">
+                    <h3>추천 상품</h3>
+                    <span class="muted">상품을 선택하면 상세 페이지로 이동합니다.</span>
+                </div>
+
+                <div class="recommend-grid" id="recommendedProductList">
+                    {% for product in recommended_product_list %}
+                    <article class="card product-card">
+                        <a href="/product/detail/{{ product['product_id'] }}">
+                            <img class="product-image" src="{{ product['product_image'] }}"
+                                 alt="{{ product['product_name'] }}">
+                        </a>
+                        <div class="product-body ai-product-body">
+                            <span class="badge ai-product-rank">
+                                추천 {{ loop.index }}순위
+                            </span>
+
+                            <strong class="ai-product-name">
+                                {{ product['product_name'] }}
+                            </strong>
+
+                            <span class="ai-product-price">
+                                {{ product['product_price'] | price }}원
+                            </span>
+
+                            <a class="button secondary small ai-product-button"
+                            href="/product/detail/{{ product['product_id'] }}">
+                                상품 확인
+                            </a>
+                        </div>
+                    </article>
+                    {% endfor %}
+                </div>
+
+                <div class="ai-result-actions ai-result-home-action">
+                    <a class="button secondary" href="/">
+                        메인페이지 돌아가기
+                    </a>
+                </div>
             </section>
+            {% else %}
+            <section class="card ai-result ai-result-empty" id="healthResultEmpty">
+                <span class="badge">STEP 2 · AI 건강 체크</span>
+                <div class="ai-empty-content">
+                    <h2>생활 정보를 입력해 주세요</h2>
+                    <p class="muted">건강 체크를 실행하면 이곳에 참고용 피드백과 추천 상품이 표시됩니다.</p>
+                </div>
+            </section>
+            {% endif %}
         </div>
+
+        {% if health_result %}
+        <section class="card clinic-section" id="clinicSection">
+            <div class="clinic-heading">
+                <div>
+                    <span class="badge success">STEP 3 · 주변 의료기관</span>
+                    <h2>전문가 상담이 필요하신가요?</h2>
+                    <p class="muted">현재 위치 또는 검색한 지역을 기준으로 주변 의원을 확인할 수 있습니다.</p>
+                </div>
+                <button class="button secondary" id="currentLocationButton" type="button">현재 위치로 찾기</button>
+            </div>
+
+            <div class="clinic-search-row">
+                <input class="form-control"
+                    id="clinicKeyword"
+                    value="{{ clinic_search_keyword or '' }}"
+                    placeholder="지역 또는 의원명을 입력해 주세요(예: 천안 내과)">
+                <button class="button" id="clinicSearchButton" type="button">의원 검색</button>
+            </div>
+
+            <div class="clinic-layout">
+                <div class="clinic-map" id="clinicMap">
+                    <p>지도 API 연결 후 주변 의원이 이곳에 표시됩니다.</p>
+                </div>
+                <div class="clinic-list" id="clinicList">
+                    <div class="clinic-list-empty">
+                        <strong>주변 의원 찾기를 시작해 주세요.</strong>
+                        <p class="muted">검색 결과에는 의원명, 주소, 전화번호와 거리를 표시합니다.</p>
+                    </div>
+                </div>
+            </div>
+
+            <p class="clinic-notice">
+                지도 위치는 카카오 검색 결과를 기반으로 하며, 의료기관명과 연락처는
+                포트폴리오 시연을 위한 가상 정보입니다.
+            </p>
+        </section>
+        {% endif %}
     </div>
 </main>
 {% endblock %}
-   
