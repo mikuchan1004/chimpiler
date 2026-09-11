@@ -34,11 +34,18 @@ def get_session():
     with Session(engine) as session :
         yield session
 
+####################################
+#          공통 설정 및 함수        
+####################################
 def price(value) :
+    # Jinja에서 20000원 → 20,000원 으로 변경하기 위한 필터
+    # print(random.randint(1,10))
     return f'{int(value):,}'
 templates.env.filters['price'] = price
-# print(random.randint(1,10))
 
+####################################
+#          레이아웃 관련 구역        
+####################################
 @app.get('/chat')
 def chatBot(answer:str, session: Session = Depends(get_session)) :
     print('''
@@ -46,6 +53,7 @@ def chatBot(answer:str, session: Session = Depends(get_session)) :
     /chat : 챗봇 실행
     ========================================
     ''')
+    # DB에 넣어둔 ai_chatbot 테이블의 chat_keyword 중 제미나이 keyword를 받아 진행
     sql = text('''
         select chat_answer
         from ai_chatbot
@@ -63,6 +71,9 @@ def chatBot(answer:str, session: Session = Depends(get_session)) :
         'chat_result' : chat_result
     }
 
+####################################
+#          메인 페이지 관련 구역       
+####################################
 @app.get('/')
 def mainPage(request: Request, session: Session = Depends(get_session)) :
     print('''
@@ -84,7 +95,7 @@ def mainPage(request: Request, session: Session = Depends(get_session)) :
     # print(product_list_main)
 
     product_random_main = []
-
+    # 4개의 랜덤 product_id를 받아 중복이 없을 때 append 진행
     while len(product_random_main) < 4 :
         check = product_list_main[random.randint(0,len(product_list_main)-1)].get('product_id', 0)
         
@@ -118,7 +129,7 @@ def mainPage(request: Request, session: Session = Depends(get_session)) :
     })
 
 @app.get('/random_product')
-def randomProduct(session: Session = Depends(get_session)):
+def mainRandomProduct(session: Session = Depends(get_session)):
     print('''
     ========================================
     /random_product : 메인페이지 랜덤 상품 실행
@@ -156,6 +167,9 @@ def randomProduct(session: Session = Depends(get_session)):
         'product_random_4' : product_random[3]
     }
 
+####################################
+#          전체 상품 관련 구역       
+####################################
 @app.get('/products')
 def products(
     request: Request, 
@@ -753,7 +767,6 @@ def error(request: Request):
     ''')
     return templates.TemplateResponse(request, 'error-404.html')
 
-
 @app.get('/admin/inquiries')
 def adminInquiries(request: Request) :
     print('''
@@ -848,16 +861,37 @@ def checkout(request: Request, session: Session = Depends(get_session)) :
     ========================================
     ''')
     user_id = request.session.get('user_id')
+    checkout_type = request.session.get('checkout_type')
     product_id = request.session.get('checkout_product_id')
     buy_quantity = request.session.get('checkout_quantity')
+    cartBuyList = request.session.get('checkout_cart_ids')
 
     if user_id == None:
         return RedirectResponse(
             url='/login',
             status_code=303
         )
+    if checkout_type == 'direct' :
+        if product_id == None or buy_quantity == None:
+            return RedirectResponse(
+                url='/products',
+                status_code=303
+            )
+    elif checkout_type == 'reservation' :
+        if product_id == None or buy_quantity == None:
+            return RedirectResponse(
+                url='/mypage/reservations',
+                status_code=303
+            )
+    elif checkout_type == 'cart':
+        cartBuyList = request.session.get('checkout_cart_ids')
 
-    if product_id == None or buy_quantity == None:
+        if cartBuyList == None or len(cartBuyList) == 0:
+            return RedirectResponse(
+                url='/cart',
+                status_code=303
+            ) 
+    else :
         return RedirectResponse(
             url='/products',
             status_code=303
@@ -866,23 +900,67 @@ def checkout(request: Request, session: Session = Depends(get_session)) :
     print(user_id)
     print(product_id)
     print(buy_quantity)
+    if checkout_type == 'direct' or checkout_type == 'reservation' :
+        sql_checkout = text('''
+            select * from product
+            where product_id = :product_id
+        ''')
 
-    sql_checkout = text('''
-        select * from product
-        where product_id = :product_id
-    ''')
+        result_checkout = session.execute(sql_checkout, {
+            'product_id': product_id
+        })
 
-    result_checkout = session.execute(sql_checkout, {
-        'product_id': product_id
-    })
+        checkout_product = result_checkout.mappings().fetchone()
 
-    checkout_product = result_checkout.mappings().fetchone()
+        if checkout_product == None:
+            return RedirectResponse(
+                url='/products',
+                status_code=303
+            )
+    elif checkout_type == 'cart' :
 
-    if checkout_product == None:
-        return RedirectResponse(
-            url='/products',
-            status_code=303
-        )
+        if cartBuyList == None or len(cartBuyList) == 0:
+            return RedirectResponse(
+                url='/cart',
+                status_code=303
+            )
+
+        cartList = ''
+        for cartIndex in cartBuyList :
+            cartList += str(cartIndex) + ','
+
+        cartList = cartList[:-1]
+
+        sql_checkout = text(f'''
+            select
+                ca.cart_id,
+                ca.product_quantity,
+                pr.product_id,
+                pr.product_name,
+                pr.product_image,
+                pr.product_price,
+                pr.product_sale_stock,
+                pr.product_active
+            from cart as ca
+            join product as pr
+                on ca.product_id = pr.product_id
+            where ca.user_id = :user_id
+            and ca.cart_id in ({cartList})
+        ''')
+
+        result_checkout = session.execute(sql_checkout, {
+            'user_id': user_id
+        })
+
+        checkout_product = result_checkout.mappings().fetchall()
+
+        if len(checkout_product) != len(cartBuyList):
+            return RedirectResponse(
+                url='/cart',
+                status_code=303
+            )
+
+    print(checkout_product)
 
     sql_checkout_user = text('''
         select * from users
@@ -903,22 +981,27 @@ def checkout(request: Request, session: Session = Depends(get_session)) :
             status_code=303
         )
 
-    checkout_total_price = (
-        checkout_product['product_price'] * buy_quantity
-    )
+    if checkout_type =='cart' :
+        checkout_total_price = 0
+
+        for product in checkout_product :
+            checkout_total_price += (product['product_price'] * product['product_quantity'])
+    else :
+        checkout_total_price = (checkout_product['product_price'] * buy_quantity)
 
     return templates.TemplateResponse(request, 'checkout.html', {
+        'checkout_type' : checkout_type,
         'checkout_product': checkout_product,
         'buy_quantity': buy_quantity,
         'checkout_total_price': checkout_total_price,
         'checkout_user' : checkout_user
     })
 
-@app.post('/checkout')
+@app.post('/checkout/direct')
 def checkoutBuy (request:Request, buy_quantity: int = Form(), product_id:int = Form(), session: Session = Depends(get_session)) :
     print('''
     ========================================
-    /checkout : 상품 상세 바로구매 실행
+    /checkout/direct : 상품 상세 바로구매 실행
     ========================================
     ''')
     print(buy_quantity)
@@ -974,7 +1057,154 @@ def checkoutBuy (request:Request, buy_quantity: int = Form(), product_id:int = F
     return RedirectResponse(
         url='/checkout',
         status_code=303
-    )    
+    )   
+
+@app.post('/checkout/reservation')
+def checkOutReservation(
+    request:Request, 
+    product_id:int = Form(), 
+    reservation_quantity:int = Form(), 
+    reservation_id:int = Form(),
+    session: Session = Depends(get_session)):
+    print('''
+    ========================================
+    /checkout/reservaton : 예약 관리 바로구매 실행
+    ========================================
+    ''')
+
+    user_id = request.session.get('user_id')
+
+    if user_id == None:
+        return RedirectResponse(
+            url='/login',
+            status_code=303
+        )
+    sql_reservation_check = text('''
+        select *
+        from reservation
+        where reservation_id = :reservation_id
+        and user_id = :user_id
+        and product_id = :product_id
+        and reservation_quantity = :reservation_quantity
+        and reservation_status_id = 2
+    ''')
+
+    result_reservation_check = session.execute(
+        sql_reservation_check,
+        {
+            'reservation_id': reservation_id,
+            'user_id': user_id,
+            'product_id': product_id,
+            'reservation_quantity': reservation_quantity
+        }
+    )
+
+    reservation_check = (
+        result_reservation_check.mappings().fetchone()
+    )
+
+    if reservation_check == None:
+        return RedirectResponse(
+            url='/mypage/reservations',
+            status_code=303
+        )
+
+    if reservation_quantity < 1:
+        return RedirectResponse(
+            url='/mypage/reservations',
+            status_code=303
+        )
+
+    sql_checkout = text('''
+        select * from product
+        where product_id = :product_id
+    ''')
+
+    result_checkout = session.execute(sql_checkout, {
+        'product_id' : product_id
+    })
+
+    product = result_checkout.mappings().fetchone()
+
+    if product == None:
+        return RedirectResponse(
+            url='/mypage/reservations',
+            status_code=303
+        )
+
+    if product['product_active'] != 1:
+        return RedirectResponse(
+            url='/mypage/reservations',
+            status_code=303
+        )
+
+    if reservation_quantity > product['product_reservation_stock']:
+        return RedirectResponse(
+            url='/mypage/reservations',
+            status_code=303
+        )
+
+    request.session['checkout_product_id'] = product_id
+    request.session['checkout_quantity'] = reservation_quantity
+    request.session['checkout_type'] = 'reservation'
+    request.session['checkout_reservation_id'] = reservation_id
+
+    return RedirectResponse(
+        url='/checkout',
+        status_code=303
+    )   
+
+@app.post('/checkout/cart')
+def cartDeleteSelect(
+    request: Request,
+    cartBuyList: list[int],
+    session: Session = Depends(get_session)):
+
+    if len(cartBuyList) == 0:
+        return {
+            'result': '주문하실 상품을 선택해 주세요.'
+        }
+
+    user_id = request.session.get('user_id')
+
+    if user_id == None:
+        return {
+            'result': 'login'
+        }
+
+    cartList = ''
+
+    for cartIndex in cartBuyList :
+        cartList += str(cartIndex) + ','
+
+    cartList = cartList[:-1]
+    print(cartList)
+
+    sql_cartSelect = text(f'''
+        select count(*) as buyCount from cart
+        where user_id = :user_id
+        and cart_id in ({cartList})
+    ''')
+
+    result_cartSelect= session.execute(sql_cartSelect, {
+        'user_id' : user_id
+    })
+
+    cartSelect = result_cartSelect.mappings().fetchone()
+    print('cartSelect 결과물 : ', cartSelect)
+
+    if cartSelect['buyCount'] != len(cartBuyList):
+        return {
+            'result': 'failed',
+            'message': '선택한 장바구니 정보를 확인할 수 없습니다.'
+        }
+
+    request.session['checkout_cart_ids'] = cartBuyList
+    request.session['checkout_type'] = 'cart'
+
+    return {
+        'result' : 'success'
+    }
 
 @app.post('/checkout/card')
 def checkOutCard(
@@ -993,6 +1223,7 @@ def checkOutCard(
     product_id = request.session.get('checkout_product_id')
     buy_quantity = request.session.get('checkout_quantity')
     checkout_type = request.session.get('checkout_type')
+    reservation_id = request.session.get('checkout_reservation_id')
     user_id = request.session.get('user_id')
 
     print('구매 시 PRID : ', product_id)
@@ -1005,55 +1236,157 @@ def checkOutCard(
             status_code=303
         )
 
-    if product_id == None or buy_quantity == None:
-        return RedirectResponse(
-            url='/products',
-            status_code=303
-        )
-
-    sql_checkout_stock = text('''
-        select * from product
-        where product_id = :product_id
-    ''')
-
-    result_checkout_stock = session.execute(sql_checkout_stock, {
-        'product_id' : product_id
-    })
-
-    checkout_stock = result_checkout_stock.mappings().fetchone()
-    print(checkout_stock)
-
-    # 검증구간
-
-    
-    if checkout_stock == None:
-        return RedirectResponse(
-            url='/products',
-            status_code=303
-        )
-    
-    if checkout_stock['product_active'] != 1 :
-        return RedirectResponse(
+    if checkout_type == 'direct' or checkout_type == 'reservation':
+        if product_id == None or buy_quantity == None:
+            return RedirectResponse(
                 url='/products',
                 status_code=303
             )
 
-    if buy_quantity < 1 :
+    elif checkout_type == 'cart':
+        cartBuyList = request.session.get('checkout_cart_ids')
+
+        if cartBuyList == None or len(cartBuyList) == 0:
+            return RedirectResponse(
+                url='/cart',
+                status_code=303
+            )
+
+    else:
         return RedirectResponse(
-            url=f'/product/detail/{product_id}',
+            url='/products',
             status_code=303
         )
 
-    if checkout_stock['product_sale_stock'] < buy_quantity :
-        return RedirectResponse(
-            url=f'/product/detail/{product_id}',
-            status_code=303
+
+    if checkout_type == 'direct' or checkout_type == 'reservation':
+
+        sql_checkout_stock = text('''
+            select * from product
+            where product_id = :product_id
+        ''')
+
+        result_checkout_stock = session.execute(sql_checkout_stock, {
+            'product_id': product_id
+        })
+
+        checkout_stock = result_checkout_stock.mappings().fetchone()
+
+        if checkout_stock == None:
+            return RedirectResponse(
+                url='/products',
+                status_code=303
+            )
+
+        if checkout_stock['product_active'] != 1:
+            return RedirectResponse(
+                url='/products',
+                status_code=303
+            )
+
+        if buy_quantity < 1:
+            return RedirectResponse(
+                url=f'/product/detail/{product_id}',
+                status_code=303
+            )
+
+    # 장바구니 상품 조회
+    elif checkout_type == 'cart':
+
+        cartList = ''
+
+        for cartIndex in cartBuyList:
+            cartList += str(cartIndex) + ','
+
+        cartList = cartList[:-1]
+
+        sql_checkout_cart = text(f'''
+            select
+                ca.cart_id,
+                ca.product_quantity,
+                pr.product_id,
+                pr.product_price,
+                pr.product_sale_stock,
+                pr.product_active
+            from cart as ca
+            join product as pr
+                on ca.product_id = pr.product_id
+            where ca.user_id = :user_id
+            and ca.cart_id in ({cartList})
+        ''')
+
+        result_checkout_cart = session.execute(sql_checkout_cart, {
+            'user_id': user_id
+        })
+
+        checkout_cart_list = (
+            result_checkout_cart.mappings().fetchall()
         )
+
+        # 선택한 장바구니 개수와 조회된 개수가 다른 경우
+        if len(checkout_cart_list) != len(cartBuyList):
+            return RedirectResponse(
+                url='/cart',
+                status_code=303
+            )
+
+        # 상품별 판매 상태와 재고 검사
+    
+        for cartProduct in checkout_cart_list:
+
+            if cartProduct['product_active'] != 1:
+                return RedirectResponse(
+                    url='/cart',
+                    status_code=303
+                )
+
+            if cartProduct['product_quantity'] < 1:
+                return RedirectResponse(
+                    url='/cart',
+                    status_code=303
+                )
+
+            if (
+                cartProduct['product_sale_stock']
+                < cartProduct['product_quantity']
+            ):
+                return RedirectResponse(
+                    url='/cart?checkout=stock_failed',
+                    status_code=303
+                )
+
+    if checkout_type == 'direct':
+        if checkout_stock['product_sale_stock'] < buy_quantity:
+            return RedirectResponse(
+                url=f'/product/detail/{product_id}',
+                status_code=303
+            )
+
+    elif checkout_type == 'reservation':
+        if checkout_stock['product_reservation_stock'] < buy_quantity:
+            return RedirectResponse(
+                url='/mypage/reservations',
+                status_code=303
+            )
 
     now = datetime.now()
     checkoutDate = now.strftime('%Y-%m-%d %H:%M:%S')
 
-    checkout_total_price = checkout_stock['product_price'] * buy_quantity
+    if checkout_type == 'cart':
+
+        checkout_total_price = 0
+
+        for cartProduct in checkout_cart_list:
+            checkout_total_price += (
+                cartProduct['product_price']
+                * cartProduct['product_quantity']
+            )
+
+    else:
+        checkout_total_price = (
+            checkout_stock['product_price']
+            * buy_quantity
+        )
 
     sql_checkout_sheet = text('''
         insert into order_sheet (order_sheet_date, order_total_price)
@@ -1074,17 +1407,35 @@ def checkOutCard(
         (:user_id, :order_status_id, :order_name, :order_addr, :order_phone, :product_id, :order_quantity, :order_sheet_id, :order_price)
     ''')
 
-    session.execute(sql_orders, {
-        'user_id' : user_id, 
-        'order_status_id' : 1, 
-        'order_name' : order_name, 
-        'order_addr' : order_addr + ' ' + order_addr_detail, 
-        'order_phone' : order_phone, 
-        'product_id' : product_id, 
-        'order_quantity' : buy_quantity, 
-        'order_sheet_id' : checkout_sheet_id, 
-        'order_price' : checkout_stock['product_price']
-    })
+    if checkout_type == 'cart':
+
+        for cartProduct in checkout_cart_list:
+
+            session.execute(sql_orders, {
+                'user_id': user_id,
+                'order_status_id': 1,
+                'order_name': order_name,
+                'order_addr': order_addr + ' ' + order_addr_detail,
+                'order_phone': order_phone,
+                'product_id': cartProduct['product_id'],
+                'order_quantity': cartProduct['product_quantity'],
+                'order_sheet_id': checkout_sheet_id,
+                'order_price': cartProduct['product_price']
+            })
+
+    else:
+
+        session.execute(sql_orders, {
+            'user_id': user_id,
+            'order_status_id': 1,
+            'order_name': order_name,
+            'order_addr': order_addr + ' ' + order_addr_detail,
+            'order_phone': order_phone,
+            'product_id': product_id,
+            'order_quantity': buy_quantity,
+            'order_sheet_id': checkout_sheet_id,
+            'order_price': checkout_stock['product_price']
+        })
 
     sql_payment = text('''
         insert into payment
@@ -1097,24 +1448,83 @@ def checkOutCard(
         'order_sheet_id' : checkout_sheet_id
     })
 
-    sql_stock_update = text('''
-        update product
-        set product_sale_stock = product_sale_stock - :order_quantity
-        where product_id = :product_id and product_sale_stock >= :order_quantity and product_active = 1
-    ''')
+    # 바로 구매 판매재고 차감
+    if checkout_type == 'direct':
 
-    result_stock_update = session.execute(sql_stock_update, {
-        'order_quantity' : buy_quantity,
-        'product_id' : product_id
-    })
+        sql_stock_update = text('''
+            update product
+            set product_sale_stock =
+                product_sale_stock - :order_quantity
+            where product_id = :product_id
+            and product_sale_stock >= :order_quantity
+            and product_active = 1
+        ''')
 
-    if result_stock_update.rowcount == 0:
-        session.rollback()
+        result_stock_update = session.execute(sql_stock_update, {
+            'order_quantity': buy_quantity,
+            'product_id': product_id
+        })
 
-        return RedirectResponse(
-            url=f'/product/detail/{product_id}',
-            status_code=303
-        )
+        if result_stock_update.rowcount == 0:
+            session.rollback()
+
+            return RedirectResponse(
+                url=f'/product/detail/{product_id}',
+                status_code=303
+            )
+
+
+    # 예약 구매 예약재고 차감
+    elif checkout_type == 'reservation':
+
+        sql_stock_update = text('''
+            update product
+            set product_reservation_stock =
+                product_reservation_stock - :order_quantity
+            where product_id = :product_id
+            and product_reservation_stock >= :order_quantity
+            and product_active = 1
+        ''')
+
+        result_stock_update = session.execute(sql_stock_update, {
+            'order_quantity': buy_quantity,
+            'product_id': product_id
+        })
+
+        if result_stock_update.rowcount == 0:
+            session.rollback()
+
+            return RedirectResponse(
+                url='/mypage/reservations',
+                status_code=303
+            )
+
+    # 장바구니 상품별 판매재고 차감
+    elif checkout_type == 'cart':
+
+        sql_stock_update = text('''
+            update product
+            set product_sale_stock =
+                product_sale_stock - :order_quantity
+            where product_id = :product_id
+            and product_sale_stock >= :order_quantity
+            and product_active = 1
+        ''')
+
+        for cartProduct in checkout_cart_list:
+
+            result_stock_update = session.execute(sql_stock_update, {
+                'order_quantity': cartProduct['product_quantity'],
+                'product_id': cartProduct['product_id']
+            })
+
+            if result_stock_update.rowcount == 0:
+                session.rollback()
+
+                return RedirectResponse(
+                    url='/cart',
+                    status_code=303
+                )
 
     sql_delivery = text('''
         insert into delivery (delivery_receiver, delivery_addr, delivery_phone, delivery_status_id, order_sheet_id)
@@ -1128,11 +1538,66 @@ def checkOutCard(
         'order_sheet_id' : checkout_sheet_id
     })
 
+    if checkout_type == 'reservation':
+        if reservation_id == None:
+            session.rollback()
+
+            return RedirectResponse(
+                url='/mypage/reservations',
+                status_code=303
+            )
+
+        sql_reservation_delete = text('''
+            delete from reservation
+            where reservation_id = :reservation_id
+            and user_id = :user_id
+            and product_id = :product_id
+            and reservation_status_id = 2
+        ''')
+
+        result_reservation_delete = session.execute(
+            sql_reservation_delete,
+            {
+                'reservation_id': reservation_id,
+                'user_id': user_id,
+                'product_id': product_id
+            }
+        )
+
+        if result_reservation_delete.rowcount == 0:
+            session.rollback()
+
+            return RedirectResponse(
+                url='/mypage/reservations',
+                status_code=303
+            )
+    if checkout_type == 'cart':
+
+        sql_cart_delete = text(f'''
+            delete from cart
+            where user_id = :user_id
+            and cart_id in ({cartList})
+        ''')
+
+        result_cart_delete = session.execute(sql_cart_delete, {
+            'user_id': user_id
+        })
+
+        if result_cart_delete.rowcount != len(cartBuyList):
+            session.rollback()
+
+            return RedirectResponse(
+                url='/cart',
+                status_code=303
+            )
+        
     session.commit()
 
     request.session.pop('checkout_product_id', None)
     request.session.pop('checkout_quantity', None)
     request.session.pop('checkout_type', None)
+    request.session.pop('checkout_reservation_id', None)
+    request.session.pop('checkout_cart_ids', None)
 
     return RedirectResponse(
         url=f'/payment/result?order_sheet_id={checkout_sheet_id}',
@@ -1459,6 +1924,9 @@ def mypageReservationTurn(
         'reservation_count' : reservation_turn['reservation_turn']
     }
 
+# 사용 없는 코드 정리본
+"""
+사용 없는 코드 정리
 
 # 사용없음 정리
 # @app.get('/products/align')
@@ -1732,6 +2200,109 @@ def mypageReservationTurn(
 
     # print('내가결과에요 : ', result)
 
+# @app.post('/checkout/card')
+# def checkOutCard(
+#     request:Request,
+#     order_name:str = Form(),
+#     order_phone:str = Form(),
+#     order_addr:str = Form(),
+#     order_addr_detail:str = Form(),
+#     payment_method:str = Form(),
+#     session: Session = Depends(get_session)):
+#     if checkout_type == 'cart':
+#         cartList = ''
+
+#         for cartIndex in cartBuyList:
+#             cartList += str(cartIndex) + ','
+
+#         cartList = cartList[:-1]
+
+#         sql_checkout_cart = text(f'''
+#             select
+#                 ca.cart_id,
+#                 ca.product_quantity,
+#                 pr.product_id,
+#                 pr.product_price,
+#                 pr.product_sale_stock,
+#                 pr.product_active
+#             from cart as ca
+#             join product as pr
+#                 on ca.product_id = pr.product_id
+#             where ca.user_id = :user_id
+#             and ca.cart_id in ({cartList})
+#         ''')
+
+#         result_checkout_cart = session.execute(sql_checkout_cart, {
+#             'user_id': user_id
+#         })
+
+#         checkout_cart_list = result_checkout_cart.mappings().fetchall()
+
+#         if len(checkout_cart_list) != len(cartBuyList):
+#             return RedirectResponse(
+#                 url='/cart',
+#                 status_code=303
+#             )
+
+#     if checkout_type == 'direct' or checkout_type == 'reservation':
+#         sql_checkout_stock = text('''
+#             select * from product
+#             where product_id = :product_id
+#         ''')
+
+#         result_checkout_stock = session.execute(sql_checkout_stock, {
+#             'product_id': product_id
+#         })
+
+#         checkout_stock = result_checkout_stock.mappings().fetchone()
+
+#         if checkout_stock == None:
+#             return RedirectResponse(
+#                 url='/products',
+#                 status_code=303
+#             )
+
+#         if checkout_stock['product_active'] != 1:
+#             return RedirectResponse(
+#                 url='/products',
+#                 status_code=303
+#             )
+
+#         if buy_quantity < 1:
+#             return RedirectResponse(
+#                 url=f'/product/detail/{product_id}',
+#                 status_code=303
+#             )
+    
+#     result_checkout_stock = session.execute(sql_checkout_stock, {
+#         'product_id' : product_id
+#     })
+
+#     checkout_stock = result_checkout_stock.mappings().fetchone()
+#     print(checkout_stock)
+
+#     # 검증구간
+
+    
+#     if checkout_stock == None:
+#         return RedirectResponse(
+#             url='/products',
+#             status_code=303
+#         )
+    
+#     if checkout_stock['product_active'] != 1 :
+#         return RedirectResponse(
+#                 url='/products',
+#                 status_code=303
+#             )
+
+#     if buy_quantity < 1 :
+#         return RedirectResponse(
+#             url=f'/product/detail/{product_id}',
+#             status_code=303
+#         )
+# 바로 구매 또는 예약 구매 상품 조회
+"""
 
 if __name__ == '__main__' :
     import uvicorn

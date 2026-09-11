@@ -224,13 +224,40 @@
             <div class="summary-list">
                 <section class="panel">
                     <h2>주문 상품</h2>
-                    <div class="order-card">
-                        <img src="{{ checkout_product['product_image'] }}" alt="{{ checkout_product['product_name'] }}">
-                        <div>
-                            <strong>{{ checkout_product['product_name'] }}</strong>
-                            <p>수량 {{ buy_quantity }}개 · {{ checkout_total_price | price }}원</p>
+                        {% if checkout_type == 'cart' %}
+                        <div class="checkout-product-list">
+                            {% for product in checkout_product %}
+                            <div class="order-card checkout-order-item">
+                                <img src="{{ product['product_image'] }}"
+                                    alt="{{ product['product_name'] }}">
+
+                                <div>
+                                    <strong>{{ product['product_name'] }}</strong>
+                                    <p>
+                                        수량 {{ product['product_quantity'] }}개 ·
+                                        {{ (product['product_price'] * product['product_quantity']) | price }}원
+                                    </p>
+                                </div>
+                            </div>
+                            {% endfor %}
                         </div>
-                    </div>
+
+                        {% else %}
+
+                        <div class="order-card checkout-order-item">
+                            <img src="{{ checkout_product['product_image'] }}"
+                                alt="{{ checkout_product['product_name'] }}">
+
+                            <div>
+                                <strong>{{ checkout_product['product_name'] }}</strong>
+                                <p>
+                                    수량 {{ buy_quantity }}개 ·
+                                    {{ checkout_total_price | price }}원
+                                </p>
+                            </div>
+                        </div>
+
+                        {% endif %}
                 </section>
                 <section class="panel">
                     <h2>배송 정보</h2>

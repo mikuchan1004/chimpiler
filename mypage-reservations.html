@@ -14,6 +14,7 @@
         const priorityNumber = document.querySelector('#priorityNumber')
         const priorityModalClose = priorityModal.querySelector('.priority-modal-close')
         const priorityConfirmButton = priorityModal.querySelector('.priority-confirm-button')
+        const statusBuy = document.querySelector('.statusBuy')
 
         orderCard.forEach(function(button){
             const reservationPriorityButton = button.querySelector('.reservationPriorityButton')
@@ -32,9 +33,13 @@
                     console.log('result : ', result['reservation_count'])
                     // alert('현재 해당 상품의 우선 순위는 ' + result['reservation_count'] + '번 입니다.')
 
-                    priorityNumber.innerText = result['reservation_count']
+                    if(result['reservation_count'] != 0) {
+                        // priorityNumber.innerText = '현재 해당 상품의 우선 순위는' + result['reservation_count'] + '번 입니다.'
+                        statusBuy.innerHTML = `해당 상품의 우선 순위는 <strong id="priorityNumber">${result['reservation_count']}</strong>번 입니다.`
+                    } else if (result['reservation_count'] == 0) {
+                        statusBuy.innerText = '해당 상품은 구매하실 수 있는 상태입니다.'
+                    }
                     priorityModal.classList.add('is-open')
-
                 })
             })
         })
@@ -86,38 +91,55 @@
                 <span class="eyebrow">RESERVATION</span>
                 <h1 class="page-title">예약 관리</h1>
             </header>
-            {% for reservations in reservationList %}
-            <article class="card order-card">
-                <img src="{{ reservations['product_image'] }}" alt="{{ reservations['product_name'] }}">
-                <div>
-                    {% if reservations['reservation_status_id'] == 3 %}
-                    <span class="badge warning">{{ reservations['reservation_status_name'] }}</span>
-                    {% elif reservations['reservation_status_id'] == 2 %}
-                    <span class="badge success">{{ reservations['reservation_status_name'] }}</span>
-                    {% elif reservations['reservation_status_id'] == 5 %}
-                    <span class="badge danger">{{ reservations['reservation_status_name'] }}</span>
-                    {% endif %}
-                    <h2>{{ reservations['product_name'] }}</h2>
-                    {% if reservations['reservation_expiration'] %}
-                    <p>구매 가능 수량 0개 · 구매 만료 일자 {{reservations['reservation_expiration']}}</p>
-                    {% else %}
-                    <p>예약 수량 {{reservations['reservation_quantity']}}개 · 예약 완료 일자 {{reservations['reservation_date']}}</p>
-                    {% endif %}
-                </div>
-                <div class="order-actions">
-                    <button class="button secondary small reservationPriorityButton" type="button" data-product="{{reservations['product_id']}}" value="{{ reservations['reservation_id'] }}">우선순위
-                        확인</button>
-                    <a class="button small" href="/checkout" disabled>구매하기</a>
-                    <form class="reservation-cancel-form" method="post" action="/mypage/reservation/cancel">
-                        <input type="hidden" name="reservation_id" value="{{ reservations['reservation_id'] }}">
+            {% if reservationList %}
+                {% for reservations in reservationList %}
+                <article class="card order-card">
+                    <img src="{{ reservations['product_image'] }}" alt="{{ reservations['product_name'] }}">
+                    <div>
+                        {% if reservations['reservation_status_id'] == 3 %}
+                        <span class="badge warning">{{ reservations['reservation_status_name'] }}</span>
+                        {% elif reservations['reservation_status_id'] == 2 %}
+                        <span class="badge success">{{ reservations['reservation_status_name'] }}</span>
+                        {% elif reservations['reservation_status_id'] == 5 %}
+                        <span class="badge danger">{{ reservations['reservation_status_name'] }}</span>
+                        {% endif %}
+                        <h2>{{ reservations['product_name'] }}</h2>
+                        {% if reservations['reservation_expiration'] %}
+                        <p>구매 가능 수량 {{reservations['reservation_quantity']}}개 · 구매 만료 일자 {{reservations['reservation_expiration']}}</p>
+                        {% else %}
+                        <p>예약 수량 {{reservations['reservation_quantity']}}개 · 예약 완료 일자 {{reservations['reservation_date']}}</p>
+                        {% endif %}
+                    </div>
+                    <div class="order-actions">
+                        <button class="button secondary small reservationPriorityButton" type="button" data-product="{{reservations['product_id']}}" value="{{ reservations['reservation_id'] }}">우선순위
+                            확인</button>
+                        {% if reservations['reservation_status_id'] == 3 %}
+                        <button class="button small" type="button" disabled>구매하기</button>
+                        {% elif reservations['reservation_status_id'] == 2 %}
+                        <form method="post" action="/checkout/reservation">
+                            <input type="hidden" name="reservation_id" value="{{ reservations['reservation_id'] }}">
+                            <input type="hidden" name="product_id" value="{{ reservations['product_id'] }}">
+                            <input type="hidden" name="reservation_quantity" value="{{ reservations['reservation_quantity'] }}">
+                            <button class="button small">구매하기</button>
+                        </form>
+                        <!-- <a class="button small" href="/checkout/reservation">구매하기</a> -->
+                        {% endif %}
+                        <form class="reservation-cancel-form" method="post" action="/mypage/reservation/cancel">
+                            <input type="hidden" name="reservation_id" value="{{ reservations['reservation_id'] }}">
 
-                        <button class="button danger small" type="submit">
-                            예약 취소
-                        </button>
-                    </form>
-                </div>
-            </article>
-            {% endfor %}
+                            <button class="button danger small" type="submit">
+                                예약 취소
+                            </button>
+                        </form>
+                    </div>
+                </article>
+                {% endfor %}
+            {% else %}
+                <article class="card order-card">
+                    <div>
+                    </div>
+                </article>
+            {% endif %}
             <div class="priority-modal" id="priorityModal">
                 <div class="priority-modal-box">
                     <header class="priority-modal-header">
@@ -133,7 +155,7 @@
                     <div class="priority-modal-body">
                         <div class="priority-icon">✓</div>
 
-                        <p>
+                        <p class="statusBuy">
                             현재 해당 상품의 예상 우선순위는
                             <strong id="priorityNumber">0</strong>번입니다.
                         </p>

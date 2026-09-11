@@ -96,8 +96,6 @@
                   })
             }
 
-            
-
             if (modalCancleButton) {
                   modalCancleButton.addEventListener('click', function () {
                         reservationConfirmModal.classList.remove('is-open')
@@ -140,9 +138,20 @@
             let cartAddButton = document.querySelector('#cartAddButton')
             let cartQuantity = document.querySelector('#cartQuantity')
 
-            cartAddButton.addEventListener('click', function(){
-                  cartQuantity.value = productQuantity.value
-            })
+            let buyNowButton = document.querySelector('#buyNowButton')
+            let buyQuantity = document.querySelector('#buyQuantity')
+            
+            if (cartAddButton) {
+                  cartAddButton.addEventListener('click', function(){
+                        cartQuantity.value = productQuantity.value
+                  })
+            }
+            
+            if (buyNowButton) {
+                  buyNowButton.addEventListener('click', function(){
+                        buyQuantity.value = productQuantity.value
+                  })
+            }
 
       }
 </script>
@@ -240,7 +249,11 @@
                                           <input type="hidden" name="product_id" value="{{ products['product_id'] }}">
                                           <button class="button secondary" id="cartAddButton">장바구니</button>
                                     </form>
-                                    <a class="button" id="buyNowButton" href="/checkout">구매하기</a>
+                                    <form method="post" action="/checkout/direct">
+                                          <input type="hidden" name="buy_quantity" id="buyQuantity" value="0">
+                                          <input type="hidden" name="product_id" value="{{ products['product_id'] }}">
+                                          <button class="button" id="buyNowButton">구매하기</button>
+                                    </form>
                                     {% else %}
                                     <!-- {% if products['product_reservation_stock'] > 0 %}
                                           <button class="button" id="reservationButton" type="button">
@@ -274,7 +287,6 @@
                               {% if request.session.get('isLogin') == True %}
                               <form class="review-form" action="/product/review" method="post">
                                     <input type="hidden" name="product_id" value="{{ products['product_id'] }}">
-                                    <input type="hidden" name="user_id" value="{{ request.session.get('user_id') }}">
 
                                     <div class="review-score">
                                           <strong>별점</strong>
