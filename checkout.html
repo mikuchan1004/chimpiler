@@ -5,6 +5,211 @@
 {% endblock %}
 
 {% block script %}
+<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+
+<script>
+    window.onload = () => {
+        const addressSearchButton = document.querySelector('#addressSearchButton')
+
+        const paymentLoading =
+            document.querySelector('#paymentLoading')
+
+        const paymentDots =
+            document.querySelectorAll('.payment-dot')
+
+        let paymentProcessing = false
+
+        addressSearchButton.addEventListener('click',function(){
+            new kakao.Postcode({
+                oncomplete: function(data) {
+                    console.log(data)
+                    console.log(data.address)
+                    console.log(data.zonecode)
+
+                    const receiverAddress = document.querySelector('#receiverAddress')
+                    const receiverAddressDetail = document.querySelector('#receiverAddressDetail')
+
+                    receiverAddress.value = `${data.address} (${data.zonecode})`
+                    receiverAddressDetail.value = ''
+                }
+            }).open();
+        })
+
+        const receiverPhone = document.querySelector('#receiverPhone')
+
+        receiverPhone.addEventListener('input', function(){
+            this.value = this.value.replace(/[^0-9]/g, '');
+            if ((this.value).length > 11) {
+                alert('최대 11자리까지만 입력하실 수 있습니다.')
+                this.value = this.value.slice(0,11)
+            }
+        })
+
+        const orderAgreement = document.querySelector('#orderAgreement')
+        const paymentSubmitButton = document.querySelector('#paymentSubmitButton')
+
+        paymentSubmitButton.disabled = !orderAgreement.checked
+
+        orderAgreement.addEventListener('change',function(){
+            paymentSubmitButton.disabled = !this.checked
+        })
+
+        const creditCard = document.querySelector('#creditCard')
+
+        const cardNumber = document.querySelector('#cardNumber')
+        const cardHolder = document.querySelector('#cardHolder')
+        const cardExpiry = document.querySelector('#cardExpiry')
+        const cardCvc = document.querySelector('#cardCvc')
+
+        const cardNumberPreview =
+            document.querySelector('#cardNumberPreview')
+
+        const cardHolderPreview =
+            document.querySelector('#cardHolderPreview')
+
+        const cardExpiryPreview =
+            document.querySelector('#cardExpiryPreview')
+
+        const cardCvcPreview =
+            document.querySelector('#cardCvcPreview')
+
+        cardNumber.addEventListener('input', function(){
+            let number = this.value.replace(/[^0-9]/g, '')
+            number = number.slice(0, 16)
+
+            this.value = number.replace(/(.{4})/g, '$1 ').trim()
+
+            cardNumberPreview.textContent =
+                this.value || '0000 0000 0000 0000'
+        })
+        
+        cardHolder.addEventListener('input', function(){
+            this.value = this.value.replace(/[^a-zA-Zㄱ-ㅎㅏ-ㅣ가-힣 ]/g, '')
+
+            if(this.value.length > 26) {
+                alert('최대 26자리까지만 입력하실 수 있습니다.')
+                this.value = this.value.slice(0,26)
+            }
+            
+            cardHolderPreview.textContent =
+                this.value.trim() || 'NAME'
+        })
+
+        cardExpiry.addEventListener('input', function(){
+            let expiry = this.value.replace(/[^0-9]/g, '')
+            expiry = expiry.slice(0, 4)
+
+            if (expiry.length >= 3) {
+                expiry =
+                    expiry.slice(0, 2) + '/' + expiry.slice(2)
+            }
+
+            this.value = expiry
+
+            cardExpiryPreview.textContent =
+                expiry || 'MM/YY'
+        })
+
+        cardCvc.addEventListener('focus', function(){
+            creditCard.classList.add('is-flipped')
+        })
+
+        cardCvc.addEventListener('input', function(){
+            let cvc = this.value.replace(/[^0-9]/g, '')
+            cvc = cvc.slice(0, 3)
+
+            this.value = cvc
+            cardCvcPreview.textContent = cvc || '•••'
+        })
+
+        cardCvc.addEventListener('blur', function(){
+            creditCard.classList.remove('is-flipped')
+        })
+
+        const checkoutForm = document.querySelector('#checkoutForm')
+
+        checkoutForm.addEventListener('submit', function(event){
+            const cardNumberValue =
+                cardNumber.value.replace(/[^0-9]/g, '')
+
+            const cardExpiryValue =
+                cardExpiry.value.replace(/[^0-9]/g, '')
+
+            const cardCvcValue =
+                cardCvc.value.replace(/[^0-9]/g, '')
+
+            if (cardNumberValue.length !== 16) {
+                event.preventDefault()
+                alert('카드번호 16자리를 입력해 주세요.')
+                cardNumber.focus()
+                return
+            }
+
+            if (cardExpiryValue.length !== 4) {
+                event.preventDefault()
+                alert('카드 유효기간을 정확히 입력해 주세요.')
+                cardExpiry.focus()
+                return
+            }
+
+            if (cardCvcValue.length !== 3) {
+                event.preventDefault()
+                alert('CVC 3자리를 입력해 주세요.')
+                cardCvc.focus()
+                return
+            }
+
+            if (cardHolder.value.trim() === '') {
+                event.preventDefault()
+                alert('카드 소유자명을 입력해 주세요.')
+                cardHolder.focus()
+                return
+            }
+
+            if (!orderAgreement.checked) {
+                event.preventDefault()
+                alert('주문 내용 확인 및 결제에 동의해 주세요.')
+                return
+            }
+
+            if (paymentProcessing) {
+                event.preventDefault()
+                return
+            }
+
+            // 여기서 실제 제출을 잠시 중단
+            event.preventDefault()
+
+            paymentProcessing = true
+            paymentSubmitButton.disabled = true
+            paymentLoading.classList.add('is-open')
+
+            let dotIndex = 0
+
+            const dotAnimation = setInterval(function(){
+                paymentDots.forEach(function(dot){
+                    dot.classList.remove('is-active')
+                })
+
+                paymentDots[dotIndex].classList.add('is-active')
+
+                dotIndex += 1
+
+                if (dotIndex >= paymentDots.length) {
+                    dotIndex = 0
+                }
+            }, 350)
+
+            setTimeout(function(){
+                clearInterval(dotAnimation)
+
+                // 실제 POST 제출
+                checkoutForm.submit()
+            }, 2500)
+        })
+    }
+</script>
+
 {% endblock %}
 
 {% block main %}
@@ -15,15 +220,15 @@
             <h1 class="page-title">주문서 작성</h1>
             <a class="button secondary small" id="continueShoppingButton" href="/products">← 상품 더 둘러보기</a>
         </header>
-        <form class="checkout-layout" id="checkoutForm">
+        <form class="checkout-layout" id="checkoutForm" method="post" action="/checkout/card">
             <div class="summary-list">
                 <section class="panel">
                     <h2>주문 상품</h2>
                     <div class="order-card">
-                        <img src="static/images/supplement-01-vita-core.png" alt="">
+                        <img src="{{ checkout_product['product_image'] }}" alt="{{ checkout_product['product_name'] }}">
                         <div>
-                            <strong>데일리 비타 코어 멀티비타민</strong>
-                            <p>수량 1개 · 29,800원</p>
+                            <strong>{{ checkout_product['product_name'] }}</strong>
+                            <p>수량 {{ buy_quantity }}개 · {{ checkout_total_price | price }}원</p>
                         </div>
                     </div>
                 </section>
@@ -32,23 +237,23 @@
                     <div class="form-grid">
                         <label class="form-field">
                             <span class="form-label">받는 분</span>
-                            <input class="form-control" id="receiverName" name="order_name">
+                            <input class="form-control" id="receiverName" name="order_name" value="{{ checkout_user['user_name'] }}" placeholder="성함을 입력해주세요." required>
                         </label>
                         <label class="form-field">
                             <span class="form-label">연락처</span>
-                            <input class="form-control" id="receiverPhone" name="order_phone">
+                            <input class="form-control" id="receiverPhone" name="order_phone" value="{{ checkout_user['user_phone'] }}" placeholder="'-'를 제외한 연락처를 입력해주세요." required>
                         </label>
                         <label class="form-field full">
                             <span class="form-label">주소</span>
                             <span class="input-row">
-                                <input class="form-control" id="receiverAddress" name="order_addr">
+                                <input class="form-control" id="receiverAddress" name="order_addr" value="{{ checkout_user['user_addr'] }}" placeholder="주소를 입력해주세요." required>
                                 <button class="button secondary" type="button" id="addressSearchButton">주소
                                     검색</button>
                             </span>
                         </label>
                         <label class="form-field full">
                             <span class="form-label">상세 주소</span>
-                            <input class="form-control" id="receiverAddressDetail">
+                            <input class="form-control" id="receiverAddressDetail" name="order_addr_detail" value="{{ checkout_user['user_addr_detail'] or '' }}" placeholder="상세 주소를 입력해주세요." required>
                         </label>
                     </div>
                 </section>
@@ -56,20 +261,61 @@
                     <h2>결제 방법</h2>
                     <label>
                         <input type="radio" name="payment_method" value="card" checked> 카드결제</label> &nbsp; <label>
-                        <input type="radio" name="payment_method" value="account"> 계좌 간편결제</label>
+                        <input type="radio" name="payment_method" value="account" disabled> 계좌 간편결제[준비중]</label>
+                    <div class="credit-card-scene">
+                        <div class="credit-card" id="creditCard">
+                            <div class="credit-card-face credit-card-front">
+                                <div class="credit-card-chip"></div>
+
+                                <strong class="credit-card-brand">
+                                    CHIMPILER CARD
+                                </strong>
+
+                                <p class="credit-card-number" id="cardNumberPreview">
+                                    0000 0000 0000 0000
+                                </p>
+
+                                <div class="credit-card-info">
+                                    <div>
+                                        <span>CARD HOLDER</span>
+                                        <strong id="cardHolderPreview">NAME</strong>
+                                    </div>
+
+                                    <div>
+                                        <span>EXPIRES</span>
+                                        <strong id="cardExpiryPreview">MM/YY</strong>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="credit-card-face credit-card-back">
+                                <div class="credit-card-stripe"></div>
+
+                                <div class="credit-card-cvc-area">
+                                    <span>CVC</span>
+                                    <strong id="cardCvcPreview">•••</strong>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
                     <div class="form-grid" id="cardPaymentFields">
                         <label class="form-field full">
                             <span class="form-label">카드번호</span>
                             <input class="form-control" id="cardNumber" inputmode="numeric" maxlength="19"
-                                placeholder="숫자 16자리">
+                                placeholder="숫자 16자리" required>
                         </label>
                         <label class="form-field">
                             <span class="form-label">유효기간</span>
-                            <input class="form-control" id="cardExpiry" placeholder="MM/YY">
+                            <input class="form-control" id="cardExpiry" placeholder="MM/YY" required>
                         </label>
                         <label class="form-field">
                             <span class="form-label">CVC</span>
-                            <input class="form-control" id="cardCvc" inputmode="numeric" maxlength="3">
+                            <input class="form-control" id="cardCvc" inputmode="numeric" maxlength="3" required>
+                        </label>
+                        <label class="form-field full">
+                            <span class="form-label">카드 소유자</span>
+                            <input class="form-control card-required-input" id="cardHolder" placeholder="카드 소유자명(한글 또는 영문)" required>
                         </label>
                     </div>
                 </section>
@@ -79,7 +325,7 @@
                 <div class="summary-list">
                     <div class="summary-row">
                         <span>상품 금액</span>
-                        <strong>29,800원</strong>
+                        <strong>{{ checkout_total_price | price }}원</strong>
                     </div>
                     <div class="summary-row">
                         <span>배송비</span>
@@ -87,14 +333,30 @@
                     </div>
                     <div class="summary-row total">
                         <span>총 결제금액</span>
-                        <strong id="checkoutTotalPrice">29,800원</strong>
+                        <strong id="checkoutTotalPrice">{{ checkout_total_price | price }}원</strong>
                     </div>
                 </div>
                 <label>
-                    <input id="orderAgreement" type="checkbox"> 주문 내용을 확인했으며 결제에 동의합니다.</label>
-                <button class="button full" id="paymentSubmitButton" type="submit">29,800원 결제하기</button>
+                    <input id="orderAgreement" type="checkbox"> 주문 내용을 확인했으며 결제에 동의합니다.
+                </label>
+                <button class="button full" id="paymentSubmitButton" type="submit" disabled>{{ checkout_total_price | price }}원 결제하기</button>
             </aside>
         </form>
+
+        <div class="payment-loading" id="paymentLoading">
+            <div class="payment-loading-box">
+                <h2>결제중입니다.</h2>
+                <p>잠시만 기다려 주세요.</p>
+
+                <div class="payment-loading-dots">
+                    <span class="payment-dot is-active"></span>
+                    <span class="payment-dot"></span>
+                    <span class="payment-dot"></span>
+                    <span class="payment-dot"></span>
+                    <span class="payment-dot"></span>
+                </div>
+            </div>
+        </div>
     </div>
 </main>
 {% endblock %}

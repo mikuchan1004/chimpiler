@@ -33,7 +33,6 @@ engine = create_engine(DATABASE_URL, echo=True)
 def get_session():
     with Session(engine) as session :
         yield session
-        session.commit() 
 
 def price(value) :
     return f'{int(value):,}'
@@ -842,24 +841,351 @@ def adminAihealth(request: Request) :
 
 # 레이아웃 페이지 이동용_주문서작성
 @app.get('/checkout')
-def checkout(request: Request) :
+def checkout(request: Request, session: Session = Depends(get_session)) :
     print('''
     ========================================
     /checkout : 주문서 작성 실행
     ========================================
     ''')
+    user_id = request.session.get('user_id')
+    product_id = request.session.get('checkout_product_id')
+    buy_quantity = request.session.get('checkout_quantity')
 
-    return templates.TemplateResponse(request, 'checkout.html')
+    if user_id == None:
+        return RedirectResponse(
+            url='/login',
+            status_code=303
+        )
+
+    if product_id == None or buy_quantity == None:
+        return RedirectResponse(
+            url='/products',
+            status_code=303
+        )
+
+    print(user_id)
+    print(product_id)
+    print(buy_quantity)
+
+    sql_checkout = text('''
+        select * from product
+        where product_id = :product_id
+    ''')
+
+    result_checkout = session.execute(sql_checkout, {
+        'product_id': product_id
+    })
+
+    checkout_product = result_checkout.mappings().fetchone()
+
+    if checkout_product == None:
+        return RedirectResponse(
+            url='/products',
+            status_code=303
+        )
+
+    sql_checkout_user = text('''
+        select * from users
+        where user_id = :user_id
+    ''')
+
+    result_checkout_user = session.execute(sql_checkout_user, {
+        'user_id' : user_id
+    })
+
+    checkout_user = result_checkout_user.mappings().fetchone()
+
+    if checkout_user == None:
+        request.session.clear()
+
+        return RedirectResponse(
+            url='/login',
+            status_code=303
+        )
+
+    checkout_total_price = (
+        checkout_product['product_price'] * buy_quantity
+    )
+
+    return templates.TemplateResponse(request, 'checkout.html', {
+        'checkout_product': checkout_product,
+        'buy_quantity': buy_quantity,
+        'checkout_total_price': checkout_total_price,
+        'checkout_user' : checkout_user
+    })
 
 @app.post('/checkout')
-def checkoutBuy (buy_quantity: int = Form(), product_id:int = Form()) :
+def checkoutBuy (request:Request, buy_quantity: int = Form(), product_id:int = Form(), session: Session = Depends(get_session)) :
+    print('''
+    ========================================
+    /checkout : 상품 상세 바로구매 실행
+    ========================================
+    ''')
     print(buy_quantity)
     print(product_id)
+    user_id = request.session.get('user_id')
+    print(user_id)
+
+    if user_id == None:
+        return RedirectResponse(
+            url='/login',
+            status_code=303
+        )
+
+    if buy_quantity < 1:
+        return RedirectResponse(
+            url=f'/product/detail/{product_id}',
+            status_code=303
+        )
+
+    sql_checkout = text('''
+        select * from product
+        where product_id = :product_id
+    ''')
+
+    result_checkout = session.execute(sql_checkout, {
+        'product_id' : product_id
+    })
+
+    product = result_checkout.mappings().fetchone()
+
+    if product == None:
+        return RedirectResponse(
+            url='/products',
+            status_code=303
+        )
+
+    if product['product_active'] != 1:
+        return RedirectResponse(
+            url=f'/product/detail/{product_id}',
+            status_code=303
+        )
+
+    if buy_quantity > product['product_sale_stock']:
+        return RedirectResponse(
+            url=f'/product/detail/{product_id}',
+            status_code=303
+        )
+
+    request.session['checkout_product_id'] = product_id
+    request.session['checkout_quantity'] = buy_quantity
+    request.session['checkout_type'] = 'direct'
 
     return RedirectResponse(
         url='/checkout',
         status_code=303
     )    
+
+@app.post('/checkout/card')
+def checkOutCard(
+    request:Request,
+    order_name:str = Form(),
+    order_phone:str = Form(),
+    order_addr:str = Form(),
+    order_addr_detail:str = Form(),
+    payment_method:str = Form(),
+    session: Session = Depends(get_session)):
+    print('''
+    ========================================
+    /checkout/card : 체크아웃 카드결제 실행
+    ========================================
+    ''')
+    product_id = request.session.get('checkout_product_id')
+    buy_quantity = request.session.get('checkout_quantity')
+    checkout_type = request.session.get('checkout_type')
+    user_id = request.session.get('user_id')
+
+    print('구매 시 PRID : ', product_id)
+    print('구매 시 수량 : ', buy_quantity)
+    print('구매 시 경로 : ', checkout_type)
+
+    if user_id == None:
+        return RedirectResponse(
+            url='/login',
+            status_code=303
+        )
+
+    if product_id == None or buy_quantity == None:
+        return RedirectResponse(
+            url='/products',
+            status_code=303
+        )
+
+    sql_checkout_stock = text('''
+        select * from product
+        where product_id = :product_id
+    ''')
+
+    result_checkout_stock = session.execute(sql_checkout_stock, {
+        'product_id' : product_id
+    })
+
+    checkout_stock = result_checkout_stock.mappings().fetchone()
+    print(checkout_stock)
+
+    # 검증구간
+
+    
+    if checkout_stock == None:
+        return RedirectResponse(
+            url='/products',
+            status_code=303
+        )
+    
+    if checkout_stock['product_active'] != 1 :
+        return RedirectResponse(
+                url='/products',
+                status_code=303
+            )
+
+    if buy_quantity < 1 :
+        return RedirectResponse(
+            url=f'/product/detail/{product_id}',
+            status_code=303
+        )
+
+    if checkout_stock['product_sale_stock'] < buy_quantity :
+        return RedirectResponse(
+            url=f'/product/detail/{product_id}',
+            status_code=303
+        )
+
+    now = datetime.now()
+    checkoutDate = now.strftime('%Y-%m-%d %H:%M:%S')
+
+    checkout_total_price = checkout_stock['product_price'] * buy_quantity
+
+    sql_checkout_sheet = text('''
+        insert into order_sheet (order_sheet_date, order_total_price)
+        values (:checkoutDate, :checkout_total_price)
+    ''')
+
+    result_checkout_sheet = session.execute(sql_checkout_sheet, {
+        'checkoutDate' : checkoutDate,
+        'checkout_total_price' : checkout_total_price
+    })
+
+    checkout_sheet_id = result_checkout_sheet.lastrowid
+
+    sql_orders = text('''
+        insert into orders
+        (user_id, order_status_id, order_name, order_addr, order_phone, product_id, order_quantity, order_sheet_id, order_price)
+        values
+        (:user_id, :order_status_id, :order_name, :order_addr, :order_phone, :product_id, :order_quantity, :order_sheet_id, :order_price)
+    ''')
+
+    session.execute(sql_orders, {
+        'user_id' : user_id, 
+        'order_status_id' : 1, 
+        'order_name' : order_name, 
+        'order_addr' : order_addr + ' ' + order_addr_detail, 
+        'order_phone' : order_phone, 
+        'product_id' : product_id, 
+        'order_quantity' : buy_quantity, 
+        'order_sheet_id' : checkout_sheet_id, 
+        'order_price' : checkout_stock['product_price']
+    })
+
+    sql_payment = text('''
+        insert into payment
+        (payment_method, payment_failure_reason, payment_status_id, order_sheet_id)
+        values (:payment_method, null, 2, :order_sheet_id)
+    ''')
+
+    session.execute(sql_payment, {
+        'payment_method' : payment_method,
+        'order_sheet_id' : checkout_sheet_id
+    })
+
+    sql_stock_update = text('''
+        update product
+        set product_sale_stock = product_sale_stock - :order_quantity
+        where product_id = :product_id and product_sale_stock >= :order_quantity and product_active = 1
+    ''')
+
+    result_stock_update = session.execute(sql_stock_update, {
+        'order_quantity' : buy_quantity,
+        'product_id' : product_id
+    })
+
+    if result_stock_update.rowcount == 0:
+        session.rollback()
+
+        return RedirectResponse(
+            url=f'/product/detail/{product_id}',
+            status_code=303
+        )
+
+    sql_delivery = text('''
+        insert into delivery (delivery_receiver, delivery_addr, delivery_phone, delivery_status_id, order_sheet_id)
+        values (:delivery_receiver, :delivery_addr, :delivery_phone, 1, :order_sheet_id)
+    ''')
+
+    session.execute(sql_delivery,{
+        'delivery_receiver' : order_name,
+        'delivery_addr' : order_addr + ' ' + order_addr_detail,
+        'delivery_phone' : order_phone,
+        'order_sheet_id' : checkout_sheet_id
+    })
+
+    session.commit()
+
+    request.session.pop('checkout_product_id', None)
+    request.session.pop('checkout_quantity', None)
+    request.session.pop('checkout_type', None)
+
+    return RedirectResponse(
+        url=f'/payment/result?order_sheet_id={checkout_sheet_id}',
+        status_code=303
+    )
+
+@app.get('/payment/result')
+def paymentResult(
+    request: Request,
+    order_sheet_id: int,
+    session: Session = Depends(get_session)
+):
+    user_id = request.session.get('user_id')
+
+    if user_id == None:
+        return RedirectResponse(
+            url='/login',
+            status_code=303
+        )
+
+    sql_order = text('''
+        select
+            os.order_sheet_id,
+            os.order_sheet_date,
+            os.order_total_price,
+            od.order_name
+        from order_sheet as os
+        join orders as od
+            on os.order_sheet_id = od.order_sheet_id
+        where os.order_sheet_id = :order_sheet_id
+          and od.user_id = :user_id
+        limit 1
+    ''')
+
+    result_order = session.execute(sql_order, {
+        'order_sheet_id': order_sheet_id,
+        'user_id': user_id
+    })
+
+    payment_result = result_order.mappings().fetchone()
+
+    if payment_result == None:
+        return RedirectResponse(
+            url='/',
+            status_code=303
+        )
+
+    print(payment_result)
+
+    return templates.TemplateResponse(request, 'payment-result.html',{
+            'payment_result': payment_result
+        }
+    )
 
 # 레이아웃 페이지 이동용_커뮤니티
 @app.get('/notice')
@@ -1036,7 +1362,7 @@ def mypageReservations(request: Request, session: Session = Depends(get_session)
 
     reservationList = result_mypage_reservation.mappings().fetchall()
 
-    # print(' reservationList : ' , reservationList)
+    print(' reservationList : ' , reservationList)
 
     return templates.TemplateResponse(request, 'mypage-reservations.html', {
         'reservationList' : reservationList
