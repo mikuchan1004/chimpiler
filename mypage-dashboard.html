@@ -21,37 +21,41 @@
         <section>
             <header class="page-heading">
                 <span class="eyebrow">MY PAGE</span>
-                <h1 class="page-title">정근욱님, 안녕하세요</h1>
+                <h1 class="page-title">관리자님, 안녕하세요</h1>
             </header>
             <article class="panel" style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:16px">
                 <div>
                     <span class="badge warning">GOLD</span>
-                    <h2 style="margin-bottom:4px">정근욱 님</h2>
+                    <h2 style="margin-bottom:4px">관리자 님</h2>
                     <span class="muted">포인트 <strong class="success-text">12,450P</strong> · 쿠폰 <strong
                             class="success-text">3장</strong>
                     </span>
                 </div>
                 <div>
                     <strong>기본 배송지</strong>
-                    <p class="muted">서울특별시 강남구 테헤란로 123, 15층<br>010-1234-5678</p>
+                    {% if contact_details %}
+                    {% for users in contact_details %}
+                    <p class="muted">{{users.user_addr}}<br>{{users.user_phone}}</p>
+                    {% endfor %}
+                    {% endif %}
                 </div>
             </article>
             <section class="dashboard-cards">
                 <article class="card metric">
                     <span>결제완료</span>
-                    <div class="metric-value success-text">2건</div>
+                    <div class="metric-value success-text">{{payment_completed_count}} 건</div>
                 </article>
                 <article class="card metric">
-                    <span>상품준비</span>
-                    <div class="metric-value success-text">1건</div>
+                    <span>예약완료</span>
+                    <div class="metric-value success-text">{{reservation_completed_count}} 건</div>
                 </article>
                 <article class="card metric">
-                    <span>배송중</span>
-                    <div class="metric-value success-text">1건</div>
+                    <span>답변완료</span>
+                    <div class="metric-value success-text"> {{inquiry_repiled_count}} 건</div>
                 </article>
                 <article class="card metric">
                     <span>배송완료</span>
-                    <div class="metric-value success-text">5건</div>
+                    <div class="metric-value success-text">{{delivery_completed_count}} 건</div>
                 </article>
             </section>
             <article class="panel" style="margin-top:16px;border-color:var(--purple)">
@@ -60,16 +64,27 @@
                         <span class="eyebrow">RESERVATION</span>
                         <h2>예약구매 현황</h2>
                     </div>
-                    <span class="badge success">구매 가능</span>
+                    {% if reservation_purchase_status %}
+                    {% for reservation in reservation_purchase_status %}
+                    <span class="badge success">{{reservation.reservation_status_name}}</span>
                 </div>
                 <div class="order-card">
-                    <img src="static/images/supplement-01-vita-core.png" alt="">
+                    <img src="{{reservation.product_image}}" alt="">
                     <div>
-                        <h3>VITA CORE 멀티비타민</h3>
-                        <p>예약 2순위 · 구매 가능 시간 <strong class="success-text">18:24:36</strong>
+                        <h3>{{reservation.product_name}}</h3>
+                        <p>예약 {{reservation.reservation_turn}} 순위 · 구매 만료 일자
+                            <strong class="success-text">
+                                {% if reservation.reservation_status_name == '구매 가능' %}
+                                {{reservation.reservation_expiration}}
+                                {% else %}
+                                -
+                                {% endif %}
+                            </strong>
                         </p>
                     </div>
                     <a class="button" href="/checkout">구매 확정</a>
+                    {% endfor %}
+                    {% endif %}
                 </div>
             </article>
             <div class="split-view" style="margin-top:16px">
@@ -86,30 +101,34 @@
                                 </tr>
                             </thead>
                             <tbody>
+                                {% if recent_order_history %}
+                                {% for orders in recent_order_history %}
                                 <tr>
-                                    <td>2026-09-04</td>
-                                    <td>스마트 체지방 체중계</td>
-                                    <td>49,000원</td>
+                                    <td>{{orders.order_sheet_date}}</td>
+                                    <td>{{orders.product_name}}</td>
+                                    <td>{{orders.order_total_price}}</td>
                                     <td>
-                                        <span class="badge success">배송중</span>
+                                        {% if orders.delivery_status_name == '배송대기' %}
+                                        <span class="badge warning">{{orders.delivery_status_name}}</span>
+                                        {% else %}
+                                        <span class="badge success">{{orders.delivery_status_name}}</span>
+                                        {% endif %}
                                     </td>
                                 </tr>
-                                <tr>
-                                    <td>2026-09-02</td>
-                                    <td>프로바이오틱스</td>
-                                    <td>24,900원</td>
-                                    <td>
-                                        <span class="badge">상품준비</span>
-                                    </td>
-                                </tr>
+                                {% endfor %}
+                                {% endif %}
                             </tbody>
                         </table>
                     </div>
                 </section>
                 <section class="panel">
                     <h2>최근 문의</h2>
-                    <p>[배송문의] 주문한 상품은 언제 출고되나요?</p>
-                    <p class="muted">답변완료 · 2026-09-04</p>
+                    {% if recent_inquiry_history %}
+                    {% for inquiry in recent_inquiry_history%}
+                    <p>[{{inquiry.inquiry_type}}] {{inquiry.inquiry_title}}</p>
+                    <p class="muted">{{inquiry.inquiry_status_name}} · {{inquiry.inquiry_answer_date}}</p>
+                    {% endfor %}
+                    {% endif %}
                 </section>
             </div>
         </section>
