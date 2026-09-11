@@ -280,7 +280,7 @@
                         </nav>
                         <article class="detail-panel" id="description">
                               <h2>상품정보</h2>
-                              <p>건강한 일상을 위한 영양 성분과 섭취 방법을 확인해 주세요.</p>
+                              <p>{{ products['product_info']}}</p>
                         </article>
                         <article class="detail-panel" id="reviews">
                               <h2>상품후기</h2>
@@ -426,7 +426,7 @@
                         <article class="detail-panel" id="qna">
                               <h2>상품 Q&amp;A</h2>
                               {% if request.session.get('isLogin') == True %}
-                              <a href="/inquiry-write">
+                              <a href="/inquiry/write">
                                     <button class="button secondary">상품 문의 작성</button>
                               </a>
                               {% else %}
@@ -438,7 +438,7 @@
                         </article>
                         <article class="detail-panel" id="deliveryGuide">
                               <h2>배송안내</h2>
-                              <p>결제 완료 후 상품 준비 및 배송이 시작됩니다.</p>
+                              <p>{{ products['product_delivery'] }}</p>
                         </article>
                   </section>
                   <div class="modal {% if reservation == 'success' or reservation == 'failed' %}is-open{% endif %}" id="reservationConfirmModal">

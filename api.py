@@ -72,6 +72,284 @@ def chatBot(answer:str, session: Session = Depends(get_session)) :
     }
 
 ####################################
+#          로그인 관련 구역        
+####################################
+@app.get('/login')
+def login_loading(request: Request):
+    print('''
+    ========================================
+    /login : 로그인 페이지 로딩
+    ========================================
+    ''')
+    return templates.TemplateResponse(request, 'login.html')
+
+@app.post('/login')
+def login(request: Request, user_id:str = Form(), user_password:str = Form(), session: Session = Depends(get_session)) :
+    print('''
+    ========================================
+    /login : 로그인 페이지 실행
+    ========================================
+    ''')
+
+    sql = text('''
+        select * from users
+        where user_id = :user_id
+    ''')
+
+    result = session.execute(sql, {
+        'user_id' : user_id
+    })
+    login_check = result.mappings().fetchone()
+
+    print(login_check)
+
+    if login_check :
+        if user_password == login_check['user_password'] :
+            # print('ID PW 같아요!!!')
+
+            request.session['isLogin'] = True
+            request.session['user_id'] = user_id
+            request.session['user_name'] = login_check['user_name']
+
+            print('/login : 로그인 성공')
+            return RedirectResponse(
+                url='/',
+                status_code=303
+            )
+
+    print('/login : 로그인 실패')
+    return templates.TemplateResponse(request, 'login.html', {
+        'login_error': '아이디 또는 비밀번호가 일치하지 않습니다.'
+    })
+
+@app.get('/logout')
+def logout(request:Request):
+    print('''
+    ========================================
+    /logout : 로그아웃 페이지 실행
+    ========================================
+    ''')
+    request.session.clear()
+
+    return RedirectResponse(
+        url='/',
+        status_code=303
+    )
+
+@app.get('/signup')
+def signup(request: Request):
+    print('''
+    ========================================
+    /signup : 회원가입 페이지 실행
+    ========================================
+    ''')
+
+    return templates.TemplateResponse(
+        request,
+        'signup.html'
+    )
+
+@app.post('/signup/idcheck')
+async def signupIDChk(
+    request: Request,
+    session: Session = Depends(get_session)
+):
+    data = await request.json()
+
+    request.session.pop(
+        'signup_checked_id',
+        None
+    )
+
+    signupUserId = data.get(
+        'signupUserId',
+        ''
+    ).strip()
+
+    if (
+        signupUserId == ''
+        or len(signupUserId) > 12
+        or not signupUserId.isalnum()
+    ):
+        return {
+            'result': '아이디 형식을 확인해 주세요.',
+            'check': 'failed'
+        }
+
+    sql_idcheck = text('''
+        select user_id
+        from users
+        where user_id = :user_id
+    ''')
+
+    result_idcheck = session.execute(
+        sql_idcheck,
+        {
+            'user_id': signupUserId
+        }
+    )
+
+    idcheck = (
+        result_idcheck
+        .mappings()
+        .fetchone()
+    )
+
+    if idcheck is None:
+        request.session[
+            'signup_checked_id'
+        ] = signupUserId
+
+        return {
+            'result': '사용 가능한 아이디입니다.',
+            'check': 'success'
+        }
+
+    return {
+        'result': '이미 사용 중인 아이디입니다.',
+        'check': 'failed'
+    }
+
+@app.post('/signup')
+def signupData(
+    request: Request,
+    user_id: str = Form(),
+    user_password: str = Form(),
+    user_password_confirm: str = Form(),
+    user_name: str = Form(),
+    user_addr: str = Form(),
+    user_addr_detail: str = Form(),
+    user_email: str = Form(),
+    user_phone: str = Form(),
+    session: Session = Depends(get_session)
+):
+    print('''
+    ========================================
+    /signup : 회원가입 실행
+    ========================================
+    ''')
+
+    user_id = user_id.strip()
+    user_name = user_name.strip()
+    user_addr = user_addr.strip()
+    user_addr_detail = user_addr_detail.strip()
+    user_email = user_email.strip()
+    user_phone = user_phone.strip()
+
+    # 휴대폰 번호에서 하이픈 제거
+    user_phone = user_phone.replace('-', '')
+
+    # 010으로 시작하는 숫자 11자리 검사
+    if (
+        not user_phone.isdigit()
+        or len(user_phone) != 11
+        or not user_phone.startswith('010')
+    ):
+        return RedirectResponse(
+            url='/signup',
+            status_code=303
+        )
+
+    # 필수 입력값 검사
+    if (
+        user_id == ''
+        or user_password == ''
+        or user_name == ''
+        or user_addr == ''
+        or user_addr_detail == ''
+        or user_email == ''
+        or user_phone == ''
+    ):
+        return RedirectResponse(
+            url='/signup',
+            status_code=303
+        )
+
+    # 비밀번호 확인
+    if user_password != user_password_confirm:
+        return RedirectResponse(
+            url='/signup',
+            status_code=303
+        )
+
+    # 중복확인을 받은 아이디와 제출한 아이디 비교
+    checked_user_id = request.session.get(
+        'signup_checked_id'
+    )
+
+    if checked_user_id != user_id:
+        return RedirectResponse(
+            url='/signup',
+            status_code=303
+        )
+
+    # 회원가입 직전 아이디 중복 재검사
+    sql_idcheck = text('''
+        select user_id
+        from users
+        where user_id = :user_id
+    ''')
+
+    result_idcheck = session.execute(sql_idcheck, {
+        'user_id': user_id
+    })
+
+    idcheck = result_idcheck.mappings().fetchone()
+
+    if idcheck is not None:
+        request.session.pop('signup_checked_id', None)
+
+        return RedirectResponse(
+            url='/signup',
+            status_code=303
+        )
+
+    sql_signup = text('''
+        insert into users (
+            user_id,
+            user_password,
+            user_name,
+            user_email,
+            user_phone,
+            user_addr,
+            user_addr_detail
+        )
+        values (
+            :user_id,
+            :user_password,
+            :user_name,
+            :user_email,
+            :user_phone,
+            :user_addr,
+            :user_addr_detail
+        )
+    ''')
+
+    session.execute(sql_signup, {
+        'user_id': user_id,
+        'user_password': user_password,
+        'user_name': user_name,
+        'user_email': user_email,
+        'user_phone': user_phone,
+        'user_addr': user_addr,
+        'user_addr_detail': user_addr_detail
+    })
+
+    session.commit()
+
+    # 회원가입 완료 후 중복확인 기록 제거
+    request.session.pop('signup_checked_id', None)
+
+    return RedirectResponse(
+        url='/login',
+        status_code=303
+    )
+
+@app.get('/terms')
+def terms(request: Request) :
+    return templates.TemplateResponse(request, 'terms.html')
+
+####################################
 #          메인 페이지 관련 구역       
 ####################################
 @app.get('/')
@@ -461,6 +739,9 @@ def productReservation (
         status_code=303
     )
 
+####################################
+#          장바구니 관련 구역       
+####################################
 @app.get('/cart')
 def cart(
     request: Request,
@@ -741,9 +1022,11 @@ def cartDeleteSelect(
         'result' : f'총 {deleteCount}건이 삭제되었습니다.'
     }
 
-# 레이아웃 페이지 이동용_관리자페이지
+####################################
+#          관리자 페이지 관련 구역       
+####################################
 @app.get('/admin')
-def admin(request: Request) :
+def adminDashboard(request: Request) :
     print('''
     ========================================
     /admin : 관리자페이지 실행
@@ -759,7 +1042,7 @@ def admin(request: Request) :
         )
 
 @app.get('/error-404')
-def error(request: Request):
+def adminError(request: Request):
     print('''
     ========================================
     /error-404 : 관리자페이지 접근 불가 실행
@@ -842,17 +1125,265 @@ def adminUsers(request: Request) :
             status_code=303
         )    
 
-# 레이아웃 페이지 이동용_AI건강체크
+####################################
+#          AI 건강진단 관련 구역       
+####################################
 @app.get('/ai-health')
-def adminAihealth(request: Request) :
+def aiHealth(request: Request):
+
     print('''
     ========================================
     /ai-health : AI 건강 체크 실행
     ========================================
     ''')
-    return templates.TemplateResponse(request, 'ai-health.html')
 
-# 레이아웃 페이지 이동용_주문서작성
+    user_id = request.session.get('user_id')
+
+    if user_id == None:
+        return RedirectResponse(
+            url='/login',
+            status_code=303
+        )
+
+    return templates.TemplateResponse(
+        request,
+        'ai-health.html',
+        {
+            'health_result': None,
+            'recommended_product_list': [],
+            'clinic_search_keyword': ''
+        }
+    )
+
+@app.post('/ai-health')
+def aiHealthData(
+    request: Request,
+    health_weight: float = Form(),
+    health_age: int = Form(),
+    health_gender: str = Form(),
+    health_sleep: float = Form(),
+    health_activity: int = Form(),
+    session: Session = Depends(get_session)
+):
+    print('''
+    ========================================
+    /ai-health : AI 건강 체크 결과 실행
+    ========================================
+    ''')
+
+    user_id = request.session.get('user_id')
+
+    if user_id == None:
+        return RedirectResponse(
+            url='/login',
+            status_code=303
+        )
+
+    # 입력값 검증
+    if health_weight < 20 or health_weight > 300:
+        return RedirectResponse(
+            url='/ai-health',
+            status_code=303
+        )
+
+    if health_age < 1 or health_age > 120:
+        return RedirectResponse(
+            url='/ai-health',
+            status_code=303
+        )
+
+    if health_gender not in ['남성', '여성', '기타']:
+        return RedirectResponse(
+            url='/ai-health',
+            status_code=303
+        )
+
+    if health_sleep < 0 or health_sleep > 24:
+        return RedirectResponse(
+            url='/ai-health',
+            status_code=303
+        )
+
+    if health_activity < 0 or health_activity > 14:
+        return RedirectResponse(
+            url='/ai-health',
+            status_code=303
+        )
+
+    # 건강 키워드 결정
+    if health_sleep < 6:
+        health_keyword = 'sleep'
+
+    elif health_age >= 60:
+        health_keyword = 'health_device'
+
+    elif health_activity < 2:
+        health_keyword = 'fitness'
+
+    else:
+        health_keyword = 'nutrition'
+
+    print('건강 키워드:', health_keyword)
+
+    # 키워드에 해당하는 AI 피드백과 의원 검색어 조회
+    sql_health_keyword = text('''
+        select
+            health_keyword_id,
+            health_keyword,
+            health_answer,
+            clinic_search_keyword
+        from ai_health_keyword
+        where health_keyword = :health_keyword
+    ''')
+
+    result_health_keyword = session.execute(
+        sql_health_keyword,
+        {
+            'health_keyword': health_keyword
+        }
+    )
+
+    health_keyword_result = (
+        result_health_keyword.mappings().fetchone()
+    )
+
+    if health_keyword_result == None:
+        return RedirectResponse(
+            url='/ai-health',
+            status_code=303
+        )
+
+    health_keyword_id = (
+        health_keyword_result['health_keyword_id']
+    )
+
+    health_result = (
+        health_keyword_result['health_answer']
+    )
+
+    clinic_search_keyword = (
+        health_keyword_result['clinic_search_keyword']
+    )
+
+    # 건강 체크 입력값과 결과 저장
+    sql_health_insert = text('''
+        insert into ai_health
+        (
+            health_weight,
+            health_age,
+            health_gender,
+            health_sleep,
+            health_activity,
+            health_result,
+            health_keyword_id,
+            user_id
+        )
+        values
+        (
+            :health_weight,
+            :health_age,
+            :health_gender,
+            :health_sleep,
+            :health_activity,
+            :health_result,
+            :health_keyword_id,
+            :user_id
+        )
+    ''')
+
+    result_health_insert = session.execute(
+        sql_health_insert,
+        {
+            'health_weight': health_weight,
+            'health_age': health_age,
+            'health_gender': health_gender,
+            'health_sleep': health_sleep,
+            'health_activity': health_activity,
+            'health_result': health_result,
+            'health_keyword_id': health_keyword_id,
+            'user_id': user_id
+        }
+    )
+
+    health_id = result_health_insert.lastrowid
+
+    # 키워드에 연결된 판매 중인 상품 중 3개 조회
+    sql_recommended_product = text('''
+        select
+            pr.product_id,
+            pr.product_name,
+            pr.product_image,
+            pr.product_price,
+            pr.product_sale_stock,
+            pr.product_active
+        from product_health_keyword as phk
+        join product as pr
+            on phk.product_id = pr.product_id
+        where phk.health_keyword_id = :health_keyword_id
+        and pr.product_active = 1
+        order by rand()
+        limit 3
+    ''')
+
+    result_recommended_product = session.execute(
+        sql_recommended_product,
+        {
+            'health_keyword_id': health_keyword_id
+        }
+    )
+
+    recommended_product_list = (
+        result_recommended_product.mappings().fetchall()
+    )
+
+    # 추천 결과 저장
+    sql_recommendation_insert = text('''
+        insert into ai_health_recommendation
+        (
+            health_id,
+            product_id,
+            recommendation_rank
+        )
+        values
+        (
+            :health_id,
+            :product_id,
+            :recommendation_rank
+        )
+    ''')
+
+    recommendation_rank = 1
+
+    for product in recommended_product_list:
+
+        session.execute(
+            sql_recommendation_insert,
+            {
+                'health_id': health_id,
+                'product_id': product['product_id'],
+                'recommendation_rank': recommendation_rank
+            }
+        )
+
+        recommendation_rank += 1
+
+    session.commit()
+
+    return templates.TemplateResponse(
+        request,
+        'ai-health.html',
+        {
+            'health_result': health_result,
+            'recommended_product_list':
+                recommended_product_list,
+            'clinic_search_keyword':
+                clinic_search_keyword
+        }
+    )
+
+####################################
+#          상품 주문 관련 구역       
+####################################
 @app.get('/checkout')
 def checkout(request: Request, session: Session = Depends(get_session)) :
     print('''
@@ -1604,6 +2135,9 @@ def checkOutCard(
         status_code=303
     )
 
+####################################
+#          상품 결제 관련 구역       
+####################################
 @app.get('/payment/result')
 def paymentResult(
     request: Request,
@@ -1652,116 +2186,721 @@ def paymentResult(
         }
     )
 
-# 레이아웃 페이지 이동용_커뮤니티
+####################################
+#          커뮤니티 관련 구역       
+####################################
 @app.get('/notice')
-def commNotice(request: Request) :
+def commNotice(
+    request: Request,
+    keyword: str = '',
+    page: int = 1,
+    session: Session = Depends(get_session)
+):
     print('''
     ========================================
     /notice : 커뮤니티 공지사항 실행
     ========================================
     ''')
-    return templates.TemplateResponse(request, 'notice.html')
 
-@app.get('/faq')
-def commFaq(request: Request) :
-    print('''
-    ========================================
-    /faq : 커뮤니티 자주 묻는 질문 실행
-    ========================================
-    ''')
-    return templates.TemplateResponse(request, 'faq.html')
+    keyword = keyword.strip()
 
-@app.get('/inquiry-write')
-def commInquirywrite(request: Request) :
-    print('''
-    ========================================
-    /inquiry-write : 커뮤니티 일대일 문의 실행
-    ========================================
-    ''')
-    return templates.TemplateResponse(request, 'inquiry-write.html')
+    if page < 1:
+        page = 1
 
-@app.get('/login')
-def login_loading(request: Request):
-    print('''
-    ========================================
-    /login : 로그인 페이지 로딩
-    ========================================
-    ''')
-    return templates.TemplateResponse(request, 'login.html')
+    page_size = 10
+    page_start = (page - 1) * page_size
 
-# 레이아웃 페이지 이동용_로그인/회원가입
-@app.post('/login')
-def login(request: Request, user_id:str = Form(), user_password:str = Form(), session: Session = Depends(get_session)) :
-    print('''
-    ========================================
-    /login : 로그인 페이지 실행
-    ========================================
+    sql_notice = text('''
+        select
+            notice_id,
+            notice_title,
+            notice_detail,
+            notice_date,
+            user_id
+        from notice
+        where (
+            :keyword = ''
+            or notice_title like :search_keyword
+            or notice_detail like :search_keyword
+        )
+        order by notice_id desc
+        limit :page_start, :page_size
     ''')
 
-    sql = text('''
-        select * from users
-        where user_id = :user_id
+    result_notice = session.execute(
+        sql_notice,
+        {
+            'keyword': keyword,
+            'search_keyword': '%' + keyword + '%',
+            'page_start': page_start,
+            'page_size': page_size
+        }
+    )
+
+    notice_list = (
+        result_notice
+        .mappings()
+        .fetchall()
+    )
+
+    sql_notice_count = text('''
+        select count(*) as notice_count
+        from notice
+        where (
+            :keyword = ''
+            or notice_title like :search_keyword
+            or notice_detail like :search_keyword
+        )
     ''')
 
-    result = session.execute(sql, {
-        'user_id' : user_id
-    })
-    login_check = result.mappings().fetchone()
+    result_count = session.execute(
+        sql_notice_count,
+        {
+            'keyword': keyword,
+            'search_keyword': '%' + keyword + '%'
+        }
+    )
 
-    print(login_check)
+    notice_count = (
+        result_count
+        .mappings()
+        .fetchone()['notice_count']
+    )
 
-    if login_check :
-        if user_password == login_check['user_password'] :
-            # print('ID PW 같아요!!!')
+    total_page = int(notice_count / page_size)
 
-            request.session['isLogin'] = True
-            request.session['user_id'] = user_id
-            request.session['user_name'] = login_check['user_name']
+    if notice_count % page_size != 0:
+        total_page += 1
 
-            print('/login : 로그인 성공')
-            return RedirectResponse(
-                url='/',
-                status_code=303
-            )
+    return templates.TemplateResponse(
+        request,
+        'notice.html',
+        {
+            'notice_list': notice_list,
+            'keyword': keyword,
+            'page': page,
+            'total_page': total_page
+        }
+    )
 
-    print('/login : 로그인 실패')
-    return templates.TemplateResponse(request, 'login.html', {
-        'login_error': '아이디 또는 비밀번호가 일치하지 않습니다.'
-    })
+@app.get('/notice/write')
+def noticeWrite(request: Request):
+    if request.session.get('user_id') != 'admin':
+        return RedirectResponse(
+            url='/error-404',
+            status_code=303
+        )
 
-@app.get('/logout')
-def logout(request:Request):
-    print('''
-    ========================================
-    /logout : 로그아웃 페이지 실행
-    ========================================
+    return templates.TemplateResponse(
+        request,
+        'notice-editor.html',
+        {
+            'editor_mode': 'write',
+            'notice': None
+        }
+    )
+
+
+@app.post('/notice/write')
+def noticeWriteData(
+    request: Request,
+    notice_title: str = Form(),
+    notice_detail: str = Form(),
+    session: Session = Depends(get_session)
+):
+    if request.session.get('user_id') != 'admin':
+        return RedirectResponse(
+            url='/error-404',
+            status_code=303
+        )
+
+    notice_title = notice_title.strip()
+    notice_detail = notice_detail.strip()
+
+    if notice_title == '' or notice_detail == '':
+        return RedirectResponse(
+            url='/notice/write',
+            status_code=303
+        )
+
+    notice_date = datetime.now().strftime('%Y-%m-%d')
+
+    sql_notice_write = text('''
+        insert into notice (
+            notice_title,
+            notice_detail,
+            notice_date,
+            user_id
+        )
+        values (
+            :notice_title,
+            :notice_detail,
+            :notice_date,
+            :user_id
+        )
     ''')
-    request.session.clear()
+
+    session.execute(
+        sql_notice_write,
+        {
+            'notice_title': notice_title,
+            'notice_detail': notice_detail,
+            'notice_date': notice_date,
+            'user_id': request.session.get('user_id')
+        }
+    )
+
+    session.commit()
 
     return RedirectResponse(
-        url='/',
+        url='/notice',
         status_code=303
     )
 
-@app.get('/signup')
-def signup(request: Request) :
-    print('''
-    ========================================
-    /signup : 회원가입 페이지 실행
-    ========================================
-    ''')
-    return templates.TemplateResponse(request, 'signup.html')
+@app.get('/notice/edit/{notice_id}')
+def noticeEdit(
+    request: Request,
+    notice_id: int,
+    session: Session = Depends(get_session)
+):
+    if request.session.get('user_id') != 'admin':
+        return RedirectResponse(
+            url='/error-404',
+            status_code=303
+        )
 
-@app.get('/terms')
-def terms(request: Request) :
-    print('''
-    ========================================
-    /terms : 이용약관 페이지 실행
-    ========================================
+    sql_notice = text('''
+        select *
+        from notice
+        where notice_id = :notice_id
     ''')
-    return templates.TemplateResponse(request, 'terms.html')
 
-# 레이아웃 페이지 이동용_마이페이지
+    result_notice = session.execute(
+        sql_notice,
+        {
+            'notice_id': notice_id
+        }
+    )
+
+    notice = (
+        result_notice
+        .mappings()
+        .fetchone()
+    )
+
+    if notice is None:
+        return RedirectResponse(
+            url='/notice',
+            status_code=303
+        )
+
+    return templates.TemplateResponse(
+        request,
+        'notice-editor.html',
+        {
+            'editor_mode': 'edit',
+            'notice': notice
+        }
+    )
+
+
+@app.post('/notice/edit/{notice_id}')
+def noticeEditData(
+    request: Request,
+    notice_id: int,
+    notice_title: str = Form(),
+    notice_detail: str = Form(),
+    session: Session = Depends(get_session)
+):
+    if request.session.get('user_id') != 'admin':
+        return RedirectResponse(
+            url='/error-404',
+            status_code=303
+        )
+
+    notice_title = notice_title.strip()
+    notice_detail = notice_detail.strip()
+
+    if notice_title == '' or notice_detail == '':
+        return RedirectResponse(
+            url=f'/notice/edit/{notice_id}',
+            status_code=303
+        )
+
+    sql_notice_update = text('''
+        update notice
+        set
+            notice_title = :notice_title,
+            notice_detail = :notice_detail
+        where notice_id = :notice_id
+    ''')
+
+    session.execute(
+        sql_notice_update,
+        {
+            'notice_title': notice_title,
+            'notice_detail': notice_detail,
+            'notice_id': notice_id
+        }
+    )
+
+    session.commit()
+
+    return RedirectResponse(
+        url='/notice',
+        status_code=303
+    )
+
+@app.post('/notice/delete')
+def noticeDelete(
+    request: Request,
+    notice_id: int = Form(),
+    session: Session = Depends(get_session)
+):
+    if request.session.get('user_id') != 'admin':
+        return RedirectResponse(
+            url='/error-404',
+            status_code=303
+        )
+
+    sql_notice_delete = text('''
+        delete from notice
+        where notice_id = :notice_id
+    ''')
+
+    session.execute(
+        sql_notice_delete,
+        {
+            'notice_id': notice_id
+        }
+    )
+
+    session.commit()
+
+    return RedirectResponse(
+        url='/notice',
+        status_code=303
+    )
+
+@app.get('/faq')
+def commFaq(
+    request: Request,
+    keyword: str = '',
+    page: int = 1,
+    session: Session = Depends(get_session)
+):
+    print('''
+========================================
+/faq : 커뮤니티 자주 묻는 질문 실행
+========================================
+''')
+
+    keyword = keyword.strip()
+
+    if page < 1:
+        page = 1
+
+    page_size = 10
+    page_start = (page - 1) * page_size
+
+    sql_faq = text('''
+        select
+            faq_id,
+            faq_title,
+            faq_detail,
+            faq_date,
+            user_id
+        from faq
+        where (
+            :keyword = ''
+            or faq_title like :search_keyword
+            or faq_detail like :search_keyword
+        )
+        order by faq_id desc
+        limit :page_start, :page_size
+    ''')
+
+    result_faq = session.execute(
+        sql_faq,
+        {
+            'keyword': keyword,
+            'search_keyword': '%' + keyword + '%',
+            'page_start': page_start,
+            'page_size': page_size
+        }
+    )
+
+    faq_list = (
+        result_faq
+        .mappings()
+        .fetchall()
+    )
+
+    sql_faq_count = text('''
+        select count(*) as faq_count
+        from faq
+        where (
+            :keyword = ''
+            or faq_title like :search_keyword
+            or faq_detail like :search_keyword
+        )
+    ''')
+
+    result_count = session.execute(
+        sql_faq_count,
+        {
+            'keyword': keyword,
+            'search_keyword': '%' + keyword + '%'
+        }
+    )
+
+    faq_count = (
+        result_count
+        .mappings()
+        .fetchone()['faq_count']
+    )
+
+    total_page = int(faq_count / page_size)
+
+    if faq_count % page_size != 0:
+        total_page += 1
+
+    return templates.TemplateResponse(
+        request,
+        'faq.html',
+        {
+            'faq_list': faq_list,
+            'keyword': keyword,
+            'page': page,
+            'total_page': total_page
+        }
+    )
+@app.get('/faq/write')
+def faqWrite(request: Request):
+    if request.session.get('user_id') != 'admin':
+        return RedirectResponse(
+            url='/error-404',
+            status_code=303
+        )
+
+    return templates.TemplateResponse(
+        request,
+        'faq-editor.html',
+        {
+            'editor_mode': 'write',
+            'faq': None
+        }
+    )
+
+@app.post('/faq/write')
+def faqWriteData(
+    request: Request,
+    faq_title: str = Form(),
+    faq_detail: str = Form(),
+    session: Session = Depends(get_session)
+):
+    if request.session.get('user_id') != 'admin':
+        return RedirectResponse(
+            url='/error-404',
+            status_code=303
+        )
+
+    faq_title = faq_title.strip()
+    faq_detail = faq_detail.strip()
+
+    if faq_title == '' or faq_detail == '':
+        return RedirectResponse(
+            url='/faq/write',
+            status_code=303
+        )
+
+    faq_date = datetime.now().strftime('%Y-%m-%d')
+
+    sql_faq_write = text('''
+        insert into faq (
+            faq_title,
+            faq_detail,
+            faq_date,
+            user_id
+        )
+        values (
+            :faq_title,
+            :faq_detail,
+            :faq_date,
+            :user_id
+        )
+    ''')
+
+    session.execute(
+        sql_faq_write,
+        {
+            'faq_title': faq_title,
+            'faq_detail': faq_detail,
+            'faq_date': faq_date,
+            'user_id': request.session.get('user_id')
+        }
+    )
+
+    session.commit()
+
+    return RedirectResponse(
+        url='/faq',
+        status_code=303
+    )
+
+@app.get('/faq/edit/{faq_id}')
+def faqEdit(
+    request: Request,
+    faq_id: int,
+    session: Session = Depends(get_session)
+):
+    if request.session.get('user_id') != 'admin':
+        return RedirectResponse(
+            url='/error-404',
+            status_code=303
+        )
+
+    sql_faq = text('''
+        select *
+        from faq
+        where faq_id = :faq_id
+    ''')
+
+    result_faq = session.execute(
+        sql_faq,
+        {
+            'faq_id': faq_id
+        }
+    )
+
+    faq = (
+        result_faq
+        .mappings()
+        .fetchone()
+    )
+
+    if faq is None:
+        return RedirectResponse(
+            url='/faq',
+            status_code=303
+        )
+
+    return templates.TemplateResponse(
+        request,
+        'faq-editor.html',
+        {
+            'editor_mode': 'edit',
+            'faq': faq
+        }
+    )
+
+@app.post('/faq/edit/{faq_id}')
+def faqEditData(
+    request: Request,
+    faq_id: int,
+    faq_title: str = Form(),
+    faq_detail: str = Form(),
+    session: Session = Depends(get_session)
+):
+    if request.session.get('user_id') != 'admin':
+        return RedirectResponse(
+            url='/error-404',
+            status_code=303
+        )
+
+    faq_title = faq_title.strip()
+    faq_detail = faq_detail.strip()
+
+    if faq_title == '' or faq_detail == '':
+        return RedirectResponse(
+            url=f'/faq/edit/{faq_id}',
+            status_code=303
+        )
+
+    sql_faq_update = text('''
+        update faq
+        set
+            faq_title = :faq_title,
+            faq_detail = :faq_detail
+        where faq_id = :faq_id
+    ''')
+
+    session.execute(
+        sql_faq_update,
+        {
+            'faq_title': faq_title,
+            'faq_detail': faq_detail,
+            'faq_id': faq_id
+        }
+    )
+
+    session.commit()
+
+    return RedirectResponse(
+        url='/faq',
+        status_code=303
+    )
+
+@app.post('/faq/delete')
+def faqDelete(
+    request: Request,
+    faq_id: int = Form(),
+    session: Session = Depends(get_session)
+):
+    if request.session.get('user_id') != 'admin':
+        return RedirectResponse(
+            url='/error-404',
+            status_code=303
+        )
+
+    sql_faq_delete = text('''
+        delete from faq
+        where faq_id = :faq_id
+    ''')
+
+    session.execute(
+        sql_faq_delete,
+        {
+            'faq_id': faq_id
+        }
+    )
+
+    session.commit()
+
+    return RedirectResponse(
+        url='/faq',
+        status_code=303
+    )
+
+@app.get('/inquiry/write')
+def commInquiryWrite(request: Request):
+    print('''
+========================================
+/inquiry/write : 커뮤니티 일대일 문의 실행
+========================================
+''')
+
+    user_id = request.session.get('user_id')
+
+    if user_id is None:
+        return RedirectResponse(
+            url='/login',
+            status_code=303
+        )
+
+    return templates.TemplateResponse(
+        request,
+        'inquiry-write.html'
+    )
+
+@app.post('/inquiry/write')
+def commInquiryWriteData(
+    request: Request,
+    inquiry_type: str = Form(),
+    inquiry_title: str = Form(),
+    inquiry_detail: str = Form(),
+    session: Session = Depends(get_session)
+):
+    print('''
+========================================
+/inquiry/write : 일대일 문의 등록
+========================================
+''')
+
+    user_id = request.session.get('user_id')
+
+    if user_id is None:
+        return RedirectResponse(
+            url='/login',
+            status_code=303
+        )
+
+    inquiry_type = inquiry_type.strip()
+    inquiry_title = inquiry_title.strip()
+    inquiry_detail = inquiry_detail.strip()
+
+    inquiry_type_list = [
+        '상품문의',
+        '배송문의',
+        '예약문의',
+        '기타문의'
+    ]
+
+    if inquiry_type not in inquiry_type_list:
+        return RedirectResponse(
+            url='/inquiry/write',
+            status_code=303
+        )
+
+    if (
+        inquiry_title == ''
+        or inquiry_detail == ''
+    ):
+        return RedirectResponse(
+            url='/inquiry/write',
+            status_code=303
+        )
+
+    if (
+        len(inquiry_title) > 200
+        or len(inquiry_detail) > 3000
+    ):
+        return RedirectResponse(
+            url='/inquiry/write',
+            status_code=303
+        )
+
+    inquiry_date = (
+        datetime.now()
+        .strftime('%Y-%m-%d')
+    )
+
+    sql_inquiry_write = text('''
+        insert into inquiry (
+            inquiry_title,
+            inquiry_detail,
+            inquiry_attachment,
+            inquiry_date,
+            inquiry_answer,
+            inquiry_answer_date,
+            user_id,
+            inquiry_status_id,
+            inquiry_type
+        )
+        values (
+            :inquiry_title,
+            :inquiry_detail,
+            null,
+            :inquiry_date,
+            null,
+            null,
+            :user_id,
+            1,
+            :inquiry_type
+        )
+    ''')
+
+    session.execute(
+        sql_inquiry_write,
+        {
+            'inquiry_title': inquiry_title,
+            'inquiry_detail': inquiry_detail,
+            'inquiry_date': inquiry_date,
+            'user_id': user_id,
+            'inquiry_type': inquiry_type
+        }
+    )
+
+    session.commit()
+
+    return RedirectResponse(
+        url='/mypage/inquiries?write_result=success',
+        status_code=303
+    )
+
+####################################
+#          마이페이지 관련 구역       
+####################################
 @app.get('/mypage')
 def mypage(request: Request) :
     print('''
@@ -1772,13 +2911,141 @@ def mypage(request: Request) :
     return templates.TemplateResponse(request, 'mypage-dashboard.html')
 
 @app.get('/mypage/inquiries')
-def mypageInquiries(request: Request) :
+def mypageInquiries(
+    request: Request,
+    page: int = 1,
+    session: Session = Depends(get_session)
+):
     print('''
-    ========================================
-    /mypage/inquiries : 마이페이지 일대일 문의 실행
-    ========================================
+========================================
+/mypage/inquiries : 마이페이지 일대일 문의 실행
+========================================
+''')
+
+    user_id = request.session.get('user_id')
+
+    if user_id is None:
+        return RedirectResponse(
+            url='/login',
+            status_code=303
+        )
+
+    if page < 1:
+        page = 1
+
+    page_size = 10
+    page_start = (page - 1) * page_size
+
+    sql_inquiry = text('''
+        select
+            iq.inquiry_id,
+            iq.inquiry_type,
+            iq.inquiry_title,
+            iq.inquiry_detail,
+            iq.inquiry_attachment,
+            iq.inquiry_date,
+            iq.inquiry_answer,
+            iq.inquiry_answer_date,
+            iq.inquiry_status_id,
+            ist.inquiry_status_name
+        from inquiry as iq
+        join inquiry_status as ist
+            on iq.inquiry_status_id =
+               ist.inquiry_status_id
+        where iq.user_id = :user_id
+        order by iq.inquiry_id desc
+        limit :page_start, :page_size
     ''')
-    return templates.TemplateResponse(request, 'mypage-inquiries.html')
+
+    result_inquiry = session.execute(
+        sql_inquiry,
+        {
+            'user_id': user_id,
+            'page_start': page_start,
+            'page_size': page_size
+        }
+    )
+
+    inquiry_list = (
+        result_inquiry
+        .mappings()
+        .fetchall()
+    )
+
+    sql_inquiry_count = text('''
+        select count(*) as inquiry_count
+        from inquiry
+        where user_id = :user_id
+    ''')
+
+    result_count = session.execute(
+        sql_inquiry_count,
+        {
+            'user_id': user_id
+        }
+    )
+
+    inquiry_count = (
+        result_count
+        .mappings()
+        .fetchone()['inquiry_count']
+    )
+
+    total_page = int(inquiry_count / page_size)
+
+    if inquiry_count % page_size != 0:
+        total_page += 1
+
+    return templates.TemplateResponse(
+        request,
+        'mypage-inquiries.html',
+        {
+            'inquiry_list': inquiry_list,
+            'page': page,
+            'total_page': total_page
+        }
+    )
+
+@app.post('/mypage/inquiry/delete')
+def mypageInquiryDelete(
+    request: Request,
+    inquiry_id: int = Form(),
+    session: Session = Depends(get_session)
+):
+    print('''
+========================================
+/mypage/inquiry/delete : 내 문의 삭제
+========================================
+''')
+
+    user_id = request.session.get('user_id')
+
+    if user_id is None:
+        return RedirectResponse(
+            url='/login',
+            status_code=303
+        )
+
+    sql_inquiry_delete = text('''
+        delete from inquiry
+        where inquiry_id = :inquiry_id
+          and user_id = :user_id
+    ''')
+
+    session.execute(
+        sql_inquiry_delete,
+        {
+            'inquiry_id': inquiry_id,
+            'user_id': user_id
+        }
+    )
+
+    session.commit()
+
+    return RedirectResponse(
+        url='/mypage/inquiries?delete_result=success',
+        status_code=303
+    )
 
 @app.get('/mypage/orders')
 def mypageOrders(request: Request) :
@@ -1790,13 +3057,230 @@ def mypageOrders(request: Request) :
     return templates.TemplateResponse(request, 'mypage-orders.html')
 
 @app.get('/mypage/profile')
-def mypageProfile(request: Request) :
+def mypageProfile(
+    request: Request,
+    session: Session = Depends(get_session)
+):
     print('''
-    ========================================
-    /mypage/profile : 마이페이지 회원 정보 실행
-    ========================================
+========================================
+/mypage/profile : 마이페이지 회원 정보 실행
+========================================
+''')
+
+    user_id = request.session.get('user_id')
+
+    if user_id is None:
+        return RedirectResponse(
+            url='/login',
+            status_code=303
+        )
+
+    sql_profile = text('''
+        select
+            user_id,
+            user_name,
+            user_email,
+            user_phone,
+            user_addr,
+            user_addr_detail
+        from users
+        where user_id = :user_id
     ''')
-    return templates.TemplateResponse(request, 'mypage-profile.html')
+
+    result_profile = session.execute(
+        sql_profile,
+        {
+            'user_id': user_id
+        }
+    )
+
+    user_profile = (
+        result_profile
+        .mappings()
+        .fetchone()
+    )
+
+    if user_profile is None:
+        request.session.clear()
+
+        return RedirectResponse(
+            url='/login',
+            status_code=303
+        )
+
+    return templates.TemplateResponse(
+        request,
+        'mypage-profile.html',
+        {
+            'user_profile': user_profile
+        }
+    )
+
+@app.post('/mypage/profile')
+def mypageProfileUpdate(
+    request: Request,
+    user_name: str = Form(),
+    user_addr: str = Form(),
+    user_addr_detail: str = Form(),
+    user_email: str = Form(),
+    user_phone: str = Form(),
+    session: Session = Depends(get_session)
+):
+    print('''
+========================================
+/mypage/profile : 마이페이지 회원 정보 수정
+========================================
+''')
+
+    user_id = request.session.get('user_id')
+
+    if user_id is None:
+        return RedirectResponse(
+            url='/login',
+            status_code=303
+        )
+
+    user_name = user_name.strip()
+    user_addr = user_addr.strip()
+    user_addr_detail = user_addr_detail.strip()
+    user_email = user_email.strip()
+
+    # 010-1234-5678 → 01012345678
+    user_phone = (
+        user_phone
+        .strip()
+        .replace('-', '')
+    )
+
+    if (
+        user_name == ''
+        or user_addr == ''
+        or user_addr_detail == ''
+        or user_email == ''
+    ):
+        return RedirectResponse(
+            url='/mypage/profile',
+            status_code=303
+        )
+
+    if (
+        not user_phone.isdigit()
+        or len(user_phone) != 11
+        or not user_phone.startswith('010')
+    ):
+        return RedirectResponse(
+            url='/mypage/profile',
+            status_code=303
+        )
+
+    sql_profile_update = text('''
+        update users
+        set
+            user_name = :user_name,
+            user_addr = :user_addr,
+            user_addr_detail = :user_addr_detail,
+            user_email = :user_email,
+            user_phone = :user_phone
+        where user_id = :user_id
+    ''')
+
+    session.execute(
+        sql_profile_update,
+        {
+            'user_name': user_name,
+            'user_addr': user_addr,
+            'user_addr_detail': user_addr_detail,
+            'user_email': user_email,
+            'user_phone': user_phone,
+            'user_id': user_id
+        }
+    )
+
+    session.commit()
+
+    # 헤더에 표시되는 이름도 변경
+    request.session['user_name'] = user_name
+
+    return RedirectResponse(
+        url='/mypage/profile',
+        status_code=303
+    )
+
+@app.post('/mypage/profile/password')
+def mypagePasswordUpdate(
+    request: Request,
+    current_password: str = Form(),
+    new_password: str = Form(),
+    new_password_confirm: str = Form(),
+    session: Session = Depends(get_session)
+):
+    user_id = request.session.get('user_id')
+
+    if user_id is None:
+        return RedirectResponse(
+            url='/login',
+            status_code=303
+        )
+
+    if (
+        current_password == ''
+        or new_password == ''
+        or new_password != new_password_confirm
+    ):
+        return RedirectResponse(
+            url='/mypage/profile',
+            status_code=303
+        )
+
+    sql_password_check = text('''
+        select user_password
+        from users
+        where user_id = :user_id
+    ''')
+
+    result_password = session.execute(
+        sql_password_check,
+        {
+            'user_id': user_id
+        }
+    )
+
+    password_data = (
+        result_password
+        .mappings()
+        .fetchone()
+    )
+
+    if (
+        password_data is None
+        or password_data['user_password']
+            != current_password
+    ):
+        return RedirectResponse(
+            url='/mypage/profile?password_result=wrong',
+            status_code=303
+        )
+
+    sql_password_update = text('''
+        update users
+        set user_password = :new_password
+        where user_id = :user_id
+    ''')
+
+    session.execute(
+        sql_password_update,
+        {
+            'new_password': new_password,
+            'user_id': user_id
+        }
+    )
+
+    session.commit()
+
+    return RedirectResponse(
+        url='/mypage/profile?password_result=success',
+        status_code=303
+    )
 
 @app.get('/mypage/reservations')
 def mypageReservations(request: Request, session: Session = Depends(get_session)) :
@@ -1827,7 +3311,7 @@ def mypageReservations(request: Request, session: Session = Depends(get_session)
 
     reservationList = result_mypage_reservation.mappings().fetchall()
 
-    print(' reservationList : ' , reservationList)
+    # print(' reservationList : ' , reservationList)
 
     return templates.TemplateResponse(request, 'mypage-reservations.html', {
         'reservationList' : reservationList
