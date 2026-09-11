@@ -6,16 +6,6 @@
 
 {% block script %}
 <script>
-    document.querySelectorAll('#reservationreminderButton').forEach(btn => {
-        btn.addEventListener('click', () => {
-            alert('예약 알림이 발송되었습니다.')
-        })
-    })
-    document.querySelectorAll('#paymentreminderButton').forEach(btn => {
-        btn.addEventListener('click', () => {
-            alert('결제 알림이 발송되었습니다.')
-        })
-    })
     //-------------------------------------------
     // [1] '상세 정보' 버튼 클릭시 상세 정보 팝업창 열기   
     //-------------------------------------------
@@ -109,10 +99,6 @@
                         data-quantity="{{reservation.reservation_quantity}}" data-date="{{reservation.reservation_date}}"
                         data-expiration="{{reservation.reservation_expiration}}"
                         >상세 정보</button>
-                        <button class="button secondary small" id="reservationreminderButton" type="button">예약 알림
-                            발송</button>
-                        <button class="button secondary small" id="paymentreminderButton" type="button">결제 알림
-                            발송</button>
                         <a href="/api/delete/reservations/{{reservation.reservation_id}}">
                             <button class="button danger small" id="removereservationButton" type="button">예약
                                 삭제</button>
