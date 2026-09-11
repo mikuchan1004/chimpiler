@@ -51,6 +51,12 @@ from starlette.middleware.sessions import SessionMiddleware
 # secret_key 설정 
 app.add_middleware(SessionMiddleware, secret_key= 'chimpiler-session-key') 
 
+from datetime import datetime, timedelta
+
+now = datetime.now()
+checkoutDate = now.strftime('%Y-%m-%d %H:%M:%S')
+future = now + timedelta(days=1)
+
 # ==============================================================================
 # 2. 데이터베이스(DB: 정보 저장 창고) 연결 설정
 # ==============================================================================
@@ -81,18 +87,16 @@ def get_session():
 # 3. 단순 페이지 이동 및 대시보드 화면 보여주기
 # ==============================================================================
 
-def admin_session_check(request:Request):
-        print  ('관리자 세션인지 아닌지 검사합니다.')
-        if request.session.get('user_id') == 'admin':
-            return templates.TemplateResponse(request, 'admin-dashboard.html')
-        else:
-            return RedirectResponse(
-                url='/error-404',
-                status_code = 303 
-            )
 # [관리자 대시보드 메인 화면] 인터넷 주소: /admin 접속 시 실행
 @app.get('/admin')
 def dashboard(request: Request, session: Session = Depends(get_session)):
+    print  ('관리자 세션인지 아닌지 검사합니다.')
+    # 관리자가 아니면 에러 페이지로 쫒아내고 함수 종료 
+    if request.session.get('user_id') != 'admin':
+        return RedirectResponse(
+            url='/error-404',
+            status_code = 303 
+        )
     # 1) 창고에서 '남은 판매 재고가 0개'인 품절 상품의 총개수를 세어옴
     sql1 = text('''
     select count(*)
@@ -290,6 +294,13 @@ def logout(request:Request):
         status_code=303
     )
 
+#[마이페이지 영역]
+@app.get('/mypage')
+def mypage(request:Request):
+    print('마이페이지로 이동합니다.')
+    return templates.TemplateResponse(request, 'mypage-dashboard.html')
+
+
 # ==============================================================================
 # 4. 상품 관리 기능 (목록 보기, 새 상품 등록, 수정, 삭제, 품절 처리)
 # ==============================================================================
@@ -308,7 +319,6 @@ def product_list(request: Request, session: Session = Depends(get_session)):
     return templates.TemplateResponse(request, 'admin-products.html', {
         'product_list': results
     })
-
 
 # [새 상품 등록하기]
 @app.post('/api/add')
@@ -567,7 +577,24 @@ def user_warning(user_id: str, session: Session = Depends(get_session)):
         where
             user_id = :user_id
     ''')
+
+    # 경고횟수가 5회 이상일경우, 상태를 '경고'로 변경
+    sql2 = text('''
+        update users
+        set user_status = '경고'
+        where user_warning_count >= 5 and user_id = :user_id
+    ''')
+
+    # 경고횟수가 10회 이상일경우, 상태를 '정지'로 변경
+    sql3 = text ('''
+        update users 
+        set user_status = '정지'
+        where user_warning_count >= 10 and user_id = :user_id
+    ''')
+
     session.execute(sql, {'user_id': user_id})
+    session.execute(sql2, {'user_id' : user_id})
+    session.execute(sql3, {'user_id' : user_id})
     session.commit()
 
     return RedirectResponse(url='/admin/users', status_code=303)
@@ -769,7 +796,11 @@ def delivery_complete (order_sheet_id : int , session : Session = Depends(get_se
         left join payment_status as ps
              on p.payment_status_id = ps.payment_status_id
         set
-            d.delivery_status_id = 3 /* 배송상태를 '배송완료(3)'로 변경 */
+            d.delivery_status_id = 3, /* 배송 상태를 '배송완료(3)'로 변경*/
+            /* 배송시작일 (이미 있으면 유지, 비어있으면 현재 시각 ) */
+            d.delivery_start_date = IFNULL(d.delivery_start_date, NOW()), 
+            /* 배송완료일 (현재 시각 저장) */
+            d.delivery_complete_date = NOW()
         where 
             /*  결제 상태가 '결제완료(2)' 인 주문서의 ID를 받아서 업데이트 */
             ps.payment_status_id = 2 and o.order_sheet_id = :order_sheet_id
@@ -863,7 +894,13 @@ def process_purchace(reservation_id: int, session: Session = Depends(get_session
         */
         update reservation as r 
         left join product as p on r.product_id = p.product_id
-        set reservation_status_id = 2 
+        set 
+            reservation_status_id = 2,
+            /*
+             만료일을 현재 시간 기준 1일 뒤로 설정을 하고 싶다면 이렇게 쿼리를 적어야한다고 합니다.
+             (출처 : 구글 검색)
+            */
+            reservation_expiration = DATE_ADD(NOW(), INTERVAL 1 DAY)
         where 
             p.product_reservation_stock >= r.reservation_quantity and r.reservation_id = :reservation_id
         and (
