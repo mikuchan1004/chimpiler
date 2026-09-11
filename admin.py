@@ -292,7 +292,10 @@ def logout(request:Request):
         status_code=303
     )
 
-#[마이페이지 영역]
+# ==============================================================================
+# 4. 마이페이지 영역 
+# ==============================================================================
+
 @app.get('/mypage')
 def mypage(request:Request, session:Session=Depends(get_session)):
     print('마이페이지로 이동합니다.')
@@ -434,8 +437,74 @@ def mypage(request:Request, session:Session=Depends(get_session)):
         'inquiry_repiled_count' : result8[0]['inquiry_repiled_count']
     })
 
+# [마이페이지 - 주문/배송 조회]
+@app.get('/mypage/orders')
+def mypage_orders(request: Request , session:Session=Depends(get_session)):
+    print ('주문/배송 페이지로 이동합니다.')
+
+    # 주문 내역에서 결제 상태가 '결제 완료' 인 항목이 몇 개인지 세는 SQL문
+    sql = text('''
+        select count(*) as payment_completed
+            from orders as o 
+            left join users as u 
+                on o.user_id = u.user_id
+            left join payment as p 
+                on o.order_sheet_id = p.order_sheet_id
+            left join payment_status as ps
+                on p.payment_status_id = ps.payment_status_id
+            where o.user_id = 'admin' and ps.payment_status_name = '결제완료'
+    ''')
+
+    result = session.execute(sql).mappings().fetchall()
+
+    # 주문 내역에서 배송 상태가 '배송 완료' 인 항목이 몇 개인지 세는 SQL문
+    sql2 = text('''
+          select count(*) as delivery_completed
+                from orders as o 
+                left join users as u 
+                    on o.user_id = u.user_id
+                left join delivery as d
+                    on o.order_sheet_id = d.order_sheet_id
+                left join delivery_status as ds 
+                    on d.delivery_status_id = ds.delivery_status_id 
+                where o.user_id = 'admin' and delivery_status_name = '배송완료'        
+         ''')
+
+    result2 = session.execute(sql2).mappings().fetchall()
+
+    # 주문. 배송 조회 (관리자)
+    sql3 = text('''
+        select 
+            u.user_id,
+            ds.delivery_status_name,
+            p.product_name,
+            p.product_image,
+            os.order_sheet_id,
+            p.product_price
+        from orders as o 
+        left join users as u
+            on o.user_id = u.user_id
+        left join order_sheet as os 
+            on o.order_sheet_id = os.order_sheet_id
+        left join delivery as d
+            on os.order_sheet_id = d.order_sheet_id
+        left join delivery_status as ds
+            on d.delivery_status_id = ds.delivery_status_id
+        left join product as p 
+            on o.product_id = p.product_id
+        where o.user_id = 'admin'
+    ''')
+
+    result3 = session.execute(sql3).mappings().fetchall()
+
+    return templates.TemplateResponse(request, 'mypage-orders.html' , {
+        'payment_completed' : result[0]['payment_completed'],
+        'delivery_completed' : result2[0]['delivery_completed'],
+        'order_list' : result3
+    })
+
 # ==============================================================================
-# 4. 상품 관리 기능 (목록 보기, 새 상품 등록, 수정, 삭제, 품절 처리)
+# 5. 상품 관리 기능 (목록 보기, 새 상품 등록, 수정, 삭제, 품절 처리)
 # ==============================================================================
 
 # [상품 목록 화면 조회]
@@ -652,7 +721,7 @@ def search_product(request: Request, keyword: str = "", session: Session = Depen
 
 
 # ==============================================================================
-# 5. 회원 관리 기능 (회원 조회, 경고 부여/차감, 정지, 삭제)
+# 6. 회원 관리 기능 (회원 조회, 경고 부여/차감, 정지, 삭제)
 # ==============================================================================
 
 # [회원 목록 및 리뷰 신고 내역 조회]
@@ -829,7 +898,7 @@ def delete_user(user_id: str, session: Session = Depends(get_session)):
 
 
 # ==============================================================================
-# 6. 고객 1:1 문의 관리 기능
+# 7. 고객 1:1 문의 관리 기능
 # ==============================================================================
 
 # [손님들의 문의 목록 조회]
@@ -872,7 +941,7 @@ def answer_inquiry(inquiry_id: int, inquiry_answer: str = Form(), session: Sessi
 
 
 # ==============================================================================
-# 7. 주문 및 배송 현황 관리
+# 8. 주문 및 배송 현황 관리
 # ==============================================================================
 
 # [손님들의 주문 및 배송 목록 전체 조회]
@@ -945,7 +1014,7 @@ def delivery_complete (order_sheet_id : int , session : Session = Depends(get_se
     return RedirectResponse(url='/admin/orders', status_code=303)
 
 # ==============================================================================
-# 8. 상품 예약 관리
+# 9. 상품 예약 관리
 # ==============================================================================
 
 # [예약 목록 조회 및 대기 건수 확인]
