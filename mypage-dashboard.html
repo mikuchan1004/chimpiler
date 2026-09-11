@@ -127,6 +127,7 @@
                     {% for inquiry in recent_inquiry_history%}
                     <p>[{{inquiry.inquiry_type}}] {{inquiry.inquiry_title}}</p>
                     <p class="muted">{{inquiry.inquiry_status_name}} · {{inquiry.inquiry_answer_date}}</p>
+                    <hr>
                     {% endfor %}
                     {% endif %}
                 </section>
