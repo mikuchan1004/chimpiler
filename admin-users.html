@@ -9,6 +9,12 @@
     document.querySelector('.admin').addEventListener('click', () => {
         alert('관리자 계정은 삭제하실 수 없습니다.')
     })
+    document.querySelector('.suspension').addEventListener('click' , () =>{
+        alert('계정이 정지되었습니다.')
+    })
+    document.querySelector('.unsuspend').addEventListener('click' , () => {
+        alert('계정 정지가 해제되었습니다.')
+    })
 </script>
 {% endblock %}
 
@@ -42,7 +48,7 @@
                     <td>{{users.user_phone}}</td>
                     <td>{{users.user_warning_count}}</td>
                     <td>
-                        {% if users.user_warning_count >= 10 and users.user_status == '정지' %}
+                        {%  if users.user_status == '정지' %}
                         <span class="badge danger">정지</span>
                         {% elif users.user_warning_count >= 5 %}
                         <span class="badge warning">경고</span>
@@ -58,10 +64,10 @@
                             <button class="button secondary small">경고 제거</button>
                         </a>
                         <a href="/api/suspension/{{users.user_id}}">
-                            <button class="button danger small">계정 정지</button>
+                            <button class="button danger small suspension">계정 정지</button>
                         </a>
                         <a href="/api/unsuspend/{{users.user_id}}">
-                            <button class="button secondary small">정지 해제</button>
+                            <button class="button secondary small unsuspend">정지 해제</button>
                         </a>
                         {% if users.user_id == 'admin' %}
                         <button class="button danger small admin">회원 삭제</button>
