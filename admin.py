@@ -787,10 +787,28 @@ def mypage_orders(request: Request , session:Session=Depends(get_session)):
 
     result3 = session.execute(sql3).mappings().fetchall()
 
+    # 주문 내역에서 결제 상태가 '결제 취소' 인 항목이 몇 개인지 세는 SQL문 (관리자 기준)
+    sql4 = text('''
+        select count(*) as refund_count
+        from orders as o 
+        left join users as u 
+            on o.user_id = u.user_id 
+        left join order_sheet as os 
+            on o.order_sheet_id = os.order_sheet_id
+        left join payment as p 
+            on o.order_sheet_id = p.order_sheet_id
+        left join payment_status as ps
+            on p.payment_status_id = ps.payment_status_id
+        where o.user_id = 'admin' and payment_status_name = '결제취소'
+         ''')
+
+    result4 =session.execute(sql4).mappings().fetchall()
+
     return templates.TemplateResponse(request, 'mypage-orders.html' , {
         'payment_completed' : result[0]['payment_completed'],
         'delivery_completed' : result2[0]['delivery_completed'],
-        'order_list' : result3
+        'order_list' : result3,
+        'refund_count' : result4[0]['refund_count']
     })
 
 # ==============================================================================
@@ -1263,6 +1281,31 @@ def order_list(request: Request, session: Session = Depends(get_session)):
         on p.payment_status_id = ps.payment_status_id
     ''')
     results = session.execute(sql).mappings().fetchall()
+
+    # [환불 처리 -  결제 상태가 '결제완료' 인 주문을 환불 처리하면 결제 상태를 '결제취소'로 바꿉니다.]
+    @app.get('/api/refund_product/{order_sheet_id}')
+    def repund_product(order_sheet_id : int, session: Session = Depends(get_session)):
+        print('환불 처리를 진행합니다. / 환불 처리 대상 주문서 ID : ' , order_sheet_id)
+
+        sql = text('''
+            update orders as o 
+            left join order_sheet as os 
+                on o.order_sheet_id = os.order_sheet_id 
+            left join payment as p 
+                on os.order_sheet_id = p.order_sheet_id
+            left join payment_status as ps
+                on p.payment_status_id = ps.payment_status_id
+            set 
+                p.payment_status_id = 4
+            where 
+                ps.payment_status_name = '결제완료' and o.order_sheet_id = :order_sheet_id
+        ''')
+
+        session.execute(sql, {'order_sheet_id' : order_sheet_id})
+        session.commit()
+
+        return RedirectResponse(url='/admin/orders', status_code=303)
+
 
     # 주문 관리 화면(admin-orders.html)에 목록을 전달해 출력
     return templates.TemplateResponse(request, 'admin-orders.html', {
