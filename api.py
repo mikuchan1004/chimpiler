@@ -12,6 +12,8 @@ from datetime import datetime, timedelta
 
 import random
 
+from passlib.context import CryptContext
+
 app = FastAPI()
 app.add_middleware(
     SessionMiddleware,
@@ -42,6 +44,23 @@ def price(value) :
     # print(random.randint(1,10))
     return f'{int(value):,}'
 templates.env.filters['price'] = price
+
+ctx_pw = CryptContext(
+    schemes=['argon2'],
+    deprecated='auto'
+)
+
+def passwordHash(password):
+    return ctx_pw.hash(password)
+
+def passwordVerify(
+    input_password,
+    saved_password
+):
+    return ctx_pw.verify(
+        input_password,
+        saved_password
+    )
 
 ####################################
 #          레이아웃 관련 구역        
@@ -103,25 +122,84 @@ def login(request: Request, user_id:str = Form(), user_password:str = Form(), se
 
     print(login_check)
 
-    if login_check :
-        if user_password == login_check['user_password'] :
-            # print('ID PW 같아요!!!')
+    # if login_check :
+    #     if passwordVerify(user_password, login_check['user_password']):
+    #         # print('ID PW 같아요!!!')
 
-            request.session['isLogin'] = True
-            request.session['user_id'] = user_id
-            request.session['user_name'] = login_check['user_name']
+    #         request.session['isLogin'] = True
+    #         request.session['user_id'] = user_id
+    #         request.session['user_name'] = login_check['user_name']
 
-            print('/login : 로그인 성공')
-            return RedirectResponse(
-                url='/',
-                status_code=303
-            )
+    #         print('/login : 로그인 성공')
+    #         return RedirectResponse(
+    #             url='/',
+    #             status_code=303
+    #         )
+
+    if login_check:
+        saved_password = login_check['user_password']
+
+        if saved_password is not None:
+            # Argon2 비밀번호
+            if saved_password.startswith('$argon2'):
+                password_check = passwordVerify(
+                    user_password,
+                    saved_password
+                )
+
+            # 기존 평문 비밀번호
+            else:
+                password_check = (
+                    user_password == saved_password
+                )
+
+                # 로그인 성공 시 Argon2로 자동 변경
+                if password_check:
+                    sql_password_upgrade = text('''
+                        update users
+                        set user_password = :user_password
+                        where user_id = :user_id
+                    ''')
+
+                    session.execute(
+                        sql_password_upgrade,
+                        {
+                            'user_password':
+                                passwordHash(user_password),
+                            'user_id': user_id
+                        }
+                    )
+                    session.commit()
+
+            if password_check:
+                request.session['isLogin'] = True
+                request.session['user_id'] = user_id
+                request.session['user_name'] = (
+                    login_check['user_name']
+                )
+
+                print('/login : 로그인 성공')
+
+                return RedirectResponse(
+                    url='/',
+                    status_code=303
+                )
 
     print('/login : 로그인 실패')
-    return templates.TemplateResponse(request, 'login.html', {
-        'login_error': '아이디 또는 비밀번호가 일치하지 않습니다.'
-    })
 
+    return templates.TemplateResponse(
+        request,
+        'login.html',
+        {
+            'login_error':
+                '아이디 또는 비밀번호가 일치하지 않습니다.'
+        },
+        status_code=401
+    )
+
+####################################
+#          로그아웃 관련 구역        
+####################################
 @app.get('/logout')
 def logout(request:Request):
     print('''
@@ -136,6 +214,9 @@ def logout(request:Request):
         status_code=303
     )
 
+####################################
+#          회원가입 관련 구역        
+####################################
 @app.get('/signup')
 def signup(request: Request):
     print('''
@@ -327,7 +408,7 @@ def signupData(
 
     session.execute(sql_signup, {
         'user_id': user_id,
-        'user_password': user_password,
+        'user_password': passwordHash(user_password),
         'user_name': user_name,
         'user_email': user_email,
         'user_phone': user_phone,
@@ -527,6 +608,9 @@ def products(
         'keyword': keyword
     })
 
+####################################
+#          상품 상세 관련 구역        
+####################################
 @app.get('/product/detail/{product_id}')
 def productsDetail(request: Request, product_id:int, reservation: str = None, session: Session = Depends(get_session)) :
     print('''
@@ -2300,7 +2384,6 @@ def noticeWrite(request: Request):
         }
     )
 
-
 @app.post('/notice/write')
 def noticeWriteData(
     request: Request,
@@ -2402,7 +2485,6 @@ def noticeEdit(
             'notice': notice
         }
     )
-
 
 @app.post('/notice/edit/{notice_id}')
 def noticeEditData(
@@ -3251,11 +3333,19 @@ def mypagePasswordUpdate(
         .fetchone()
     )
 
-    if (
-        password_data is None
-        or password_data['user_password']
-            != current_password
-    ):
+    saved_password = password_data['user_password']
+
+    if saved_password.startswith('$argon2'):
+        current_password_check = passwordVerify(
+            current_password,
+            saved_password
+        )
+    else:
+        current_password_check = (
+            current_password == saved_password
+        )
+
+    if not current_password_check:
         return RedirectResponse(
             url='/mypage/profile?password_result=wrong',
             status_code=303
@@ -3270,7 +3360,7 @@ def mypagePasswordUpdate(
     session.execute(
         sql_password_update,
         {
-            'new_password': new_password,
+            'new_password': passwordHash(new_password),
             'user_id': user_id
         }
     )
