@@ -5,6 +5,14 @@
 {% endblock %}
 
 {% block script %}
+<script>
+    const date = new Date();
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const formattedDate = `${year}-${month}-${day}`;
+    document.querySelector('.nowdate').innerHTML = formattedDate
+</script>
 {% endblock %}
 
 {% block main %}
@@ -14,24 +22,32 @@
             <span class="eyebrow">ADMIN</span>
             <h1 class="page-title">운영 대시보드</h1>
         </div>
-        <span>2026.09.04 기준</span>
+        <span class="nowdate"></span>
     </header>
     <section class="dashboard-cards">
         <article class="card metric">
-            <span>오늘 주문</span>
-            <div class="metric-value">12</div>
+            <span>주문 현황</span>
+            <a href="/admin/orders">
+                <div class="metric-value">{{order_count}}건</div>
+            </a>
         </article>
         <article class="card metric">
-            <span>예약 대기</span>
-            <div class="metric-value">8</div>
+            <span>예약 현황</span>
+            <a href="/admin/reservations">
+                <div class="metric-value">{{reservation_count}}건</div>
+            </a>
         </article>
         <article class="card metric">
-            <span>답변 대기</span>
-            <div class="metric-value">4</div>
+            <span>답변대기중</span>
+            <a href="/admin/inquiries">
+                <div class="metric-value">{{inquiry_count}}건</div>
+            </a>
         </article>
         <article class="card metric">
-            <span>재고 부족</span>
-            <div class="metric-value">6</div>
+            <span>품절 상품</span>
+            <a href="/admin/products">
+                <div class="metric-value">{{sold_count}}건</div>
+            </a>
         </article>
     </section>
     <div class="split-view" style="margin-top:20px">
@@ -48,22 +64,16 @@
                         </tr>
                     </thead>
                     <tbody>
+                        {% if recent_orders %}
+                        {% for orders in recent_orders%}
                         <tr>
-                            <td>1004</td>
-                            <td>human</td>
-                            <td>49,000원</td>
-                            <td>
-                                <span class="badge warning">상품준비중</span>
-                            </td>
+                            <td>{{orders.order_sheet_id}}</td>
+                            <td>{{orders.order_name}}</td>
+                            <td>{{orders.order_total_price}}</td>
+                            <td><span class="badge success">{{orders.delivery_status_name}}</span></td>
                         </tr>
-                        <tr>
-                            <td>1003</td>
-                            <td>tester</td>
-                            <td>29,800원</td>
-                            <td>
-                                <span class="badge success">주문완료</span>
-                            </td>
-                        </tr>
+                        {% endfor %}
+                        {% endif %}
                     </tbody>
                 </table>
             </div>
@@ -71,12 +81,11 @@
         <aside class="panel">
             <h2>빠른 이동</h2>
             <div class="summary-list">
-                <a class="button secondary" href="/admin-products">재고 보충</a>
-                <a class="button secondary" href="/admin-inquiries">문의 답변</a>
-                <a class="button secondary" href="/admin-reservations">예약 확인</a>
+                <a class="button secondary" href="/admin/products">재고 보충</a>
+                <a class="button secondary" href="/admin/inquiries">문의 답변</a>
+                <a class="button secondary" href="/admin/reservations">예약 확인</a>
             </div>
         </aside>
     </div>
 </main>
 {% endblock %}
-

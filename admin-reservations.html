@@ -5,13 +5,54 @@
 {% endblock %}
 
 {% block script %}
+<script>
+    //-------------------------------------------
+    // [1] '상세 정보' 버튼 클릭시 상세 정보 팝업창 열기   
+    //-------------------------------------------
+    document.querySelector('#reservationInfo').addEventListener('click', () =>{
+        // '상세 정보'  버튼을 누르면 숨김 클래스 ('hide')를 없애서 팝업창이 화면에 보이게 만듦.
+        document.querySelector('.reservation_info_popup').classList.remove('hide')
+    })
+    //-------------------------------------------
+    // [2] 목록에 있는 모든 '상세 정보' 버튼에 클릭 이벤트 달아주기 
+    //-------------------------------------------
+    // 화면에 있는  모든 상세 정보 버튼(.reservation-info-btn)을 찾아서 하나씩 이벤트를 연결.
+    document.querySelectorAll('.reservation-info-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const target = e.currentTarget // 방금 클릭한 '상세 정보'  버튼
+            const popup = document.querySelector('.reservation_info_popup') // 딱 하나 마련해둔 '상세 정보 팝업창'
+
+            //상세 정보 버튼에 태그(data-*)  형태로 숨겨둔 정보들을 
+            // 팝업창 안에 있는 입력 칸들에 하나씩 자동으로 채워넣음
+            popup.querySelector(['[name= "reservation_id"]']).value = target.dataset.id // 예약 ID
+            popup.querySelector(['[name= "reservation_name"]']).value = target.dataset.name // 예약 고객명
+            popup.querySelector(['[name= "reservation_product"]']).value = target.dataset.product // 예약 상품명
+            popup.querySelector(['[name= "reservation_quantity"]']).value = target.dataset.quantity // 예약 상품 수량 
+            popup.querySelector(['[name= "reservation_date"]']).value = target.dataset.date // 예약일
+            popup.querySelector(['[name= "reservation_expiration_date"]']).value = target.dataset.expiration // 예약 만료일
+            // 데이터들을 다 채워넣었으니 팝업창의 숨김 클래스를 제거해서 화면에 띄워줌
+            popup.classList.remove('hide')
+        })
+    })
+    //-------------------------------------------
+    // [3] 모든 팝업창 안의 '닫기' 버튼 클릭 시 팝업창 숨기기 
+    //-------------------------------------------
+    // 모든 팝업 안에 있는 '닫기'  버튼(.close)을 찾아서 기능을 걸어줌
+    document.querySelectorAll('.close').forEach(closeBtn => {
+        closeBtn.addEventListener('click' , (e) => {
+            // 클릭된 닫기 버튼이 포함된 가장 가까운 팝업 상자를 찾아서 다시 숨김 클래스('.hide')를 붙여줌.
+            e.target.closest('.reservation_info_popup').classList.add('hide')
+        })
+    })
+
+</script>
 {% endblock %}
 
 {% block main %}
 <main class="container admin-layout">
     <div class="admin-toolbar">
         <h1 class="page-title">예약관리</h1>
-        <span class="badge warning">예약 대기 8건</span>
+        <span class="badge warning">예약 대기 {{reservation_wait}}건</span>
     </div>
     <div class="table-wrap">
         <table class="data-table" id="adminReservationTable">
@@ -20,24 +61,81 @@
                     <th>예약ID</th>
                     <th>회원</th>
                     <th>상품</th>
+                    <th>예약 재고</th>
                     <th>수량</th>
                     <th>순번</th>
                     <th>상태</th>
+                    <th>관리</th>
                 </tr>
             </thead>
             <tbody>
+                {% if reservation_list %}
+                {% for reservation in reservation_list %}
                 <tr>
-                    <td>14</td>
-                    <td>human</td>
-                    <td>화이트 노이즈 머신</td>
-                    <td>1</td>
-                    <td>1</td>
+                    <td>{{reservation.reservation_id}}</td>
+                    <td>{{reservation.user_name}}</td>
+                    <td>{{reservation.product_name}}</td>
+                    <td>{{reservation.product_reservation_stock}}</td>
+                    <td>{{reservation.reservation_quantity}}</td>
                     <td>
-                        <span class="badge">예약대기</span>
+                        {% if reservation.reservation_status_name == '구매가능' %}
+                            -
+                        {% else%}
+                            {{reservation.reservation_turn}}
+                        {% endif %}
+                    </td>
+                        
+                    <td>
+                        {% if reservation.reservation_status_name == '구매가능' %}
+                        <span class="badge success">{{reservation.reservation_status_name}}</span>
+                        {% else %}
+                        <span class="badge warning">{{reservation.reservation_status_name}}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <button class="button secondary small reservation-info-btn" id="reservationInfo" type="button"
+                        data-id="{{reservation.reservation_id}}" data-name="{{reservation.user_name}}" 
+                        data-product = "{{reservation.product_name}}"
+                        data-quantity="{{reservation.reservation_quantity}}" data-date="{{reservation.reservation_date}}"
+                        data-expiration="{{reservation.reservation_expiration}}"
+                        >상세 정보</button>
+                        <a href="/admin/reservations/delete/{{reservation.reservation_id}}">
+                            <button class="button danger small" id="removereservationButton" type="button">예약
+                                삭제</button>
+                        </a>
+                        <a href="/admin/reservations/process_purchase/{{reservation.reservation_id}}">
+                            <button class="button  success small" id="processpurchaseButton" type="button">
+                                구매 가능 처리
+                            </button>
+                        </a>
                     </td>
                 </tr>
+                {% endfor %}
+                {% endif %}
             </tbody>
         </table>
+    </div>
+
+    <div class="popup-overlay reservation_info_popup hide">
+        <div class="popup-card">
+            <div class="popup-header">
+                <h2 class="popup-title">상세 정보</h2>
+                <button type="button" class="popup-close-btn close">&times;</button>
+            </div>
+                <div class="popup-body">
+                    예약 ID : <input class="form-control" type="number" name="reservation_id" readonly><br>
+                    예약 고객명 : <input class="form-control" type="text" name="reservation_name" readonly><br>
+                    예약 상품 :<input class="form-control" type="text" name="reservation_product" readonly><br>
+                    예약 상품 수량 :<input class="form-control" type="text" name="reservation_quantity" readonly><br>
+                    예약일 :<input class="form-control" type="text" name="reservation_date" readonly><br>
+                    예약만료일 :<input class="form-control" type="text" name="reservation_expiration_date" readonly><br>
+                    <br>
+                </div>
+                <div class="popup-footer">
+                    <input class="btn btn-secondary close" type="button" value="닫기">
+                </div>
+            </form>
+        </div>
     </div>
 </main>
 {% endblock %}
