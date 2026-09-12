@@ -11,7 +11,7 @@
             alert('배송완료 처리가 되었습니다')
         })
     })
-    document.querySelectorAll('#repundProductButton').forEach(btn => {
+    document.querySelectorAll('#refundProductButton').forEach(btn => {
         btn.addEventListener('click', () => {
             alert('환불 처리가 완료되었습니다')
         })
@@ -70,7 +70,7 @@
                     <a href="/api/delivery_complete/{{orders.order_sheet_id}}">
                         <button class="button success small" id="deliveryCompleteButton">배송완료 처리</button>
                     </a>
-                    <a href="/api/repund_product/{{orders.order_sheet_id}}">
+                    <a href="/api/refund_product/{{orders.order_sheet_id}}">
                         <button class="button success small" id="repundProductButton">환불 처리</button>
                     </a>
                 </td>
