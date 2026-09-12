@@ -11,6 +11,11 @@
             alert('배송완료 처리가 되었습니다')
         })
     })
+    document.querySelectorAll('#repundProductButton').forEach(btn => {
+        btn.addEventListener('click', () => {
+            alert('환불 처리가 완료되었습니다')
+        })
+    })
 </script>
 {% endblock %}
 
@@ -48,6 +53,8 @@
                 <td>
                     {% if orders.payment_status_name == '결제대기' %}
                     <span class="badge warning">{{orders.payment_status_name}}</span>
+                    {% elif orders.payment_status_name == '결제취소' %}
+                    <span class="badge warning">{{orders.payment_status_name}}</span>
                     {% else %}
                     <span class="badge success">{{orders.payment_status_name}}</span>
                     {% endif %}
@@ -62,6 +69,9 @@
                 <td>
                     <a href="/api/delivery_complete/{{orders.order_sheet_id}}">
                         <button class="button success small" id="deliveryCompleteButton">배송완료 처리</button>
+                    </a>
+                    <a href="/api/repund_product/{{orders.order_sheet_id}}">
+                        <button class="button success small" id="repundProductButton">환불 처리</button>
                     </a>
                 </td>
             </tr>
