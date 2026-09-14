@@ -1,83 +1,299 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>장바구니 | CHIMPILER</title>
-<link rel="stylesheet" href="static/css/common.css">
-<link rel="stylesheet" href="static/css/components.css">
-<link rel="stylesheet" href="static/css/pages.css">
-<link rel="stylesheet" href="static/css/responsive.css">
-</head>
-<body id="top">
-<header class="site-header"><div class="container header-inner"><button class="menu-button" id="menuOpenButton">☰ <span>메뉴</span></button><nav class="quick-nav"><a href="main.html#bestProductList">베스트</a><a href="ai-health.html">AI 건강 체크</a><a href="notice.html">커뮤니티</a><a href="products.html">이벤트</a></nav><a class="brand" href="main.html"><strong class="brand-name">CHIMPILER HEALTHCARE</strong></a><nav class="user-nav"><a href="cart.html">장바구니</a><a href="mypage-dashboard.html">마이페이지</a><a href="login.html">로그인</a></nav></div></header>
+{% extends 'templates/layout.html' %}
+
+{% block title %}
+    <title>장바구니 | CHIMPILER</title>
+{% endblock %}
+
+{% block script %}
+<script>
+    window.onload = () => {
+        const cartItems = document.querySelectorAll('.cart-item')
+        const cartSelectAll = document.querySelector('#cartSelectAll')
+        const cartCheckboxAll = document.querySelectorAll('.cart-checkbox')
+        const cartSelectedDeleteButton = document.querySelector('#cartSelectedDeleteButton')
+
+        const cartTotalPrice = document.querySelector('#cartTotalPrice')
+        const cartProductPrice = document.querySelector('#cartProductPrice')
+
+        const cartDeleteButtons = document.querySelectorAll('.cart-delete-button')
+
+        const urlParams = new URLSearchParams(window.location.search)
+        const checkoutResult = urlParams.get('checkout')
+
+        if (checkoutResult === 'stock_failed') {
+            alert('장바구니 상품의 수량이 현재 주문 가능한 재고보다 많습니다. 수량을 변경한 후 다시 주문해 주세요.')
+            history.replaceState(null, '', '/cart')
+        }
+
+        cartDeleteButtons.forEach(function(cartDeleteButton) {
+            cartDeleteButton.addEventListener('click', function() {
+                alert('상품 1건이 삭제되었습니다.')
+            })
+        })
+
+        // 체크된 상품들의 총금액 계산
+        function calcCartTotalPrice() {
+            let total = 0
+
+            cartItems.forEach(function(cartItem) {
+                const cartCheckbox = cartItem.querySelector('.cart-checkbox')
+                const productQuantity = cartItem.querySelector('.product-quantity')
+                const productPrice = cartItem.querySelector('.cart-item-price')
+
+                if (cartCheckbox.checked) {
+                    total += Number(productQuantity.value) * Number(productPrice.value)
+                }
+            })
+
+            cartProductPrice.innerText = `${total.toLocaleString()}원`
+            cartTotalPrice.innerText = `${total.toLocaleString()}원`
+        }
+
+        // 전체 선택
+        cartSelectAll.addEventListener('click', function() {
+            cartCheckboxAll.forEach(function(cartCheckbox) {
+                cartCheckbox.checked = cartSelectAll.checked
+            })
+
+            calcCartTotalPrice()
+        })
+
+        // 개별 선택
+        cartCheckboxAll.forEach(function(cartCheckbox) {
+            cartCheckbox.addEventListener('click', function() {
+                let chkCount = 0
+
+                cartCheckboxAll.forEach(function(chkbox) {
+                    if (chkbox.checked) {
+                        chkCount += 1
+                    }
+                })
+
+                if (chkCount == cartCheckboxAll.length) {
+                    cartSelectAll.checked = true
+                } else {
+                    cartSelectAll.checked = false
+                }
+
+                calcCartTotalPrice()
+            })
+        })
+
+        // 선택 삭제
+        cartSelectedDeleteButton.addEventListener('click', function(){
+            const confirmResult = confirm('선택하신 상품을 삭제하시겠습니까?')
+
+            if(confirmResult == false) {
+                return
+            } else {
+
+                let deleteSelectList = []
+                cartCheckboxAll.forEach(function(cartCheckbox){
+                    if(cartCheckbox.checked) {
+                        // console.log(cartCheckbox)
+                        // console.log(cartCheckbox.value)
+    
+                        deleteSelectList.push(cartCheckbox.value)
+                        // console.log(list)
+                    }
+                })
+    
+                if(deleteSelectList.length == 0) {
+                    alert('삭제할 상품을 선택해 주세요.')
+                    return
+                }
+    
+                fetch('/cart/deleteSelect', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(deleteSelectList)
+                }).then( function(response){
+                    console.log('response : ', response)
+                    return response.json()
+                }).then(function(result){
+                    console.log('result : ', result)
+                    alert(result['result'])
+    
+                    location.reload()
+                }).catch( function(error){
+                    console.error('요청 중 에러', error)
+                })
+            }
+        })
+
+        const cartCheckoutButton = document.querySelector('#cartCheckoutButton')
+
+        cartCheckoutButton.addEventListener('click', function(){
+
+            let cartBuyList = []
+            cartCheckboxAll.forEach(function(cartCheckbox){
+                if(cartCheckbox.checked) {
+
+                    cartBuyList.push(Number(cartCheckbox.value))
+                }
+            })
+
+            if(cartBuyList.length == 0) {
+                alert('주문하실 상품을 선택해 주세요.')
+                return
+            }
+
+            fetch('/checkout/cart', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(cartBuyList)
+            }).then( function(response){
+                console.log('response : ', response)
+                return response.json()
+            }).then(function(result){
+                if (result['result'] === 'success') {
+                    location.href = '/checkout'
+                    return
+                }
+
+                if (result['result'] === 'login') {
+                    location.href = '/login'
+                    return
+                }
+
+                if (result['result'] === 'failed') {
+                    alert(result['message'])
+                    return
+                }
+
+            }).catch( function(error){
+                console.error('요청 중 에러', error)
+            })
+            
+        })
+
+        // 상품별 수량 계산
+        cartItems.forEach(function(cartItem) {
+            const productQuantity = cartItem.querySelector('.product-quantity')
+            const productQuantityMax = Number(productQuantity.max)
+
+            const quantityMinus = cartItem.querySelector('.quantity-minus')
+            const quantityPlus = cartItem.querySelector('.quantity-plus')
+
+            const productTotalPrice = cartItem.querySelector('.cart-item-total-price')
+            const productPrice = cartItem.querySelector('.cart-item-price')
+
+            quantityMinus.addEventListener('click', function() {
+                if (Number(productQuantity.value) > 1) {
+                    productQuantity.value = Number(productQuantity.value) - 1
+                } else {
+                    alert('1개보다 적게 선택할 수 없습니다.')
+                }
+
+                calcProductTotalPrice()
+                calcCartTotalPrice()
+            })
+
+            quantityPlus.addEventListener('click', function() {
+                if (Number(productQuantity.value) < productQuantityMax) {
+                    productQuantity.value = Number(productQuantity.value) + 1
+                } else {
+                    alert('현재 판매 재고보다 많은 수량을 선택하실 수 없습니다.')
+                }
+
+                calcProductTotalPrice()
+                calcCartTotalPrice()
+            })
+
+            function calcProductTotalPrice() {
+                const quantity = Number(productQuantity.value)
+                const price = Number(productPrice.value)
+
+                const total = quantity * price
+
+                productTotalPrice.innerText = `총 ${total.toLocaleString()}원`
+            }
+        })
+
+
+    }
+</script>
+{% endblock %}
+
+{% block main %}
 <main class="page-section">
-<div class="container">
-<header class="page-heading">
-<span class="eyebrow">SHOPPING CART</span>
-<h1 class="page-title">장바구니</h1>
-</header>
-<div class="cart-select-toolbar"><label class="check-field"><input id="cartSelectAll" type="checkbox" checked><span>전체 선택</span></label><button class="button secondary small" id="cartSelectedDeleteButton" type="button">선택 삭제</button></div>
-<div class="cart-layout">
-<section class="card" id="cartItemList">
-<article class="cart-item">
-<input class="cart-checkbox" type="checkbox" checked aria-label="상품 선택">
-<img class="cart-thumb" src="static/images/supplement-01-vita-core.png" alt="">
-<div>
-<strong>데일리 비타 코어 멀티비타민</strong>
-<p class="muted">29,800원</p>
-<span class="quantity">
-<button>−</button>
-<input value="1">
-<button>＋</button>
-</span>
-</div>
-<div class="cart-item-actions">
-<strong>29,800원</strong>
-<br>
-<button class="button secondary small">삭제</button>
-</div>
-</article>
-<article class="cart-item">
-<input class="cart-checkbox" type="checkbox" checked aria-label="상품 선택">
-<img class="cart-thumb" src="static/images/fitness-02-power-band.png" alt="">
-<div>
-<strong>파워 루프 운동 밴드 세트</strong>
-<p class="muted">19,900원</p>
-<span class="quantity">
-<button>−</button>
-<input value="1">
-<button>＋</button>
-</span>
-</div>
-<div class="cart-item-actions">
-<strong>19,900원</strong>
-<br>
-<button class="button secondary small">삭제</button>
-</div>
-</article>
-</section>
-<aside class="panel sticky-summary">
-<h2>결제 예정 금액</h2>
-<div class="summary-list">
-<div class="summary-row">
-<span>상품 금액</span>
-<strong>49,700원</strong>
-</div>
-<div class="summary-row">
-<span>배송비</span>
-<strong>0원</strong>
-</div>
-<div class="summary-row total">
-<span>총 결제금액</span>
-<strong id="cartTotalPrice">49,700원</strong>
-</div>
-</div>
-<a class="button full" id="cartCheckoutButton" href="checkout.html">선택 상품 주문하기</a>
-</aside>
-</div>
-</div>
+    <div class="container">
+        <header class="page-heading">
+            <span class="eyebrow">SHOPPING CART</span>
+            <h1 class="page-title">장바구니</h1>
+        </header>
+        <div class="cart-select-toolbar">
+            <label class="check-field">
+                <input id="cartSelectAll" type="checkbox" checked>
+                <span>전체 선택</span>
+            </label>
+            <button class="button secondary small" id="cartSelectedDeleteButton" type="button">선택 삭제</button>
+        </div>
+        <div class="cart-layout">
+            <section class="card" id="cartItemList">
+                {% for carts in cart_list %}
+                <article class="cart-item">
+                    <input class="cart-checkbox" type="checkbox" checked aria-label="상품 선택" value="{{ carts['cart_id'] }}">
+                    <img class="cart-thumb" src="{{ carts['product_image'] }}" alt="{{ carts['product_name'] }}">
+                    <div class="cart-item-info">
+                        <strong class="cart-item-name">{{ carts['product_name'] }}</strong>
+                        <p class="muted cart-item-price-text">{{ carts['product_price'] | price }}원</p>
+                        <form class="cart-quantity-form" method="post" action="/cart/update">
+                            <input type="hidden" name="cart_id" value="{{ carts['cart_id'] }}">
+                            <span class="quantity">
+                                <button type="button" class="quantity-minus">−</button>
+                                <input class="product-quantity" name="product_quantity" value="{{ carts['product_quantity'] }}" inputmode="numeric" min="1" max="{{ carts['product_sale_stock'] }}" readonly>
+                                <button type="button" class="quantity-plus">＋</button>
+                            </span>
+
+                            <button class="button small" type="submit">
+                                수량 변경
+                            </button>
+                        </form>
+                    </div>
+                    <div class="cart-item-actions">
+                        <strong class="cart-item-total-price">총 {{ (carts['product_quantity'] * carts['product_price']) | price }}원</strong>
+                        <input type="hidden" class="cart-item-price" value="{{ carts['product_price'] }}">
+                        <br>
+                        <div class="cart-row-buttons">
+                            <a class="button secondary small" href="/product/detail/{{ carts['product_id'] }}">
+                                상품으로 이동
+                            </a>
+
+                            <form method="post" action="/cart/delete">
+                                <input type="hidden" name="cart_id" value="{{ carts['cart_id'] }}">
+                                <button class="button secondary small cart-delete-button" type="submit">상품 삭제</button>
+                            </form>
+                        </div>
+                    </div>
+                </article>
+                {% endfor %}
+            </section>
+            <aside class="panel sticky-summary">
+                <h2>결제 예정 금액</h2>
+                <div class="summary-list">
+                    <div class="summary-row">
+                        <span>상품 금액</span>
+                        <strong id="cartProductPrice">{{ cart_total_price | price }}원</strong>
+                    </div>
+                    <div class="summary-row">
+                        <span>배송비</span>
+                        <strong>0원</strong>
+                    </div>
+                    <div class="summary-row total">
+                        <span>총 결제금액</span>
+                        <strong id="cartTotalPrice">{{ cart_total_price | price }}원</strong>
+                    </div>
+                </div>
+                <br>
+                <button class="button full" id="cartCheckoutButton" type="button">선택 상품 주문하기</button>
+                <!-- <a class="button full" id="cartCheckoutButton" href="/checkout/cart"></a> -->
+            </aside>
+        </div>
+    </div>
 </main>
-<footer class="site-footer" id="siteFooter"><div class="container"><div class="footer-grid"><section class="footer-brand"><img class="footer-logo" src="static/images/chimpiler-logo.png" alt=""><div><h2 class="footer-title">CHIMPILER HEALTHCARE</h2><p class="footer-copy">건강 기록 기반 AI 상품 추천 및 예약구매 헬스케어 쇼핑몰</p></div></section><section><h3 class="footer-heading">SERVICE</h3><div class="footer-list"><a href="terms.html">이용약관</a><a href="terms.html">개인정보처리방침</a><a href="faq.html">이용안내</a></div></section><section><h3 class="footer-heading">CS CENTER</h3><div class="footer-list"><a href="notice.html">공지사항</a><a href="faq.html">자주 묻는 질문</a><a href="inquiry-write.html">1:1 문의</a></div></section><section><h3 class="footer-heading">CHIMPILER TEAM</h3><div class="footer-list"><span>휴먼교육센터 팀 프로젝트</span><a href="#">GitHub 바로가기</a></div></section></div><div class="health-notice"><strong>건강정보 이용 안내</strong><br>AI 건강 체크 결과는 참고 정보이며 의학적 진단이나 처방을 대신하지 않습니다.</div><div class="copyright"><span>© 2026 Chimpiler Healthcare.</span><span>All rights reserved.</span></div></div></footer><div class="floating-tools"><button class="floating-button chat" id="chatOpenButton">💬 챗봇 상담</button><a class="floating-button" href="#top">↑</a><a class="floating-button" href="#siteFooter">↓</a></div>
-</body>
-</html>
+{% endblock %}
