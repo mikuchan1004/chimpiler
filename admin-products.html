@@ -115,7 +115,7 @@
                     <td>{{product.product_price | price}}</td>
                     <td>{{product.product_sale_stock}}</td>
                     <td>{{product.product_reservation_stock}}</td>
-                    {% if product.product_active == 1 %}
+                    {% if product.product_sale_stock >= 1 %}
                     <td>
                         <span class="badge success">판매중</span>
                     </td>
