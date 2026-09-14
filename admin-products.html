@@ -52,7 +52,7 @@
                 popup.querySelector('[name = "category_id"]').value = target.dataset.category;         // 카테고리 번호
 
                 // 팝업창 안의 '삭제' 버튼 링크 주소도 클릭한 상품의 번호에 맞춰서 동적으로 바꿔줍니다. (예: /api/remove/3)
-                popup.querySelector('a').href = `/admin/product/delete/${target.dataset.id}`
+                popup.querySelector('.delete-button').formAction = `/admin/product/delete/${target.dataset.id}`
 
                 // 상품 정보 채우기가 끝났으니, 숨겨져 있던 수정 팝업창을 화면에 짠하고 띄웁니다.
                 popup.classList.remove('hide')
@@ -94,7 +94,7 @@
         </div>
     </div>
     <div class="table-wrap">
-        <table class="data-table" id="adminProductTable">
+        <table class="data-table admin-product-table" id="adminProductTable">
             <thead>
                 <tr>
                     <th>ID</th>
@@ -112,10 +112,10 @@
                 <tr>
                     <td>{{product.product_id}}</td>
                     <td>{{product.product_name}}</td>
-                    <td>{{product.product_price}}</td>
+                    <td>{{product.product_price | price}}</td>
                     <td>{{product.product_sale_stock}}</td>
                     <td>{{product.product_reservation_stock}}</td>
-                    {% if product. product_active == 1 %}
+                    {% if product.product_active == 1 %}
                     <td>
                         <span class="badge success">판매중</span>
                     </td>
@@ -125,7 +125,8 @@
                     </td>
                     {% endif %}
                     <td>
-                        <button class="button secondary small restock-btn" id="stockEditButton"
+                        <div class="admin-table-actions">
+                        <button class="button secondary small restock-btn"
                             data-id="{{product.product_id}}" data-sale="{{product.product_sale_stock}}"
                             data-res="{{product.product_reservation_stock}}">재고 보충</button>
                         <!-- 
@@ -141,16 +142,23 @@
                             data-category="{{product.category_id}}">수정</button>
                         <!-- 일시 품절 버튼을 <a> 태그로 감싸서 바로 GET 요청을 보내도록 처리 -->
                         {% if product.product_active == 2 %}
-                        <a href="/admin/product/available/{{product.product_id}}">
-                            <button class="button danger small" id="productAvailableButton" type="button">일시 품절
-                                해제</button>
-                        </a>
+                        <form method="post"
+                            action="/admin/product/available/{{ product.product_id }}">
+                            <button class="button secondary"
+                                    type="submit">
+                                판매 재개
+                            </button>
+                        </form>
                         {% else %}
-                        <a href="/admin/product/soldout/{{product.product_id}}">
-                            <button class="button danger small" id="productSoldOutButton" type="button">일시 품절
-                                처리</button>
-                        </a>
+                        <form method="post"
+                            action="/admin/product/soldout/{{ product.product_id }}">
+                            <button class="button danger"
+                                    type="submit">
+                                일시 품절 처리
+                            </button>
+                        </form>
                         {% endif %}
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}
@@ -176,16 +184,21 @@
                     <div class="file-upload-box">
                         <!-- label의 for 속성과 input의 id를 연결합니다 -->
                         <label for="addProductImage" class="btn-file-select">📷 파일 선택</label>
-                        <input type="file" name="product_image" id="addProductImage" class="file-upload-input"
+                        <input type="file"
+                            name="product_image"
+                            id="addProductImage"
+                            class="file-upload-input"
+                            accept="image/*"
+                            required
                             onchange="updateFileName(this)">
                         <span class="file-name-text" id="addfileNameDisplay">선택된 파일 없음</span>
                     </div>
                 </div>
-                <input class="form-control" type="number" name="product_price" placeholder="가격 입력"><br><br>
-                <input class="form-control" type="number" name="product_sale_stock" placeholder="판매 재고 입력"><br><br>
-                <input class="form-control" type="number" name="product_reservation_stock"
+                가격: <input class="form-control" type="number" name="product_price" placeholder="가격 입력"><br><br>
+                판매 재고 : <input class="form-control" type="number" name="product_sale_stock" placeholder="판매 재고 입력"><br><br>
+                예약 재고 : <input class="form-control" type="number" name="product_reservation_stock"
                     placeholder="예약 재고 입력"><br><br>
-                <input class="form-control" type="number" name="category_id" placeholder="카테고리 ID 입력(1~6)"><br>
+                카테고리ID : <input class="form-control" type="number" name="category_id" placeholder="카테고리 ID 입력(1~6)"><br>
             </div>
             <div class="popup-footer">
                 <input class="btn btn-secondary close" type="button" value="닫기">
@@ -225,9 +238,12 @@
                 <input class="form-control" type="number" name="category_id" placeholder="카테고리 ID 입력(1~6)"><br>
             </div>
             <div class="popup-footer">
-                <a href="#" class="delete-link">
-                    <input class="btn btn-secondary" type="button" value="삭제">
-                </a>
+                <button class="button secondary delete-button"
+                        type="submit"
+                        formmethod="post"
+                        formnovalidate>
+                    삭제
+                </button>
                 <input class="btn btn-secondary close" type="button" value="닫기">
                 <input class="btn btn-primary modify" type="submit" value="수정">
             </div>

@@ -2446,3 +2446,69 @@
 .admin-mobile-menu {
     display: none;
 }
+
+.admin-table-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 6px;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+}
+
+.admin-table-actions form {
+    display: inline-flex;
+    margin: 0;
+}
+
+.admin-table-actions .button {
+    flex: 0 0 auto;
+}
+
+.admin-report-section {
+    margin-top: 36px;
+}
+
+.admin-product-table th:last-child,
+.admin-product-table td:last-child {
+    min-width: 280px;
+}
+
+.admin-order-table th:last-child,
+.admin-order-table td:last-child {
+    min-width: 230px;
+}
+
+.admin-reservation-table th:last-child,
+.admin-reservation-table td:last-child {
+    min-width: 330px;
+}
+
+.admin-user-table th:last-child,
+.admin-user-table td:last-child {
+    min-width: 470px;
+}
+
+.inline-form {
+    display: inline-flex;
+    margin: 0;
+}
+
+.empty-table {
+    padding: 44px 20px !important;
+    color: var(--muted);
+    text-align: center !important;
+}
+
+.order-list {
+    margin-top: 20px;
+    overflow: hidden;
+}
+
+.order-card + .order-card {
+    border-top: 1px solid var(--line);
+}
+
+.order-info {
+    min-width: 0;
+}

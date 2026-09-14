@@ -36,7 +36,10 @@ class Product(SQLModel):
         default = 0
     )
 
-    product_activate : int = Field (
+    # product_activate : int = Field (
+    #     default = 1
+    # )
+    product_active : int = Field (
         default = 1
     )
 
@@ -69,19 +72,18 @@ class Product(SQLModel):
             product_reservation_stock=product_reservation_stock,
             category_id=category_id
         )
-    
-
-# =========================================================================
-# [폼 데이터 전처리 검증기]
-# HTML <form>에서 입력란을 비워두고 제출하면 빈 문자열("")이 들어오는데,
-# 이를 int/float나 None 타입으로 올바르게 변환하지 못해 발생하는 ValidationError 예방
-# Note: DTO에 더 이상 존재하지 않는 'product_image'는 검증 대상 목록에서 제거했습니다.
-# =========================================================================
-@field_validator('product_detail', mode='before')
-@classmethod 
-def empty_to_none(cls, value):
-    # mode='before': 데이터 타입 검사 전(전처리 단계)에 가장 먼저 실행됨
-    if value == '':
-        return None  # 빈 문자열("")이 들어오면 None(NULL)으로 바꾸어 타입 에러 예방
-    else:
+    # =========================================================================
+    # [폼 데이터 전처리 검증기]
+    # HTML <form>에서 입력란을 비워두고 제출하면 빈 문자열("")이 들어오는데,
+    # 이를 int/float나 None 타입으로 올바르게 변환하지 못해 발생하는 ValidationError 예방
+    # Note: DTO에 더 이상 존재하지 않는 'product_image'는 검증 대상 목록에서 제거했습니다.
+    # =========================================================================
+    @field_validator('product_detail', mode='before')
+    @classmethod 
+    def empty_to_none(cls, value):
+        # mode='before': 데이터 타입 검사 전(전처리 단계)에 가장 먼저 실행됨
+        if value == '':
+            return None  # 빈 문자열("")이 들어오면 None(NULL)으로 바꾸어 타입 에러 예방
+        
         return value # 값이 채워져 있으면 그대로 넘겨줌
+    
