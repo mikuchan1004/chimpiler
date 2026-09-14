@@ -21,12 +21,12 @@
         <section>
             <header class="page-heading">
                 <span class="eyebrow">MY PAGE</span>
-                <h1 class="page-title">관리자님, 안녕하세요</h1>
+                <h1 class="page-title">{{ request.session.get('user_name') }}님, 안녕하세요</h1>
             </header>
             <article class="panel" style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:16px">
                 <div>
                     <span class="badge warning">GOLD</span>
-                    <h2 style="margin-bottom:4px">관리자 님</h2>
+                    <h2 style="margin-bottom:4px">{{ request.session.get('user_name') }}({{ request.session.get('user_id') }}) 님</h2>
                     <span class="muted">포인트 <strong class="success-text">12,450P</strong> · 쿠폰 <strong
                             class="success-text">3장</strong>
                     </span>
@@ -35,7 +35,7 @@
                     <strong>기본 배송지</strong>
                     {% if contact_details %}
                     {% for users in contact_details %}
-                    <p class="muted">{{users.user_addr}}<br>{{users.user_phone}}</p>
+                    <p class="muted"><strong>주소지</strong> {{users.user_addr}}<br><strong>연락처</strong> {{users.user_phone}}</p>
                     {% endfor %}
                     {% endif %}
                 </div>
@@ -62,30 +62,50 @@
                 <div class="section-head" style="margin:0">
                     <div>
                         <span class="eyebrow">RESERVATION</span>
-                        <h2>예약구매 현황</h2>
+                        <h2>예약관리 현황</h2>
                     </div>
-                    {% if reservation_purchase_status %}
+                </div>
+
+                {% if reservation_purchase_status %}
+
                     {% for reservation in reservation_purchase_status %}
-                    <span class="badge success">{{reservation.reservation_status_name}}</span>
-                </div>
-                <div class="order-card">
-                    <img src="{{reservation.product_image}}" alt="">
-                    <div>
-                        <h3>{{reservation.product_name}}</h3>
-                        <p>예약 {{reservation.reservation_turn}} 순위 · 구매 만료 일자
-                            <strong class="success-text">
-                                {% if reservation.reservation_status_name == '구매 가능' %}
-                                {{reservation.reservation_expiration}}
-                                {% else %}
-                                -
-                                {% endif %}
-                            </strong>
-                        </p>
+                    <div class="order-card">
+
+                        <img src="{{ reservation.product_image }}"
+                            alt="{{ reservation.product_name }}">
+
+                        <div>
+                            <h3>{{ reservation.product_name }}</h3>
+
+                            <p>
+                                예약 {{ reservation.reservation_turn }} 순위
+                                · 구매 만료 일자
+
+                                <strong class="success-text">
+                                    {% if reservation.reservation_status_name == '구매 가능' %}
+                                        {{ reservation.reservation_expiration }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </strong>
+                            </p>
+                        </div>
+
+                        <span class="badge success">
+                            {{ reservation.reservation_status_name }}
+                        </span>
+
                     </div>
-                    <a class="button" href="/checkout">구매 확정</a>
                     {% endfor %}
-                    {% endif %}
-                </div>
+
+                {% else %}
+
+                    <div class="empty-state">
+                        예약구매 내역이 없습니다.
+                    </div>
+
+                {% endif %}
+
             </article>
             <div class="split-view" style="margin-top:16px">
                 <section class="panel">

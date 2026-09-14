@@ -219,7 +219,7 @@
             <form id="signupForm" class="form-grid" action="/signup" method="post">
                 <label class="form-field full"><span class="form-label">아이디</span>
                     <span class="input-row">
-                        <input class="form-control" id="signupUserId" name="user_id" placeholder="영문과 숫자를 조합해 주세요." required>
+                        <input class="form-control" id="signupUserId" name="user_id" placeholder="영문 또는 영문과 숫자를 조합해 주세요." required>
                         <button class="button secondary" id="idCheckButton" type="button">중복 확인</button>
                     </span>
                     <!-- <small class="help-text" id="idCheckMessage">영문과 숫자를 조합해 주세요.</small> -->
@@ -261,7 +261,7 @@
                             name="user_phone"
                             type="tel"
                             maxlength="13"
-                            placeholder="010-1234-5678"
+                            placeholder="'-'를 포함한 휴대폰 번호를 입력해주세요. ex)010-1234-5678"
                             required>
                         <!-- <button class="button secondary" id="phoneVerifyButton" type="button">인증</button> -->
                     </span>

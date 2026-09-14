@@ -11,11 +11,32 @@
 <main class="page-section">
     <div class="container mypage-layout">
         <nav class="card side-nav">
-            <a href="/mypage">마이페이지</a>
-            <a href="/mypage/profile">회원정보 수정</a>
-            <a class="active" href="/mypage/orders">주문·배송 조회</a>
-            <a href="/mypage/reservations">예약 관리</a>
-            <a href="/mypage/inquiries">문의 내역</a>
+            <h2>마이페이지</h2>
+
+            <a href="/mypage">
+                <span class="side-nav-icon">⌂</span>
+                <span>대시보드</span>
+            </a>
+
+            <a class="active" href="/mypage/orders">
+                <span class="side-nav-icon">▣</span>
+                <span>주문·배송 조회</span>
+            </a>
+
+            <a href="/mypage/reservations">
+                <span class="side-nav-icon">◷</span>
+                <span>예약구매 내역</span>
+            </a>
+
+            <a href="/mypage/inquiries">
+                <span class="side-nav-icon">○</span>
+                <span>1:1 문의</span>
+            </a>
+
+            <a href="/mypage/profile">
+                <span class="side-nav-icon">♙</span>
+                <span>회원정보 수정</span>
+            </a>
         </nav>
         <section>
             <header class="page-heading">
@@ -40,24 +61,28 @@
                     <div class="metric-value">{{delivery_completed}}</div>
                 </article>
             </div>
-            <div class="card" style="margin-top:20px">
+            <div class="card">
+                {% if order_list %}
+                {% for orders in order_list %}
                 <article class="order-card">
-                    {% if order_list %}
-                    {% for orders in order_list %}
                     <img src="{{orders.product_image}}" alt="">
                     <div>
                         <span class="badge warning">{{orders.delivery_status_name}}</span>
                         <h2>{{orders.product_name}}</h2>
-                        <p class="muted">주문서 번호 : {{orders.order_sheet_id}} · {{orders.product_price}}원</p>
+                        <p class="muted">주문서 번호 : {{orders.order_sheet_id}} · {{orders.product_price}}원  ·  배송완료일 : {{orders.delivery_complete_date}}</p>
                     </div>
-                    <div class="order-actions">
+                    <!-- <div class="order-actions">
                         <button class="button secondary small">상세보기</button>
                         <button class="button danger small">주문취소</button>
                         <button class="button secondary small" id="refundRequestButton" type="button">환불 요청</button>
-                    </div>
-                    {% endfor %}
-                    {% endif %}
+                    </div> -->
                 </article>
+                {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        주문 내역이 없습니다.
+                    </div>
+                {% endif %}
             </div>
         </section>
     </div>

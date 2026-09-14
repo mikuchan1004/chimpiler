@@ -6,16 +6,35 @@
 
 {% block script %}
 <script>
-    document.querySelectorAll('#deliveryCompleteButton').forEach(btn => {
+    document.querySelectorAll('.delivery-complete-button').forEach(btn => {
         btn.addEventListener('click', () => {
             alert('배송완료 처리가 되었습니다')
         })
     })
-    document.querySelectorAll('#refundProductButton').forEach(btn => {
-        btn.addEventListener('click', () => {
-            alert('환불 처리가 완료되었습니다')
-        })
-    })
+
+    const statusFilter = document.querySelector('#orderStatusFilter')
+
+    statusFilter.addEventListener(
+        'change',
+        function () {
+            const selected = this.value
+
+            document
+                .querySelectorAll(
+                    '#adminOrderTable tbody tr'
+                )
+                .forEach(row => {
+                    if (
+                        selected === '전체 상태'
+                        || row.textContent.includes(selected)
+                    ) {
+                        row.style.display = ''
+                    } else {
+                        row.style.display = 'none'
+                    }
+                })
+        }
+    )
 </script>
 {% endblock %}
 
@@ -31,7 +50,7 @@
         </select>
     </div>
     <div class="table-wrap">
-        <table class="data-table" id="adminOrderTable">
+        <table class="data-table admin-order-table" id="adminOrderTable">
             <thead>
                 <tr>
                     <th>주문서</th>
@@ -43,40 +62,51 @@
                     <th>처리</th>
                 </tr>
             </thead>
-            <tr>
+            <tbody>
                 {% if order_list %}
                 {% for orders in order_list %}
-                <td>{{orders.order_sheet_id}}</td>
-                <td>{{orders.user_id}}</td>
-                <td>{{orders.order_name}}</td>
-                <td>{{orders.order_total_price}}</td>
-                <td>
-                    {% if orders.payment_status_name == '결제대기' %}
-                    <span class="badge warning">{{orders.payment_status_name}}</span>
-                    {% elif orders.payment_status_name == '결제취소' %}
-                    <span class="badge warning">{{orders.payment_status_name}}</span>
-                    {% else %}
-                    <span class="badge success">{{orders.payment_status_name}}</span>
-                    {% endif %}
-                </td>
-                <td>
-                    {% if orders.delivery_status_name == '배송대기' %}
-                    <span class="badge warning">{{orders.delivery_status_name}}</span>
-                    {% else %}
-                    <span class="badge success">{{orders.delivery_status_name}}</span>
-                    {% endif %}
-                </td>
-                <td>
-                    <a href="/admin/orders/delivery_complete/{{orders.order_sheet_id}}">
-                        <button class="button success small" id="deliveryCompleteButton">배송완료 처리</button>
-                    </a>
-                    <a href="/admin/orders/refund_product/{{orders.order_sheet_id}}">
-                        <button class="button success small" id="repundProductButton">환불 처리</button>
-                    </a>
-                </td>
-            </tr>
-            {%endfor%}
-            {%endif%}
+                <tr>
+                    <td>{{orders.order_sheet_id}}</td>
+                    <td>{{orders.user_id}}</td>
+                    <td>{{orders.order_name}}</td>
+                    <td>{{orders.order_total_price | price}}</td>
+                    <td>
+                        {% if orders.payment_status_name == '결제대기' %}
+                        <span class="badge warning">{{orders.payment_status_name}}</span>
+                        {% elif orders.payment_status_name == '결제취소' %}
+                        <span class="badge warning">{{orders.payment_status_name}}</span>
+                        {% else %}
+                        <span class="badge success">{{orders.payment_status_name}}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if orders.delivery_status_name == '배송대기' %}
+                        <span class="badge warning">{{orders.delivery_status_name}}</span>
+                        {% else %}
+                        <span class="badge success">{{orders.delivery_status_name}}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="admin-table-actions">
+                        <form method="post"
+                            action="/admin/orders/delivery_complete/{{ orders.order_sheet_id }}">
+                            <button class="button success small delivery-complete-button"
+                                    type="submit">
+                                배송완료 처리
+                            </button>
+                        </form>
+                        <form method="post"
+                            action="/admin/orders/refund_product/{{ orders.order_sheet_id }}">
+                            <button class="button secondary small"
+                                    type="submit">
+                                결제취소 처리
+                            </button>
+                        </form>
+                        </div>
+                    </td>
+                </tr>
+                {%endfor%}
+                {%endif%}
             </tbody>
         </table>
     </div>

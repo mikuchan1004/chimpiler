@@ -9,10 +9,7 @@
     //-------------------------------------------
     // [1] '상세 정보' 버튼 클릭시 상세 정보 팝업창 열기   
     //-------------------------------------------
-    document.querySelector('#reservationInfo').addEventListener('click', () =>{
-        // '상세 정보'  버튼을 누르면 숨김 클래스 ('hide')를 없애서 팝업창이 화면에 보이게 만듦.
-        document.querySelector('.reservation_info_popup').classList.remove('hide')
-    })
+
     //-------------------------------------------
     // [2] 목록에 있는 모든 '상세 정보' 버튼에 클릭 이벤트 달아주기 
     //-------------------------------------------
@@ -55,7 +52,7 @@
         <span class="badge warning">예약 대기 {{reservation_wait}}건</span>
     </div>
     <div class="table-wrap">
-        <table class="data-table" id="adminReservationTable">
+        <table class="data-table admin-reservation-table" id="adminReservationTable">
             <thead>
                 <tr>
                     <th>예약ID</th>
@@ -93,21 +90,23 @@
                         {% endif %}
                     </td>
                     <td>
-                        <button class="button secondary small reservation-info-btn" id="reservationInfo" type="button"
+                        <div class="admin-table-actions">
+                        <button class="button secondary small reservation-info-btn" type="button"
                         data-id="{{reservation.reservation_id}}" data-name="{{reservation.user_name}}" 
                         data-product = "{{reservation.product_name}}"
                         data-quantity="{{reservation.reservation_quantity}}" data-date="{{reservation.reservation_date}}"
                         data-expiration="{{reservation.reservation_expiration}}"
                         >상세 정보</button>
-                        <a href="/admin/reservations/delete/{{reservation.reservation_id}}">
-                            <button class="button danger small" id="removereservationButton" type="button">예약
+                        <form method="post" action="/admin/reservations/delete/{{reservation.reservation_id}}">
+                            <button class="button danger small" id="removereservationButton" type="submit">예약
                                 삭제</button>
-                        </a>
-                        <a href="/admin/reservations/process_purchase/{{reservation.reservation_id}}">
-                            <button class="button  success small" id="processpurchaseButton" type="button">
+                        </form>
+                        <form method="post" action="/admin/reservations/process_purchase/{{reservation.reservation_id}}">
+                            <button class="button  success small" id="processpurchaseButton" type="submit">
                                 구매 가능 처리
                             </button>
-                        </a>
+                        </form>
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}
@@ -122,19 +121,18 @@
                 <h2 class="popup-title">상세 정보</h2>
                 <button type="button" class="popup-close-btn close">&times;</button>
             </div>
-                <div class="popup-body">
-                    예약 ID : <input class="form-control" type="number" name="reservation_id" readonly><br>
-                    예약 고객명 : <input class="form-control" type="text" name="reservation_name" readonly><br>
-                    예약 상품 :<input class="form-control" type="text" name="reservation_product" readonly><br>
-                    예약 상품 수량 :<input class="form-control" type="text" name="reservation_quantity" readonly><br>
-                    예약일 :<input class="form-control" type="text" name="reservation_date" readonly><br>
-                    예약만료일 :<input class="form-control" type="text" name="reservation_expiration_date" readonly><br>
-                    <br>
-                </div>
-                <div class="popup-footer">
-                    <input class="btn btn-secondary close" type="button" value="닫기">
-                </div>
-            </form>
+            <div class="popup-body">
+                예약 ID : <input class="form-control" type="number" name="reservation_id" readonly><br>
+                예약 고객명 : <input class="form-control" type="text" name="reservation_name" readonly><br>
+                예약 상품 :<input class="form-control" type="text" name="reservation_product" readonly><br>
+                예약 상품 수량 :<input class="form-control" type="text" name="reservation_quantity" readonly><br>
+                예약일 :<input class="form-control" type="text" name="reservation_date" readonly><br>
+                예약만료일 :<input class="form-control" type="text" name="reservation_expiration_date" readonly><br>
+                <br>
+            </div>
+            <div class="popup-footer">
+                <input class="btn btn-secondary close" type="button" value="닫기">
+            </div>
         </div>
     </div>
 </main>

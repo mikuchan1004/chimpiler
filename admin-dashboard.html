@@ -69,7 +69,7 @@
                         <tr>
                             <td>{{orders.order_sheet_id}}</td>
                             <td>{{orders.order_name}}</td>
-                            <td>{{orders.order_total_price}}</td>
+                            <td>{{orders.order_total_price | price}}</td>
                             <td><span class="badge success">{{orders.delivery_status_name}}</span></td>
                         </tr>
                         {% endfor %}

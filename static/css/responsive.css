@@ -709,3 +709,24 @@
         padding: 14px;
     }
 }
+
+@media (max-width: 680px) {
+    .popup-overlay {
+        padding: 10px;
+    }
+
+    .popup-card {
+        width: 100%;
+        max-height: calc(100vh - 20px);
+        padding: 16px;
+    }
+
+    .popup-footer {
+        position: sticky;
+        bottom: 0;
+    }
+
+    .popup-footer .btn {
+        flex: 1;
+    }
+}

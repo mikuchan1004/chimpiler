@@ -6,15 +6,38 @@
 
 {% block script %}
 <script>
-    document.querySelector('.admin').addEventListener('click', () => {
-        alert('관리자 계정은 삭제하실 수 없습니다.')
-    })
-    document.querySelector('.suspension').addEventListener('click' , () =>{
-        alert('계정이 정지되었습니다.')
-    })
-    document.querySelector('.unsuspend').addEventListener('click' , () => {
-        alert('계정 정지가 해제되었습니다.')
-    })
+    const adminDeleteButton = document.querySelector('.admin')
+    if (adminDeleteButton) {
+        adminDeleteButton.addEventListener(
+            'click',
+            () => {
+                alert(
+                    '관리자 계정은 삭제하실 수 없습니다.'
+                )
+            }
+        )
+    }
+
+    const suspensionButton = document.querySelector('.suspension')
+    if (suspensionButton) {
+        suspensionButton.addEventListener(
+            'click',
+            () => {
+                alert('계정이 정지되었습니다.')
+            }
+        )
+    }
+
+    const unsuspendButton = document.querySelector('.unsuspend')
+    if (unsuspendButton) {
+        unsuspendButton.addEventListener(
+            'click',
+            () => {
+                alert('계정이 정지 해제 되었습니다.')
+            }
+        )
+    }
+
 </script>
 {% endblock %}
 
@@ -28,7 +51,7 @@
         </form>
     </div>
     <div class="table-wrap">
-        <table class="data-table" id="adminUserTable">
+        <table class="data-table admin-user-table" id="adminUserTable">
             <thead>
                 <tr>
                     <th>아이디</th>
@@ -57,24 +80,33 @@
                         {% endif %}
                     </td>
                     <td>
-                        <a href="/admin/users/warning/{{users.user_id}}">
-                            <button class="button secondary small">경고</button>
-                        </a>
-                        <a href="/admin/users/warning/delete/{{users.user_id}}">
-                            <button class="button secondary small">경고 제거</button>
-                        </a>
-                        <a href="/admin/users/suspension/{{users.user_id}}">
-                            <button class="button danger small suspension">계정 정지</button>
-                        </a>
-                        <a href="/admin/users/unsuspend/{{users.user_id}}">
-                            <button class="button secondary small unsuspend">정지 해제</button>
-                        </a>
-                        {% if users.user_id == 'admin' %}
-                        <button class="button danger small admin">회원 삭제</button>
-                        {% else %}
-                        <a href="/admin/users/delete/{{users.user_id}}">
-                            <button class="button danger small">회원 삭제</button>
-                        </a>
+                        <div class="admin-table-actions">
+                            <form method="post"
+                                action="/admin/users/warning/{{ users.user_id }}">
+                                <button class="button secondary small"
+                                        type="submit">
+                                    경고
+                                </button>
+                            </form>
+                            <form method="post" action="/admin/users/warning/delete/{{users.user_id}}">
+                                <button class="button secondary small">경고 제거</button>
+                            </form>
+                            <form method="post"
+                                action="/admin/users/suspension/{{ users.user_id }}">
+                                <button class="button small suspension" type="submit">
+                                    계정 정지
+                                </button>
+                            </form>
+                            <form method="post" action="/admin/users/unsuspend/{{users.user_id}}">
+                                <button class="button secondary small unsuspend">정지 해제</button>
+                            </form>
+                            {% if users.user_id == 'admin' %}
+                            <button class="button danger small admin">회원 삭제</button>
+                            {% else %}
+                            <form method="post" action="/admin/users/delete/{{users.user_id}}">
+                                <button class="button danger small">회원 삭제</button>
+                            </form>
+                        </div>
                         {% endif %}
                     </td>
                 </tr>
