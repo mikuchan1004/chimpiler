@@ -13,48 +13,28 @@
 
 <script>
     window.onload = () => {
-        const termsPageAgreement =
-            document.querySelector('#termsPageAgreement')
+        const termsPageAgreement = document.querySelector('#termsPageAgreement')
+        const termsAcceptButton = document.querySelector('#termsAcceptButton')
 
-        const termsAcceptButton =
-            document.querySelector('#termsAcceptButton')
-
-        // 이전에 동의한 상태가 있다면 복원
-        if (
-            sessionStorage.getItem('termsAgreed') === 'true'
-        ) {
+        if (sessionStorage.getItem('termsAgreed') === 'true') {
             termsPageAgreement.checked = true
         }
 
-        // 체크 여부에 따라 확인 버튼 활성화
-        termsAcceptButton.disabled =
-            !termsPageAgreement.checked
+        termsAcceptButton.disabled = !termsPageAgreement.checked
 
-        termsPageAgreement.addEventListener(
-            'change',
-            function () {
-                termsAcceptButton.disabled =
-                    !this.checked
+        termsPageAgreement.addEventListener('change', function () {
+            termsAcceptButton.disabled = !this.checked
+        })
+
+        termsAcceptButton.addEventListener('click', function () {
+            if (!termsPageAgreement.checked) {
+                alert('이용약관에 동의해 주세요.')
+                return
             }
-        )
 
-        // 동의 상태를 저장하고 회원가입 페이지로 이동
-        termsAcceptButton.addEventListener(
-            'click',
-            function () {
-                if (!termsPageAgreement.checked) {
-                    alert('이용약관에 동의해 주세요.')
-                    return
-                }
-
-                sessionStorage.setItem(
-                    'termsAgreed',
-                    'true'
-                )
-
-                location.href = '/signup'
-            }
-        )
+            sessionStorage.setItem('termsAgreed', 'true')
+            location.href = '/signup'
+        })
     }
 </script>
 
@@ -63,32 +43,129 @@
         <section class="card auth-card">
             <span class="eyebrow">TERMS</span>
             <h1 class="auth-title">이용약관</h1>
-            <div class="panel" style="max-height:430px;overflow:auto">
-                <h2>제1조 목적</h2>
-                <p>본 약관은 CHIMPILER HEALTHCARE가 제공하는 서비스 이용에 관한 기본 사항을 규정합니다.</p>
-                <h2>제2조 건강정보 안내</h2>
-                <p>AI 건강 체크 결과와 상품 추천은 참고 정보이며 의료인의 진단이나 처방을 대신하지 않습니다.</p>
-                <h2>제3조 회원의 의무</h2>
-                <p>회원은 정확한 정보를 입력하고 계정 정보를 안전하게 관리해야 합니다.</p>
-                <h2>제4조 주문 및 예약</h2>
-                <p>재고가 없는 상품은 예약할 수 있으며 입고 시 예약 순서에 따라 구매 기회가 제공됩니다.</p>
-            </div>
-            <label class="check-field" style="margin:20px 0"><input id="termsPageAgreement" type="checkbox">
-                <span>약관을 확인하고 동의합니다.</span>
-            </label>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-                <a class="button secondary" href="/signup">
-                    취소
-                </a>
 
-                <button class="button"
-                        id="termsAcceptButton"
-                        type="button"
-                        disabled>
+            <div class="panel terms-panel" style="max-height:430px;overflow:auto">
+                <p><strong>시행일: 2026년 9월 14일</strong></p>
+                <p>
+                    본 약관은 교육 및 포트폴리오 목적으로 제작된 CHIMPILER HEALTHCARE
+                    서비스의 이용 기준을 설명합니다. 실제 의료 서비스나 상용 전자상거래
+                    서비스 운영을 위한 법률 문서를 대신하지 않습니다.
+                </p>
+
+                <h2>제1조 목적</h2>
+                <p>
+                    본 약관은 CHIMPILER HEALTHCARE가 제공하는 회원, 건강 체크, 상품,
+                    주문, 예약구매 및 고객 커뮤니티 기능의 이용 조건과 기본 절차를
+                    정하는 것을 목적으로 합니다.
+                </p>
+
+                <h2>제2조 서비스 내용</h2>
+                <p>서비스는 다음 기능을 제공합니다.</p>
+                <ol>
+                    <li>회원가입, 로그인 및 회원정보 관리</li>
+                    <li>생활정보 기반 AI 건강 체크와 참고 피드백</li>
+                    <li>건강 관련 상품 검색, 장바구니, 주문 및 결제</li>
+                    <li>품절 상품 예약구매와 예약 순위 확인</li>
+                    <li>주문·배송 조회와 예약구매 내역 확인</li>
+                    <li>공지사항, 자주 묻는 질문 및 1:1 문의</li>
+                    <li>주변 의료기관 지도 정보</li>
+                </ol>
+
+                <h2>제3조 회원가입 및 계정 관리</h2>
+                <p>
+                    회원은 정확한 정보를 입력해야 하며 자신의 아이디와 비밀번호를 안전하게
+                    관리해야 합니다. 다른 사람의 정보를 이용하거나 계정을 공유해서는 안 됩니다.
+                    비정상적인 이용이 확인되면 서비스 이용이 제한될 수 있습니다.
+                </p>
+
+                <h2>제4조 건강정보 안내</h2>
+                <p>
+                    AI 건강 체크 결과, 상품 추천 및 의료기관 정보는 생활 관리를 돕기 위한
+                    참고 정보입니다. 의료인의 진단, 검사, 치료 또는 처방을 대신하지 않습니다.
+                    불편한 증상이 있거나 긴급한 상황이라면 의료기관 또는 응급 서비스에
+                    문의해야 합니다.
+                </p>
+
+                <h2>제5조 상품정보 및 주문</h2>
+                <p>
+                    회원은 상품의 가격, 수량, 배송지 및 결제 정보를 확인한 뒤 주문해야 합니다.
+                    상품 이미지와 설명은 화면 환경에 따라 실제 표시와 차이가 있을 수 있습니다.
+                    재고 부족, 정보 오류 또는 시스템 장애가 발생한 경우 주문이 취소되거나
+                    처리 일정이 변경될 수 있습니다.
+                </p>
+
+                <h2>제6조 결제</h2>
+                <p>
+                    결제 결과와 주문번호는 결제 완료 화면과 마이페이지에서 확인할 수 있습니다.
+                    본 프로젝트의 결제 기능은 실습용으로 구성되며 실제 결제 승인 및 금융 거래를
+                    보장하지 않습니다.
+                </p>
+
+                <h2>제7조 예약구매</h2>
+                <p>
+                    품절 상품은 예약 가능한 재고 범위에서 예약구매를 신청할 수 있습니다.
+                    예약 순위는 신청 순서와 운영 상태에 따라 정해집니다. 재고가 입고되면 관리자가
+                    구매 가능 상태로 전환할 수 있으며, 회원은 마이페이지에서 현재 순위와 상태를
+                    확인할 수 있습니다. 예약 상태는 재고와 운영 사정에 따라 변경될 수 있습니다.
+                </p>
+
+                <h2>제8조 배송, 취소 및 환불</h2>
+                <p>
+                    주문의 결제 및 배송 상태는 마이페이지 주문·배송 조회에서 확인할 수 있습니다.
+                    주문 취소와 환불 가능 여부는 결제 및 배송 진행 상태에 따라 달라질 수 있습니다.
+                    배송이 시작된 이후에는 취소 대신 환불 절차가 필요할 수 있습니다.
+                </p>
+
+                <h2>제9조 게시물 및 문의</h2>
+                <p>
+                    회원은 1:1 문의와 상품 문의에 정확한 내용을 작성해야 합니다. 욕설, 광고,
+                    불법 정보, 개인정보 침해 또는 서비스 운영을 방해하는 내용은 삭제되거나
+                    이용이 제한될 수 있습니다. 문의 답변은 마이페이지에서 확인할 수 있습니다.
+                </p>
+
+                <h2>제10조 개인정보 및 보안</h2>
+                <p>
+                    서비스는 회원관리와 주문 처리에 필요한 범위에서 입력 정보를 사용합니다.
+                    비밀번호는 단방향 해시 방식으로 저장하며 원래 비밀번호를 복원하는 용도로
+                    사용하지 않습니다. 회원은 공용 기기 이용 후 반드시 로그아웃해야 합니다.
+                </p>
+
+                <h2>제11조 서비스 변경 및 중단</h2>
+                <p>
+                    점검, 장애, 데이터 정비 또는 프로젝트 운영 사정으로 서비스 일부가 변경되거나
+                    일시 중단될 수 있습니다. 중요한 변경사항은 공지사항을 통해 안내합니다.
+                </p>
+
+                <h2>제12조 책임의 제한</h2>
+                <p>
+                    서비스가 제공하는 건강정보와 상품 추천은 참고용이며 이용자의 개별 판단과
+                    실제 건강 결과를 보장하지 않습니다. 이용자가 잘못 입력한 정보 또는 계정 관리
+                    소홀로 발생한 문제에 대해서는 서비스의 책임이 제한될 수 있습니다.
+                </p>
+
+                <h2>제13조 약관 변경</h2>
+                <p>
+                    약관이 변경되는 경우 시행일과 주요 변경 내용을 공지사항에 안내합니다.
+                    변경된 약관은 안내한 시행일부터 적용합니다.
+                </p>
+
+                <h2>부칙</h2>
+                <p>본 약관은 2026년 9월 14일부터 시행합니다.</p>
+            </div>
+
+            <label class="check-field" style="margin:20px 0">
+                <input id="termsPageAgreement" type="checkbox">
+                <span>이용약관을 확인하고 동의합니다.</span>
+            </label>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <a class="button secondary" href="/signup">취소</a>
+                <button class="button" id="termsAcceptButton" type="button" disabled>
                     동의하고 돌아가기
                 </button>
             </div>
         </section>
     </main>
 </body>
+
 </html>

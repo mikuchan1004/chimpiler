@@ -88,6 +88,7 @@ def chatBot(answer:str, session: Session = Depends(get_session)) :
     /chat : 챗봇 실행
     ========================================
     ''')
+    
     # DB에 넣어둔 ai_chatbot 테이블의 chat_keyword 중 제미나이 keyword를 받아 진행
     sql = text('''
         select chat_answer
@@ -4604,6 +4605,12 @@ def mypageReservations(request: Request, session: Session = Depends(get_session)
     ''')
 
     user_id = request.session.get('user_id')
+
+    if user_id is None:
+        return RedirectResponse(
+            url='/login',
+            status_code=303
+        )
 
     sql_mypage_reservation = text('''
         select * 
