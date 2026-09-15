@@ -59,6 +59,7 @@
                         <tr>
                             <th>주문서</th>
                             <th>회원</th>
+                            <th>배송지</th>
                             <th>금액</th>
                             <th>상태</th>
                         </tr>
@@ -69,6 +70,7 @@
                         <tr>
                             <td>{{orders.order_sheet_id}}</td>
                             <td>{{orders.order_name}}</td>
+                            <td>{{orders.order_addr}}</td>
                             <td>{{orders.order_total_price | price}}</td>
                             <td><span class="badge success">{{orders.delivery_status_name}}</span></td>
                         </tr>
