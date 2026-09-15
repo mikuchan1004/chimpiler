@@ -1745,7 +1745,7 @@ def reservation_list( request: Request,session: Session = Depends(get_session)):
             on r.user_id = u.user_id
     ''')
 
-    # 2) 아직 처리되지 않고 '예약대기' 중인 상태의 총건수를 계산함
+    # 2) 예약의 상태가 '예약완료' 인 것을 세는 SQL문입니다.
     sql2 = text('''
         select 
             count(*)
