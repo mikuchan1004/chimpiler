@@ -5,9 +5,6 @@
 {% endblock %}
 
 {% block script %}
-{% endblock %}
-
-{% block main %}
 <script>
     // 선택된 파일명을 화면에 표시해 주는 이벤트 함수
     function updateFileName(input) {
@@ -82,6 +79,9 @@
         })
     }
 </script>
+{% endblock %}
+
+{% block main %}
 <main class="container admin-layout">
     <div class="admin-toolbar">
         <h1 class="page-title">상품/재고관리</h1>
@@ -126,38 +126,35 @@
                     {% endif %}
                     <td>
                         <div class="admin-table-actions">
-                        <button class="button secondary small restock-btn"
-                            data-id="{{product.product_id}}" data-sale="{{product.product_sale_stock}}"
-                            data-res="{{product.product_reservation_stock}}">재고 보충</button>
-                        <!-- 
+                            <button class="button secondary small restock-btn" data-id="{{product.product_id}}"
+                                data-sale="{{product.product_sale_stock}}"
+                                data-res="{{product.product_reservation_stock}}">재고 보충</button>
+                            <!-- 
                                 [수정 버튼 및 커스텀 데이터 속성(data-*)]
                                 -  HTML 표준 문법인 data-* 속성을 이용해 각 상품의 정보를 버튼 자체에 숨겨둡니다.
                                 - 자바스크립트(JS)는 이 버튼이 클릭되었을 때 data-* 에 담긴 값들을 읽어서 팝업창으로 전달합니다.
                                 - by Google Gemini
                             -->
-                        <button class="button small modify-btn" data-id="{{product.product_id}}"
-                            data-brand="{{product.product_brand}}" data-name="{{product.product_name}}"
-                            data-detail="{{product.product_detail}}" data-price="{{product.product_price}}"
-                            data-sale="{{product.product_sale_stock}}" data-res="{{product.product_reservation_stock}}"
-                            data-category="{{product.category_id}}">수정</button>
-                        <!-- 일시 품절 버튼을 <a> 태그로 감싸서 바로 GET 요청을 보내도록 처리 -->
-                        {% if product.product_active == 2 %}
-                        <form method="post"
-                            action="/admin/product/available/{{ product.product_id }}">
-                            <button class="button secondary"
-                                    type="submit">
-                                판매 재개
-                            </button>
-                        </form>
-                        {% else %}
-                        <form method="post"
-                            action="/admin/product/soldout/{{ product.product_id }}">
-                            <button class="button danger"
-                                    type="submit">
-                                일시 품절 처리
-                            </button>
-                        </form>
-                        {% endif %}
+                            <button class="button small modify-btn" data-id="{{product.product_id}}"
+                                data-brand="{{product.product_brand}}" data-name="{{product.product_name}}"
+                                data-detail="{{product.product_detail}}" data-price="{{product.product_price}}"
+                                data-sale="{{product.product_sale_stock}}"
+                                data-res="{{product.product_reservation_stock}}"
+                                data-category="{{product.category_id}}">수정</button>
+                            <!-- 일시 품절 버튼을 <a> 태그로 감싸서 바로 GET 요청을 보내도록 처리 -->
+                            {% if product.product_active == 2 %}
+                            <form method="post" action="/admin/product/available/{{ product.product_id }}">
+                                <button class="button secondary" type="submit">
+                                    판매 재개
+                                </button>
+                            </form>
+                            {% else %}
+                            <form method="post" action="/admin/product/soldout/{{ product.product_id }}">
+                                <button class="button danger" type="submit">
+                                    일시 품절 처리
+                                </button>
+                            </form>
+                            {% endif %}
                         </div>
                     </td>
                 </tr>
@@ -165,7 +162,6 @@
                 {% endif %}
             </tbody>
         </table>
-    </div>
 </main>
 <!-- [1] 상품 추가 팝업 -->
 <div class="popup-overlay add_popup hide">
@@ -184,18 +180,14 @@
                     <div class="file-upload-box">
                         <!-- label의 for 속성과 input의 id를 연결합니다 -->
                         <label for="addProductImage" class="btn-file-select">📷 파일 선택</label>
-                        <input type="file"
-                            name="product_image"
-                            id="addProductImage"
-                            class="file-upload-input"
-                            accept="image/*"
-                            required
-                            onchange="updateFileName(this)">
+                        <input type="file" name="product_image" id="addProductImage" class="file-upload-input"
+                            accept="image/*" required onchange="updateFileName(this)">
                         <span class="file-name-text" id="addfileNameDisplay">선택된 파일 없음</span>
                     </div>
                 </div>
                 가격: <input class="form-control" type="number" name="product_price" placeholder="가격 입력"><br><br>
-                판매 재고 : <input class="form-control" type="number" name="product_sale_stock" placeholder="판매 재고 입력"><br><br>
+                판매 재고 : <input class="form-control" type="number" name="product_sale_stock"
+                    placeholder="판매 재고 입력"><br><br>
                 예약 재고 : <input class="form-control" type="number" name="product_reservation_stock"
                     placeholder="예약 재고 입력"><br><br>
                 카테고리ID : <input class="form-control" type="number" name="category_id" placeholder="카테고리 ID 입력(1~6)"><br>
@@ -238,10 +230,7 @@
                 <input class="form-control" type="number" name="category_id" placeholder="카테고리 ID 입력(1~6)"><br>
             </div>
             <div class="popup-footer">
-                <button class="button secondary delete-button"
-                        type="submit"
-                        formmethod="post"
-                        formnovalidate>
+                <button class="button secondary delete-button" type="submit" formmethod="post" formnovalidate>
                     삭제
                 </button>
                 <input class="btn btn-secondary close" type="button" value="닫기">
@@ -261,8 +250,10 @@
         <form method="post" action="/admin/product/restock">
             <div class="popup-body">
                 상품 ID : <input class="form-control" type="number" name="product_id" readonly><br><br>
-                판매 재고 : <input class="form-control" type="number" name="product_sale_stock" placeholder="판매 재고 입력"><br><br>
-                예약 재고 : <input class="form-control" type="number" name="product_reservation_stock" placeholder="예약 재고 입력"><br>
+                판매 재고 : <input class="form-control" type="number" name="product_sale_stock"
+                    placeholder="판매 재고 입력"><br><br>
+                예약 재고 : <input class="form-control" type="number" name="product_reservation_stock"
+                    placeholder="예약 재고 입력"><br>
             </div>
             <div class="popup-footer">
                 <input class="btn btn-secondary close" type="button" value="닫기">
