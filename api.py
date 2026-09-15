@@ -139,10 +139,7 @@ def login(request: Request, user_id:str = Form(), user_password:str = Form(), se
 
     print(login_check)
 
-    if (
-        login_check
-        and login_check['user_status'] == '정지'
-    ):
+    if login_check and login_check['user_status'] == '정지':
         return templates.TemplateResponse(
             request,
             'login.html',
@@ -173,16 +170,11 @@ def login(request: Request, user_id:str = Form(), user_password:str = Form(), se
         if saved_password is not None:
             # Argon2 비밀번호
             if saved_password.startswith('$argon2'):
-                password_check = passwordVerify(
-                    user_password,
-                    saved_password
-                )
+                password_check = passwordVerify(user_password,saved_password)
 
             # 기존 평문 비밀번호
             else:
-                password_check = (
-                    user_password == saved_password
-                )
+                password_check = (user_password == saved_password)
 
                 # 로그인 성공 시 Argon2로 자동 변경
                 if password_check:
@@ -192,22 +184,16 @@ def login(request: Request, user_id:str = Form(), user_password:str = Form(), se
                         where user_id = :user_id
                     ''')
 
-                    session.execute(
-                        sql_password_upgrade,
-                        {
-                            'user_password':
-                                passwordHash(user_password),
+                    session.execute(sql_password_upgrade,{
+                            'user_password': passwordHash(user_password),
                             'user_id': user_id
-                        }
-                    )
+                    })
                     session.commit()
 
             if password_check:
                 request.session['isLogin'] = True
                 request.session['user_id'] = user_id
-                request.session['user_name'] = (
-                    login_check['user_name']
-                )
+                request.session['user_name'] = (login_check['user_name'])
 
                 print('/login : 로그인 성공')
 
@@ -218,12 +204,8 @@ def login(request: Request, user_id:str = Form(), user_password:str = Form(), se
 
     print('/login : 로그인 실패')
 
-    return templates.TemplateResponse(
-        request,
-        'login.html',
-        {
-            'login_error':
-                '아이디 또는 비밀번호가 일치하지 않습니다.'
+    return templates.TemplateResponse(request,'login.html',{
+            'login_error':'아이디 또는 비밀번호가 일치하지 않습니다.'
         },
         status_code=401
     )
@@ -268,21 +250,11 @@ async def signupIDChk(
 ):
     data = await request.json()
 
-    request.session.pop(
-        'signup_checked_id',
-        None
-    )
+    request.session.pop('signup_checked_id',None)
 
-    signupUserId = data.get(
-        'signupUserId',
-        ''
-    ).strip()
+    signupUserId = data.get('signupUserId', '').strip()
 
-    if (
-        signupUserId == ''
-        or len(signupUserId) > 12
-        or not signupUserId.isalnum()
-    ):
+    if signupUserId == '' or len(signupUserId) > 12 or not signupUserId.isalnum():
         return {
             'result': '아이디 형식을 확인해 주세요.',
             'check': 'failed'
@@ -294,23 +266,14 @@ async def signupIDChk(
         where user_id = :user_id
     ''')
 
-    result_idcheck = session.execute(
-        sql_idcheck,
-        {
+    result_idcheck = session.execute(sql_idcheck, {
             'user_id': signupUserId
-        }
-    )
+    })
 
-    idcheck = (
-        result_idcheck
-        .mappings()
-        .fetchone()
-    )
+    idcheck = result_idcheck.mappings().fetchone()
 
     if idcheck is None:
-        request.session[
-            'signup_checked_id'
-        ] = signupUserId
+        request.session['signup_checked_id'] = signupUserId
 
         return {
             'result': '사용 가능한 아이디입니다.',
@@ -352,11 +315,7 @@ def signupData(
     user_phone = user_phone.replace('-', '')
 
     # 010으로 시작하는 숫자 11자리 검사
-    if (
-        not user_phone.isdigit()
-        or len(user_phone) != 11
-        or not user_phone.startswith('010')
-    ):
+    if not user_phone.isdigit() or len(user_phone) != 11 or not user_phone.startswith('010'):
         return RedirectResponse(
             url='/signup',
             status_code=303
@@ -384,10 +343,8 @@ def signupData(
             status_code=303
         )
 
-    # 중복확인을 받은 아이디와 제출한 아이디 비교
-    checked_user_id = request.session.get(
-        'signup_checked_id'
-    )
+    # 중복확인을 받은 아이디와 입력한 아이디 비교
+    checked_user_id = request.session.get('signup_checked_id' )
 
     if checked_user_id != user_id:
         return RedirectResponse(
@@ -579,13 +536,10 @@ def products(
 
     if align == 'align_price_low':
         order = 'product_price'
-
     elif align == 'align_price_high':
         order = 'product_price desc'
-
     elif align == 'align_name':
         order = 'product_name'
-
     else:
         order = 'product_view_count desc'
 
@@ -3627,6 +3581,7 @@ def commFaq(
             'total_page': total_page
         }
     )
+
 @app.get('/faq/write')
 def faqWrite(request: Request):
     if request.session.get('user_id') != 'admin':
