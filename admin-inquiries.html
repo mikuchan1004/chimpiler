@@ -41,7 +41,32 @@
                 form.action = `/admin/inquiries/answer/${id}`
             })
         })
-    }
+
+       
+    const statusFilter = document.querySelector('#inquiryStatusFilter')
+
+    statusFilter.addEventListener(
+        'change',
+        function () {
+            const selected = this.value
+
+            document
+                .querySelectorAll(
+                    '#adminInquiryTable tbody tr'
+                )
+                .forEach(row => {
+                    if (
+                        selected === '전체'
+                        || row.textContent.includes(selected)
+                    ) {
+                        row.style.display = ''
+                    } else {
+                        row.style.display = 'none'
+                    }
+                })
+        }
+    )
+ }
 </script>
 <style>
     /* 💡 [마우스 커서 & 선택 효과] 표의 줄에 마우스를 올리면 손가락 모양 커서로 바꾸고, 클릭된 줄은 연회색 배경에 굵은 글씨로 바꿉니다. */
