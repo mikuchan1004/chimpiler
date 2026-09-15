@@ -1799,7 +1799,7 @@ def reservation_list( request: Request,session: Session = Depends(get_session)):
         left join reservation_status as rs 
             on r.reservation_status_id = rs.reservation_status_id
         where 
-            rs.reservation_status_name = '예약대기'
+            rs.reservation_status_name = '예약완료'
     ''')
 
 
@@ -1809,7 +1809,7 @@ def reservation_list( request: Request,session: Session = Depends(get_session)):
     # 예약 관리 화면(admin-reservations.html)에 예약 명단과 대기 건수를 함께 표시
     return templates.TemplateResponse(request, 'admin-reservations.html', {
         'reservation_list': results,
-        'reservation_wait': results2[0]['count(*)']
+        'reservation_completed': results2[0]['count(*)']
     })
 
 # 추가 0912_상우 @app.get('/admin/reservations/delete/{reservation_id}') 
