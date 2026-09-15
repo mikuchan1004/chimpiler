@@ -61,3 +61,8 @@ CSS 수정은 역할에 맞는 파일 한 곳에서 진행하면 같은 컴포�
 ## Jinja 적용 시
 
 `templates/layout.html`의 `mainContent` 내부를 `{% block main %}{% endblock %}`으로 바꾸고, 각 페이지에서 `{% extends "layout.html" %}`를 사용하면 됩니다. 현재 HTML은 브라우저에서 바로 확인할 수 있도록 정적 경로를 사용했습니다.
+
+## 🖼️ 스크린샷 
+
+<img width="1905" height="2208" alt="image" src="https://github.com/user-attachments/assets/9017bd5b-9d27-44d2-a3de-c0cb3dbf1f75" />
+
