@@ -1267,6 +1267,7 @@ def order_list(request: Request, session: Session = Depends(get_session)):
 	    o.order_sheet_id,
 	    o.user_id,
 	    o.order_name,
+        o.order_addr,
 	    os.order_total_price,
 	    st.order_status_name,
 	    ds.delivery_status_name,

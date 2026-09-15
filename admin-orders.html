@@ -55,6 +55,7 @@
                     <th>주문서</th>
                     <th>회원</th>
                     <th>수령인</th>
+                    <th>배송지</th>
                     <th>금액</th>
                     <th>결제</th>
                     <th>배송</th>
@@ -68,6 +69,7 @@
                     <td>{{orders.order_sheet_id}}</td>
                     <td>{{orders.user_id}}</td>
                     <td>{{orders.order_name}}</td>
+                    <td>{{orders.order_addr}}</td>
                     <td>{{orders.order_total_price | price}}</td>
                     <td>
                         {% if orders.payment_status_name == '결제대기' %}
